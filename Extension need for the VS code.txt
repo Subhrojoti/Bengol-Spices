@@ -1,0 +1,23 @@
+Live Server /live Preview 
+
+Prettier 
+
+Line Wrap
+
+Tab Size From 4 to 2
+
+Tech needed - FrontEnd
+# React Js
+# Redux Toolkit
+# Tailwind 
+# Material UI
+# Smooth Scroll
+# 
+
+BackEnd 
+# Node Js
+# MongoDB - NoSql
+# NodeMon
+# Salt-Bycrpt
+# Express Js
+# PostMan
