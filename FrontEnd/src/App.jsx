@@ -1,11 +1,10 @@
 import { useState } from "react";
+import AddToCart from "./components/AddToCart/AddToCart";
 
 function App() {
   return (
     <>
-      <h1 className="text-3xl font-bold underline text-red-600">
-        Hello world!
-      </h1>
+      <AddToCart />
     </>
   );
 }
