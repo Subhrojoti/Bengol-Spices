@@ -1,11 +1,11 @@
-import { useState } from "react";
-import AddToCart from "./components/AddToCart/AddToCart";
+import { BrowserRouter } from 'react-router-dom';
+import AppRouter from './routes/AppRouter';
 
 function App() {
   return (
-    <>
-      <AddToCart />
-    </>
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
   );
 }
 
