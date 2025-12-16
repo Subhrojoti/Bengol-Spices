@@ -1,10 +1,8 @@
-import { useState } from "react";
-import AddToCart from "./components/AddToCart/AddToCart";
-
+import Header from "./components/header/Header.JSX";
 function App() {
   return (
     <>
-      <AddToCart />
+      <Header />
     </>
   );
 }
