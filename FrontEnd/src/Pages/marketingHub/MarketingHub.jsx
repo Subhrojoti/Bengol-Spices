@@ -1,7 +1,12 @@
 import React from "react";
+import Header from "../../components/header/Header.JSX";
 
 const MarketingHub = () => {
-  return <div>MarketingHub MarketingHub</div>;
+  return (
+    <div>
+      <Header />
+    </div>
+  );
 };
 
 export default MarketingHub;
