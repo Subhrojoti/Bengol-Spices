@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import Home from "../pages/Home/Home";
 
 // ----------- Marketing Hub Layout -----------
 const MarketingHub = lazy(() => import('../pages/MarketingHub/MarketingHub'));
@@ -18,6 +19,7 @@ const Returns = lazy(() => import('../pages/MarketingHub/Tabs/Returns'));
 export const routes = [
   {
     path: '/',
+    element: <Home />,
     children: [
       // ========== MARKETING HUB ==========
       {
