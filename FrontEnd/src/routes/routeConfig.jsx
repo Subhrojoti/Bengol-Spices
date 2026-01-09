@@ -3,12 +3,17 @@ import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import Login from "../pages/Auth/Login";
 import Signup from "../pages/Auth/Signup";
 import ProtectedRoute from "../routes/ProtectedRoute";
+import Onboarding from "../pages/Auth/Onboarding";
 
 export const routes = [
   // ---------- PUBLIC ----------
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/onboarding",
+    element: <Onboarding />,
   },
   {
     path: "/signup",

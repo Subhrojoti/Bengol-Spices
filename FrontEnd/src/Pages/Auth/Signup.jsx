@@ -32,7 +32,7 @@ const spiceImages = [
 export default function Signup() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({
-    username: "",
+    agentId: "",
     email: "",
     password: "",
   });
@@ -160,9 +160,9 @@ export default function Signup() {
             <TextField
               fullWidth
               variant="standard"
-              label="Username"
-              name="username"
-              value={form.username}
+              label="Agent ID"
+              name="agentId"
+              value={form.agentId}
               onChange={handleChange}
               margin="normal"
             />
