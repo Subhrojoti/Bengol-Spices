@@ -1,0 +1,101 @@
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+export const sendAdminNotification = async ({
+  customAgentId,
+  name,
+  email,
+  phone,
+}) => {
+  await transporter.sendMail({
+    from: `"Bengol Spices" <${process.env.EMAIL_USER}>`,
+    to: process.env.ADMIN_EMAIL,
+    subject: "🚀 New Marketing Agent Application",
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+
+          <div style="background: #1f2937; color: #ffffff; padding: 16px 20px;">
+            <h2 style="margin: 0;">New Marketing Agent Applied</h2>
+          </div>
+
+          <div style="padding: 20px; color: #333;">
+            <p style="font-size: 15px;">
+              A new marketing agent has submitted an application. Below are the details:
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr>
+                <td style="padding: 8px; font-weight: bold;">Agent ID</td>
+                <td style="padding: 8px;">${customAgentId}</td>
+              </tr>
+              <tr style="background: #f9fafb;">
+                <td style="padding: 8px; font-weight: bold;">Name</td>
+                <td style="padding: 8px;">${name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; font-weight: bold;">Email</td>
+                <td style="padding: 8px;">${email}</td>
+              </tr>
+              <tr style="background: #f9fafb;">
+                <td style="padding: 8px; font-weight: bold;">Phone</td>
+                <td style="padding: 8px;">${phone}</td>
+              </tr>
+            </table>
+
+            <div style="margin-top: 25px; text-align: center;">
+              <a
+                href="#"
+                style="
+                  background: #2563eb;
+                  color: #ffffff;
+                  padding: 12px 24px;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                  display: inline-block;
+                "
+              >
+                Login to Admin Panel
+              </a>
+            </div>
+          </div>
+
+          <div style="background: #f3f4f6; padding: 12px; text-align: center; font-size: 12px; color: #6b7280;">
+            © ${new Date().getFullYear()} Bengol Spices Pvt Ltd
+          </div>
+
+        </div>
+      </div>
+    `,
+  });
+};
+
+export const sendAgentApprovalMail = async ({ email, agentId, token }) => {
+  const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Agent Account is Approved",
+    text: `
+Congratulations!
+
+Your documents are verified successfully.
+
+Agent ID: ${agentId}
+
+Set your password using the link below:
+${link}
+
+This link will expire in 15 minutes.
+`,
+  });
+};
