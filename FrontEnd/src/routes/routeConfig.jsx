@@ -1,7 +1,6 @@
 import Home from "../pages/Home/Home";
 import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import Login from "../pages/Auth/Login";
-import Signup from "../pages/Auth/Signup";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../pages/Auth/Onboarding";
 
@@ -14,10 +13,6 @@ export const routes = [
   {
     path: "/onboarding",
     element: <Onboarding />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
   },
 
   // ---------- PROTECTED ----------
