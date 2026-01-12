@@ -1,7 +1,12 @@
 import express from "express";
-import { applyAgent } from "../controllers/agent.controller.js";
+import {
+  applyAgent,
+  getAgentProfile,
+} from "../controllers/agent.controller.js";
 import { upload } from "../middleware/upload.js";
 import { setPassword } from "../controllers/auth.controller.js";
+import { protect } from "../middleware/auth.js";
+import { isAgent } from "../middleware/role.js";
 
 const router = express.Router();
 
@@ -27,4 +32,13 @@ router.post(
 );
 
 router.post("/auth/set-password", setPassword);
+
+// 🔒 AGENT ONLY ROUTE
+router.get(
+  "/profile",
+  protect, // 1️⃣ Check login
+  isAgent, // 2️⃣ Check role = AGENT
+  getAgentProfile // 3️⃣ Controller
+);
+
 export default router;

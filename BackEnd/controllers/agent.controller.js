@@ -101,3 +101,32 @@ export const applyAgent = async (req, res) => {
     });
   }
 };
+
+// GET LOGGED-IN AGENT PROFILE
+export const getAgentProfile = async (req, res) => {
+  try {
+    // id comes from JWT (agentLogin → protect middleware)
+    const agentMongoId = req.user.id;
+
+    const agent = await Agent.findById(agentMongoId).select(
+      "-password -passwordResetToken -passwordResetExpires"
+    );
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      agent,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch agent profile",
+    });
+  }
+};
