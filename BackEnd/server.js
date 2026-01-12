@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./database/db.js";
 import agentRoutes from "./routes/agent.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import authRoute from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ connectDB();
 // ✅ USE ROUTER, NOT CONTROLLER
 app.use("/agent", agentRoutes);
 app.use("/admin", adminRoutes);
+app.use("/auth", authRoute);
 
 const PORT = process.env.PORT || 5000;
 
