@@ -10,34 +10,74 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { agentRegistration } from "../../api/services";
 
 export default function Onboarding() {
   const [form, setForm] = useState({
-    username: "",
+    name: "",
     email: "",
+    phone: "",
+    address: "",
     aadhaar: "",
     pan: "",
-    phoneNo: "",
-    address: "",
+    photo: null,
+    aadhaarFile: null,
+    panFile: null,
   });
+
+  const [errors, setErrors] = useState({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Future backend integration point
-   */
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (!files || !files.length) return;
+    setForm((prev) => ({ ...prev, [name]: files[0] }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Name is required";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      newErrors.email = "Enter a valid email address";
+
+    if (!/^[6-9]\d{9}$/.test(form.phone))
+      newErrors.phone = "Enter a valid 10-digit phone number";
+
+    if (!form.photo) newErrors.photo = "Profile photo is required";
+    if (!form.aadhaarFile) newErrors.aadhaarFile = "Aadhaar document required";
+    if (!form.panFile) newErrors.panFile = "PAN document required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return;
+
     setIsSubmitting(true);
 
     try {
-      // 🔁 Replace this block with real API call later
-      // await api.submitOnboarding(form);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("phone", form.phone);
+      formData.append("address", form.address);
+
+      // FILES — must match backend field names
+      formData.append("aadhaar", form.aadhaarFile);
+      formData.append("pan", form.panFile);
+      formData.append("photo", form.photo);
+
+      await agentRegistration(formData);
 
       setIsSubmitted(true);
     } catch (error) {
@@ -78,67 +118,117 @@ export default function Onboarding() {
                 Basic Details
               </Typography>
 
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
+              <Grid container spacing={3}>
+                {/* BASIC DETAILS */}
+                <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
-                    label="Username"
-                    name="username"
-                    value={form.username}
+                    label="Full Name"
+                    name="name"
+                    value={form.name}
                     onChange={handleChange}
+                    error={!!errors.name}
+                    helperText={errors.name}
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
-                    label="Email"
+                    label="Email Address"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
+                    error={!!errors.email}
+                    helperText={errors.email}
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
                     label="Phone Number"
-                    name="phoneNo"
-                    value={form.phoneNo}
+                    name="phone"
+                    value={form.phone}
                     onChange={handleChange}
+                    error={!!errors.phone}
+                    helperText={errors.phone}
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    fullWidth
-                    label="Aadhaar Number"
-                    name="aadhaar"
-                    value={form.aadhaar}
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    fullWidth
-                    label="PAN Number"
-                    name="pan"
-                    value={form.pan}
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
                     label="Address"
                     name="address"
                     value={form.address}
                     onChange={handleChange}
-                    multiline
                     rows={3}
                   />
+                </Grid>
+
+                {/* DOCUMENT UPLOADS */}
+                <Grid item xs={12} sm={6} md={4}>
+                  <Button fullWidth variant="outlined" component="label">
+                    Upload Profile Photo
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/*"
+                      name="photo"
+                      onChange={handleFileChange}
+                    />
+                  </Button>
+                  <Typography variant="caption" color="error">
+                    {errors.photo}
+                  </Typography>
+                  {form.photo && (
+                    <Typography variant="caption" color="text.secondary">
+                      {form.photo.name}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={4}>
+                  <Button fullWidth variant="outlined" component="label">
+                    Upload Aadhaar
+                    <input
+                      hidden
+                      type="file"
+                      accept="application/pdf,image/*"
+                      name="aadhaarFile"
+                      onChange={handleFileChange}
+                    />
+                  </Button>
+                  <Typography variant="caption" color="error">
+                    {errors.aadhaarFile}
+                  </Typography>
+                  {form.aadhaarFile && (
+                    <Typography variant="caption" color="text.secondary">
+                      {form.aadhaarFile.name}
+                    </Typography>
+                  )}
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={4}>
+                  <Button fullWidth variant="outlined" component="label">
+                    Upload PAN
+                    <input
+                      hidden
+                      type="file"
+                      accept="application/pdf,image/*"
+                      name="panFile"
+                      onChange={handleFileChange}
+                    />
+                  </Button>
+                  <Typography variant="caption" color="error">
+                    {errors.panFile}
+                  </Typography>
+                  {form.panFile && (
+                    <Typography variant="caption" color="text.secondary">
+                      {form.panFile.name}
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
 
@@ -161,7 +251,7 @@ export default function Onboarding() {
                 {isSubmitting ? (
                   <CircularProgress size={22} sx={{ color: "#fff" }} />
                 ) : (
-                  "Save & Continue"
+                  "APPLY"
                 )}
               </Button>
             </>

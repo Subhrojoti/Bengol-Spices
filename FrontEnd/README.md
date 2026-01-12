@@ -62,6 +62,10 @@ src/redux/slices
 - A module layout file (e.g. `MarketingHub.jsx`)
 - Feature pages under the `Tabs/` folder
 
+### API Handling
+
+- API should be defined under `api/services.js`
+
 ### Development Guidelines
 
 - Do not hardcode routes or tab labels inside components
