@@ -1,17 +1,27 @@
+import "dotenv/config"; // ✅ THIS LINE
 import express from "express";
-import "dotenv/config";
+import cors from "cors";
 import connectDB from "./database/db.js";
-import userRoute from "./routes/userRoute.js";
+import agentRoutes from "./routes/agent.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/user", userRoute);
+app.use(cors());
+
+connectDB();
+
+// console.log(process.env.CLOUDINARY_API_KEY);
+
+// ✅ USE ROUTER, NOT CONTROLLER
+app.use("/agent", agentRoutes);
+app.use("/admin", adminRoutes);
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  connectDB();
-  console.log(`Listing to the port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
