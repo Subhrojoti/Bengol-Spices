@@ -31,7 +31,7 @@ const spiceImages = [
 
 export default function Login() {
   const [activeStep, setActiveStep] = useState(0);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ agentId: "", password: "" });
 
   // Auto-slide (React 19 safe)
   useEffect(() => {
@@ -50,7 +50,8 @@ export default function Login() {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#facc15",
+        background:
+          "radial-gradient(circle at top, #fde68a 0%, #f59e0b 45%, #f59e0b 100%)",
         display: "flex",
         alignItems: "center",
       }}>
@@ -146,7 +147,7 @@ export default function Login() {
               backgroundColor: "#fff",
             }}>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              Login
+              Agent Login
             </Typography>
 
             <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
@@ -156,9 +157,9 @@ export default function Login() {
             <TextField
               fullWidth
               variant="standard"
-              label="E-mail"
-              name="email"
-              value={form.email}
+              label="Agent-ID"
+              name="agentId"
+              value={form.agentId}
               onChange={handleChange}
               margin="normal"
             />
@@ -198,7 +199,7 @@ export default function Login() {
               Don&apos;t have an account?{" "}
               <Link
                 component={RouterLink}
-                to="/signup"
+                to="/onboarding"
                 underline="hover"
                 sx={{ fontWeight: 600 }}>
                 Sign up

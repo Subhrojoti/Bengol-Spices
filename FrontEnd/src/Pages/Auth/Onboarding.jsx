@@ -8,8 +8,10 @@ import {
   Button,
   Grid,
   CircularProgress,
+  Stack,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import UploadIcon from "@mui/icons-material/Upload";
 import { agentRegistration } from "../../api/services";
 
 export default function Onboarding() {
@@ -113,16 +115,12 @@ export default function Onboarding() {
                 Join Bengol Spices to explore authentic flavours
               </Typography>
 
-              {/* BASIC DETAILS */}
-              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
-                Basic Details
-              </Typography>
-
-              <Grid container spacing={3}>
+              <Grid container spacing={6}>
                 {/* BASIC DETAILS */}
                 <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
+                    variant="standard"
                     label="Full Name"
                     name="name"
                     value={form.name}
@@ -131,10 +129,10 @@ export default function Onboarding() {
                     helperText={errors.name}
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
+                    variant="standard"
                     label="Email Address"
                     name="email"
                     value={form.email}
@@ -143,10 +141,10 @@ export default function Onboarding() {
                     helperText={errors.email}
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
+                    variant="standard"
                     label="Phone Number"
                     name="phone"
                     value={form.phone}
@@ -155,10 +153,10 @@ export default function Onboarding() {
                     helperText={errors.phone}
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     fullWidth
+                    variant="standard"
                     label="Address"
                     name="address"
                     value={form.address}
@@ -166,69 +164,107 @@ export default function Onboarding() {
                     rows={3}
                   />
                 </Grid>
-
                 {/* DOCUMENT UPLOADS */}
-                <Grid item xs={12} sm={6} md={4}>
-                  <Button fullWidth variant="outlined" component="label">
-                    Upload Profile Photo
-                    <input
-                      hidden
-                      type="file"
-                      accept="image/*"
-                      name="photo"
-                      onChange={handleFileChange}
-                    />
-                  </Button>
-                  <Typography variant="caption" color="error">
-                    {errors.photo}
-                  </Typography>
-                  {form.photo && (
-                    <Typography variant="caption" color="text.secondary">
-                      {form.photo.name}
-                    </Typography>
-                  )}
-                </Grid>
+                <Grid
+                  container
+                  spacing={1}
+                  justifyContent="space-between"
+                  alignItems="flex-start">
+                  {/* ===================== PROFILE PHOTO ===================== */}
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Stack spacing={0.5}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        component="label"
+                        startIcon={<UploadIcon />}>
+                        Upload Profile Photo
+                        <input
+                          hidden
+                          type="file"
+                          accept="image/*"
+                          name="photo"
+                          onChange={handleFileChange}
+                        />
+                      </Button>
 
-                <Grid item xs={12} sm={6} md={4}>
-                  <Button fullWidth variant="outlined" component="label">
-                    Upload Aadhaar
-                    <input
-                      hidden
-                      type="file"
-                      accept="application/pdf,image/*"
-                      name="aadhaarFile"
-                      onChange={handleFileChange}
-                    />
-                  </Button>
-                  <Typography variant="caption" color="error">
-                    {errors.aadhaarFile}
-                  </Typography>
-                  {form.aadhaarFile && (
-                    <Typography variant="caption" color="text.secondary">
-                      {form.aadhaarFile.name}
-                    </Typography>
-                  )}
-                </Grid>
+                      {errors.photo && (
+                        <Typography variant="caption" color="error">
+                          {errors.photo}
+                        </Typography>
+                      )}
 
-                <Grid item xs={12} sm={6} md={4}>
-                  <Button fullWidth variant="outlined" component="label">
-                    Upload PAN
-                    <input
-                      hidden
-                      type="file"
-                      accept="application/pdf,image/*"
-                      name="panFile"
-                      onChange={handleFileChange}
-                    />
-                  </Button>
-                  <Typography variant="caption" color="error">
-                    {errors.panFile}
-                  </Typography>
-                  {form.panFile && (
-                    <Typography variant="caption" color="text.secondary">
-                      {form.panFile.name}
-                    </Typography>
-                  )}
+                      {form.photo && (
+                        <Typography variant="caption" color="text.secondary">
+                          {form.photo.name}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  {/* ===================== AADHAAR ===================== */}
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Stack spacing={0.5}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        component="label"
+                        startIcon={<UploadIcon />}>
+                        Upload Aadhaar
+                        <input
+                          hidden
+                          type="file"
+                          accept="application/pdf,image/*"
+                          name="aadhaarFile"
+                          onChange={handleFileChange}
+                        />
+                      </Button>
+
+                      {errors.aadhaarFile && (
+                        <Typography variant="caption" color="error">
+                          {errors.aadhaarFile}
+                        </Typography>
+                      )}
+
+                      {form.aadhaarFile && (
+                        <Typography variant="caption" color="text.secondary">
+                          {form.aadhaarFile.name}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  {/* ===================== PAN ===================== */}
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Stack spacing={0.5}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        component="label"
+                        startIcon={<UploadIcon />}>
+                        Upload PAN
+                        <input
+                          hidden
+                          type="file"
+                          accept="application/pdf,image/*"
+                          name="panFile"
+                          onChange={handleFileChange}
+                        />
+                      </Button>
+
+                      {errors.panFile && (
+                        <Typography variant="caption" color="error">
+                          {errors.panFile}
+                        </Typography>
+                      )}
+
+                      {form.panFile && (
+                        <Typography variant="caption" color="text.secondary">
+                          {form.panFile.name}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
                 </Grid>
               </Grid>
 

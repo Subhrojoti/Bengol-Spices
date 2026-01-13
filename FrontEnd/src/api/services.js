@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -10,4 +11,18 @@ export const agentRegistration = async (formData) => {
   });
 
   return response.data;
+};
+
+export const adminLogin = async (email, password) => {
+  const response = await axiosInstance.post("/auth/admin/login", {
+    email,
+    password,
+  });
+
+  return response.data;
+};
+
+export const logout = () => {
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("role");
 };

@@ -1,23 +1,40 @@
 import Home from "../pages/Home/Home";
 import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
-import Login from "../pages/Auth/Login";
+import AgentLogin from "../pages/Auth/Login/AgentLogin";
+import AdminLogin from "../pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../pages/Auth/Onboarding";
+import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
 
 export const routes = [
-  // ---------- PUBLIC ----------
+  /* ===================== PUBLIC ROUTES ===================== */
   {
-    path: "/login",
-    element: <Login />,
+    path: "/agent/login",
+    element: <AgentLogin />,
+  },
+  {
+    path: "/admin/login",
+    element: <AdminLogin />,
   },
   {
     path: "/onboarding",
     element: <Onboarding />,
   },
 
-  // ---------- PROTECTED ----------
+  /* ===================== ADMIN PROTECTED ===================== */
   {
-    element: <ProtectedRoute />, // Auth guard
+    element: <ProtectedRoute redirectTo="/admin/login" />,
+    children: [
+      {
+        path: "/admin/dashboard",
+        element: <AdminDashboard />,
+      },
+    ],
+  },
+
+  /* ===================== AGENT / APP PROTECTED ===================== */
+  {
+    element: <ProtectedRoute redirectTo="/agent/login" />,
     children: [
       {
         path: "/",
@@ -35,7 +52,7 @@ export const routes = [
                 };
               }),
 
-              // Default route → first tab
+              /* Default route → first marketing tab */
               {
                 index: true,
                 element: (() => {
