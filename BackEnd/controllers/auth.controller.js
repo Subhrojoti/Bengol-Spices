@@ -90,6 +90,86 @@ export const agentLogin = async (req, res) => {
   }
 };
 
+// CHANGE PASSWORD (AGENT)
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    // 1️⃣ Required fields check
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Old password, new password and confirm password are required",
+      });
+    }
+
+    // 2️⃣ Confirm password match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password and confirm password do not match",
+      });
+    }
+
+    // 3️⃣ Strong password validation
+    // Minimum 6 characters, at least 1 letter and 1 number
+    const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+
+    if (!strongPasswordRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be at least 6 characters long and contain letters and numbers",
+      });
+    }
+
+    // req.user.id comes from JWT (protect middleware)
+    const agent = await Agent.findById(req.user.id);
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
+    // 4️⃣ Old password check
+    const isMatch = await bcrypt.compare(oldPassword, agent.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Old password is incorrect",
+      });
+    }
+
+    // 5️⃣ Prevent using same password again
+    const isSamePassword = await bcrypt.compare(newPassword, agent.password);
+
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password cannot be the same as old password",
+      });
+    }
+
+    // 6️⃣ Hash and save new password
+    agent.password = await bcrypt.hash(newPassword, 10);
+    await agent.save();
+
+    return res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to change password",
+    });
+  }
+};
+
 // LOGOUT (Agent / Admin)
 export const logout = async (req, res) => {
   try {

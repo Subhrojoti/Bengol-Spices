@@ -99,3 +99,24 @@ This link will expire in 15 minutes.
 `,
   });
 };
+
+// SEND REJECTION EMAIL TO AGENT
+export const sendAgentRejectionMail = async ({ email, agentId }) => {
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Marketing Agent Application Status",
+    text: `
+Hello,
+
+We regret to inform you that your marketing agent application has been rejected after verification.
+
+If you believe this is a mistake, you may contact our support team.
+
+Thank you for your interest.
+
+Regards,
+Bengol Spices Team
+`,
+  });
+};

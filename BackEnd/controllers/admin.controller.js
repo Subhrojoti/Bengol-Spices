@@ -1,6 +1,9 @@
 import crypto from "crypto";
 import Agent from "../models/Agent.js";
-import { sendAgentApprovalMail } from "../utils/email.js";
+import {
+  sendAgentApprovalMail,
+  sendAgentRejectionMail,
+} from "../utils/email.js";
 
 export const approveAgent = async (req, res) => {
   try {
@@ -43,5 +46,72 @@ export const approveAgent = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });
+  }
+};
+
+// GET ALL AGENTS (ADMIN)
+export const getAllAgents = async (req, res) => {
+  try {
+    const agents = await Agent.find()
+      .select("-password -passwordResetToken -passwordResetExpires")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: agents.length,
+      agents,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch agents",
+    });
+  }
+};
+
+// REJECT AGENT (ADMIN)
+export const rejectAgent = async (req, res) => {
+  try {
+    const { agentId } = req.params;
+
+    const agent = await Agent.findOne({ agentId });
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
+    if (agent.status === "REJECTED") {
+      return res.status(400).json({
+        success: false,
+        message: "Agent already rejected",
+      });
+    }
+
+    agent.status = "REJECTED";
+    agent.passwordResetToken = undefined;
+    agent.passwordResetExpires = undefined;
+
+    await agent.save();
+
+    // 📧 SEND REJECTION EMAIL
+    await sendAgentRejectionMail({
+      email: agent.email,
+      agentId: agent.agentId,
+    });
+
+    return res.json({
+      success: true,
+      message: "Agent rejected and email sent",
+    });
+  } catch (error) {
+    console.error("REJECT AGENT ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to reject agent",
+    });
   }
 };
