@@ -1,5 +1,28 @@
 import Agent from "../models/Agent.js";
 import { sendAdminNotification } from "../utils/email.js";
+import cloudinary from "../config/cloudinary.js";
+
+const cleanupCloudinaryFiles = async (files) => {
+  if (!files) return;
+
+  const allFiles = [];
+
+  Object.values(files).forEach((fileArr) => {
+    fileArr.forEach((file) => {
+      if (file.filename) {
+        allFiles.push(file.filename);
+      }
+    });
+  });
+
+  for (const publicId of allFiles) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (err) {
+      console.error("Failed to delete file:", publicId);
+    }
+  }
+};
 
 export const applyAgent = async (req, res) => {
   try {
@@ -34,12 +57,14 @@ export const applyAgent = async (req, res) => {
 
     const existingAgent = await Agent.findOne({ email });
     if (existingAgent) {
+      // 🔥 CLEANUP uploaded files
+      await cleanupCloudinaryFiles(req.files);
+
       return res.status(400).json({
         success: false,
         message: "You have already applied",
       });
     }
-
     /* =============================
        CUSTOM AGENT ID GENERATION
        ============================= */
@@ -87,7 +112,9 @@ export const applyAgent = async (req, res) => {
   } catch (error) {
     console.error("APPLY AGENT ERROR:", error);
 
-    // handle duplicate agentId edge case
+    // 🔥 CLEANUP uploaded files on any failure
+    await cleanupCloudinaryFiles(req.files);
+
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
