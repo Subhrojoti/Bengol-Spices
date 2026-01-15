@@ -213,21 +213,6 @@ export default function Login() {
               }}>
               Login
             </Button>
-
-            {/* SIGN UP LINK */}
-            <Typography
-              variant="body2"
-              align="center"
-              sx={{ mt: 2, color: "text.secondary" }}>
-              Don&apos;t have an account?{" "}
-              <Link
-                component={RouterLink}
-                to="/onboarding"
-                underline="hover"
-                sx={{ fontWeight: 600 }}>
-                Sign up
-              </Link>
-            </Typography>
           </Paper>
         </Box>
       </Container>
