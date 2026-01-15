@@ -5,6 +5,7 @@ import connectDB from "./database/db.js";
 import agentRoutes from "./routes/agent.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import authRoute from "./routes/auth.routes.js";
+import storeRoutes from "./routes/store.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ connectDB();
 app.use("/agent", agentRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoute);
+app.use("/agent/store", storeRoutes);
 
 const PORT = process.env.PORT || 5000;
 

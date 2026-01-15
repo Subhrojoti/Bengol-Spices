@@ -74,8 +74,9 @@ export const agentLogin = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: agent._id,
-        role: agent.role,
+        id: agent._id, // MongoDB _id (internal use)
+        agentId: agent.agentId, // BS2026-001 (business use)
+        role: agent.role, // AGENT / ADMIN
       },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
