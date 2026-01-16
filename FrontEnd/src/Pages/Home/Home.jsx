@@ -1,10 +1,11 @@
-import { memo } from 'react';
-import Header from '../../components/header/Header';
+import { memo } from "react";
+import { Outlet } from "react-router-dom";
+import Header from "../../components/header/Header";
 
 const Home = () => {
   return (
     <div>
-      <Header />
+      <Outlet />
     </div>
   );
 };

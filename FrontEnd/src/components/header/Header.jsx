@@ -24,6 +24,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { useLocation, useNavigate } from "react-router-dom";
 import { marketingRoutes } from "../../config/marketingRoutes";
+import ProfileMenu from "../profile/ProfileMenu";
 
 const Header = () => {
   const theme = useTheme();
@@ -52,8 +53,7 @@ const Header = () => {
           bgcolor: "background.paper",
           borderBottom: "1px solid",
           borderColor: "divider",
-        }}
-      >
+        }}>
         <Toolbar
           sx={{
             maxWidth: 1400,
@@ -62,23 +62,20 @@ const Header = () => {
             minHeight: 64,
             display: "flex",
             gap: 2,
-          }}
-        >
+          }}>
           {/* Logo + App Name */}
           <Box
             display="flex"
             alignItems="center"
             gap={1.2}
             sx={{ cursor: "pointer" }}
-            onClick={() => navigate("/marketing")}
-          >
+            onClick={() => navigate("/marketing")}>
             <Restaurant color="secondary" />
             <Typography
               fontWeight={600}
               fontSize={16}
               whiteSpace="nowrap"
-              color="black"
-            >
+              color="black">
               Marketing Hub
             </Typography>
           </Box>
@@ -104,8 +101,7 @@ const Header = () => {
                     borderRadius: 2,
                   },
                 },
-              }}
-            >
+              }}>
               {marketingRoutes.map((route) => (
                 <Tab key={route.fullPath} label={route.label} />
               ))}
@@ -127,8 +123,7 @@ const Header = () => {
                 borderColor: "divider",
                 bgcolor: "#f9fafb",
                 minWidth: 220,
-              }}
-            >
+              }}>
               <InputBase
                 placeholder="Search..."
                 sx={{ fontSize: 14, flex: 1 }}
@@ -151,18 +146,8 @@ const Header = () => {
             </IconButton>
           )}
 
-          {/* User Info (desktop/tablet only) */}
-          {!isMobile && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <Avatar
-                src="https://i.pravatar.cc/40"
-                sx={{ width: 32, height: 32 }}
-              />
-              <Typography fontSize={14} fontWeight={500}>
-                Agent: Vikram S.
-              </Typography>
-            </Box>
-          )}
+          {/* User Profile (desktop/tablet only) */}
+          {!isMobile && <ProfileMenu />}
 
           {/* Mobile Hamburger */}
           {isMobile && (
@@ -177,8 +162,7 @@ const Header = () => {
       <Drawer
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      >
+        onClose={() => setDrawerOpen(false)}>
         <Box width={260} p={2}>
           <Box
             display="flex"
@@ -189,8 +173,7 @@ const Header = () => {
             onClick={() => {
               navigate("/marketing");
               setDrawerOpen(false);
-            }}
-          >
+            }}>
             <Restaurant color="secondary" />
             <Typography fontWeight={600}>Marketing Hub</Typography>
           </Box>
@@ -203,8 +186,7 @@ const Header = () => {
                 onClick={() => {
                   navigate(route.fullPath);
                   setDrawerOpen(false);
-                }}
-              >
+                }}>
                 <ListItemText primary={route.label} />
               </ListItemButton>
             ))}

@@ -9,7 +9,11 @@ import {
   MobileStepper,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { agentLogin } from "../../../api/services";
 import { Link } from "@mui/material";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const spiceImages = [
   {
@@ -32,6 +36,7 @@ const spiceImages = [
 export default function Login() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ agentId: "", password: "" });
+  const navigate = useNavigate();
 
   // Auto-slide (React 19 safe)
   useEffect(() => {
@@ -44,6 +49,24 @@ export default function Login() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async () => {
+    const { agentId, password } = form;
+
+    try {
+      const data = await agentLogin(agentId, password);
+
+      if (data.success) {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("role", "AGENT");
+
+        navigate("/marketing", { replace: true });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Invalid agent-id or password");
+    }
   };
 
   return (
@@ -178,6 +201,7 @@ export default function Login() {
             <Button
               fullWidth
               variant="contained"
+              onClick={handleLogin}
               sx={{
                 mt: 4,
                 py: 1.3,
@@ -191,18 +215,17 @@ export default function Login() {
               Login
             </Button>
 
-            {/* SIGN UP LINK */}
             <Typography
               variant="body2"
               align="center"
               sx={{ mt: 2, color: "text.secondary" }}>
-              Don&apos;t have an account?{" "}
+              Not an agent yet?{" "}
               <Link
                 component={RouterLink}
                 to="/onboarding"
                 underline="hover"
                 sx={{ fontWeight: 600 }}>
-                Sign up
+                Apply Now
               </Link>
             </Typography>
           </Paper>
