@@ -22,6 +22,15 @@ export const adminLogin = async (email, password) => {
   return response.data;
 };
 
+export const agentLogin = async (agentId, password) => {
+  const response = await axiosInstance.post("/auth/agent/login", {
+    agentId,
+    password,
+  });
+
+  return response.data;
+};
+
 export const logout = () => {
   localStorage.removeItem("authToken");
   localStorage.removeItem("role");
