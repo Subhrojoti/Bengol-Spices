@@ -5,6 +5,8 @@ import AdminLogin from "../pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../pages/Auth/Onboarding";
 import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
+import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
+import SetPassword from "../pages/Auth/SetPassword/SetPassword";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -19,6 +21,10 @@ export const routes = [
   {
     path: "/onboarding",
     element: <Onboarding />,
+  },
+  {
+    path: "/set-password",
+    element: <SetPassword />,
   },
 
   /* ===================== ADMIN PROTECTED ===================== */
@@ -40,6 +46,10 @@ export const routes = [
         path: "/",
         element: <Home />,
         children: [
+          {
+            path: "profile/settings",
+            element: <ProfileSettings />,
+          },
           {
             path: "marketing",
             element: <MarketingHub />,

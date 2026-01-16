@@ -48,3 +48,31 @@ export const approveAgent = (agentId) => {
 export const rejectAgent = (agentId) => {
   return axiosInstance.post(`/admin/agents/${agentId}/reject`);
 };
+
+export const getAgentProfile = async () => {
+  const response = await axiosInstance.get("/agent/profile");
+  return response.data;
+};
+
+export const changePassword = async ({
+  oldPassword,
+  newPassword,
+  confirmPassword,
+}) => {
+  const response = await axiosInstance.post("/auth/change-password", {
+    oldPassword,
+    newPassword,
+    confirmPassword,
+  });
+
+  return response.data;
+};
+
+export const setPassword = async ({ token, password }) => {
+  const response = await axiosInstance.post("/agent/auth/set-password", {
+    token,
+    password,
+  });
+
+  return response.data;
+};
