@@ -89,3 +89,35 @@ export const registerStore = async (req, res) => {
     });
   }
 };
+
+// GET STORES REGISTERED BY LOGGED-IN AGENT
+export const getMyStores = async (req, res) => {
+  try {
+    // 🔒 agentId comes from JWT
+    const agentId = req.user.agentId;
+
+    if (!agentId) {
+      return res.status(401).json({
+        success: false,
+        message: "Agent identity missing in token",
+      });
+    }
+
+    const stores = await Store.find({ registeredBy: agentId }).sort({
+      createdAt: -1,
+    });
+
+    return res.json({
+      success: true,
+      count: stores.length,
+      stores,
+    });
+  } catch (error) {
+    console.error("GET MY STORES ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch stores",
+    });
+  }
+};
