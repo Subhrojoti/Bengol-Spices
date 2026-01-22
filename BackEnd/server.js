@@ -6,6 +6,7 @@ import agentRoutes from "./routes/agent.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import authRoute from "./routes/auth.routes.js";
 import storeRoutes from "./routes/store.routes.js";
+import orderRoutes from "./routes/order.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/agent", agentRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoute);
 app.use("/agent/store", storeRoutes);
+app.use("/agent/orders", orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 
