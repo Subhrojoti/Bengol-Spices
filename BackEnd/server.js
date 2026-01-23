@@ -7,6 +7,8 @@ import adminRoutes from "./routes/admin.routes.js";
 import authRoute from "./routes/auth.routes.js";
 import storeRoutes from "./routes/store.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import employeeRoutes from "./routes/employee.routes.js";
+import deliveryRoutes from "./routes/deliveryPartner.routes.js";
 
 const app = express();
 
@@ -22,9 +24,11 @@ connectDB();
 // ✅ USE ROUTER, NOT CONTROLLER
 app.use("/agent", agentRoutes);
 app.use("/admin", adminRoutes);
+app.use("/employee", employeeRoutes);
 app.use("/auth", authRoute);
 app.use("/agent/store", storeRoutes);
 app.use("/agent/orders", orderRoutes);
+app.use("/delivery-partner", deliveryRoutes);
 
 const PORT = process.env.PORT || 5000;
 

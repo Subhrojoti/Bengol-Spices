@@ -3,81 +3,86 @@ import mongoose from "mongoose";
 const orderSchema = new mongoose.Schema(
   {
     /* =============================
-       BASIC REFERENCES
+       BASIC IDENTIFIERS
        ============================= */
 
     orderId: {
-      type: String, // Business-friendly order ID
+      type: String, // e.g. ORD2026-0001
       required: true,
       unique: true,
       index: true,
     },
 
     consumerId: {
-      type: String, // CS2026-0001
+      type: String, // e.g. CS2026-0001 (Store)
       required: true,
       index: true,
     },
 
     agentId: {
-      type: String, // BS2026-001
+      type: String, // e.g. BS2026-001
       required: true,
       index: true,
     },
 
     /* =============================
-       PRODUCTS (SPICES)
+       PRODUCTS ORDERED (SPICES)
        ============================= */
 
     products: [
       {
         name: {
-          type: String,
+          type: String, // Spice name
           required: true,
         },
 
         quantity: {
-          type: Number,
+          type: Number, // Quantity ordered
           required: true,
           min: 1,
         },
 
         unitPrice: {
-          type: Number,
+          type: Number, // Price per unit
           required: true,
           min: 0,
         },
 
+        UOM: {
+          type: String,
+          required: true,
+        },
+
         totalPrice: {
-          type: Number,
+          type: Number, // quantity × unitPrice
           required: true,
           min: 0,
         },
 
         image: {
-          type: String, // product image URL
+          type: String, // Product image URL (optional)
         },
       },
     ],
 
     /* =============================
-       AMOUNT DETAILS
+       PAYMENT DETAILS
        ============================= */
 
     totalAmount: {
-      type: Number,
+      type: Number, // Sum of all products
       required: true,
       min: 1,
     },
 
     paidAmount: {
-      type: Number,
+      type: Number, // Mandatory initial payment
       required: true,
-      min: 1, // 🔥 mandatory minimum payment
+      min: 1,
     },
 
     dueAmount: {
-      type: Number,
+      type: Number, // Remaining amount
       required: true,
       min: 0,
     },
@@ -89,12 +94,12 @@ const orderSchema = new mongoose.Schema(
     },
 
     dueDate: {
-      type: Date,
+      type: Date, // Order date + 7 days
       required: true,
     },
 
     /* =============================
-       ORDER STATUS & DELIVERY
+       ORDER STATUS
        ============================= */
 
     status: {
@@ -102,7 +107,7 @@ const orderSchema = new mongoose.Schema(
       enum: [
         "PLACED",
         "CONFIRMED",
-        "ASSIGNED_FOR_DELIVERY",
+        "SHIPPED",
         "OUT_FOR_DELIVERY",
         "DELIVERED",
         "CANCELLED",
@@ -111,7 +116,7 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       LOCATION (ORDER PLACED FROM)
+       LOCATION (WHERE ORDER WAS PLACED)
        ============================= */
 
     orderLocation: {
@@ -126,7 +131,34 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       DELIVERY DETAILS (FILLED BY OFFICE)
+       SHIPMENT DETAILS (IMPORTANT PART)
+       ============================= */
+
+    shipment: {
+      provider: {
+        type: String, // e.g. SHIPROCKET
+      },
+
+      awb: {
+        type: String, // Courier tracking number
+      },
+
+      trackingUrl: {
+        type: String, // Courier tracking link
+      },
+
+      status: {
+        type: String, // CREATED, IN_TRANSIT, DELIVERED, FAILED
+      },
+
+      createdAt: {
+        type: Date,
+      },
+    },
+
+    /* =============================
+       LEGACY / OPTIONAL MANUAL DELIVERY
+       (KEEP EMPTY FOR NOW)
        ============================= */
 
     delivery: {
@@ -137,7 +169,7 @@ const orderSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // createdAt & updatedAt auto
   },
 );
 
