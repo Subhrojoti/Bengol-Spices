@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
+import { createShiprocketOrder } from "../services/shiprocket.service.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -7,6 +8,7 @@ export const placeOrder = async (req, res) => {
     const {
       consumerId,
       products,
+      UOM,
       paidAmount,
       paymentMode,
       latitude,
@@ -23,6 +25,7 @@ export const placeOrder = async (req, res) => {
       !consumerId ||
       !Array.isArray(products) ||
       products.length === 0 ||
+      !UOM ||
       !paidAmount ||
       !paymentMode ||
       latitude === undefined ||
@@ -45,12 +48,16 @@ export const placeOrder = async (req, res) => {
        STORE VALIDATION
        ============================= */
 
-    const store = await Store.findOne({ consumerId });
+    const store = await Store.findOne({
+      consumerId,
+      registeredBy: agentId, // 🔥 ownership check
+    });
 
     if (!store) {
-      return res.status(404).json({
+      return res.status(403).json({
         success: false,
-        message: "Store not found",
+        message:
+          "You are not allowed to place order for this store or the store doesnot exist",
       });
     }
 
@@ -109,6 +116,7 @@ export const placeOrder = async (req, res) => {
       consumerId,
       agentId,
       products,
+      UOM,
       totalAmount,
       paidAmount,
       dueAmount,
@@ -181,6 +189,51 @@ export const getAllOrders = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch orders",
+    });
+  }
+};
+
+// CREATE SHIPMENT (DUMMY VERSION)
+export const createShipment = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.shipment && order.shipment.status) {
+      return res.status(400).json({
+        success: false,
+        message: "Shipment already created",
+      });
+    }
+
+    // 🔥 Call service (dummy for now)
+    const shipmentData = await createShiprocketOrder(order);
+
+    order.shipment = {
+      ...shipmentData,
+      createdAt: new Date(),
+    };
+
+    order.status = "SHIPPED";
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Shipment created successfully",
+    });
+  } catch (error) {
+    console.error("CREATE SHIPMENT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create shipment",
     });
   }
 };

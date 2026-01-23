@@ -79,7 +79,7 @@ export const agentLogin = async (req, res) => {
         role: agent.role, // AGENT / ADMIN
       },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     res.json({
@@ -182,6 +182,57 @@ export const logout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Logout failed",
+    });
+  }
+};
+
+import Employee from "../models/Employee.js";
+
+// EMPLOYEE LOGIN
+export const employeeLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password required",
+      });
+    }
+
+    const employee = await Employee.findOne({ email, status: "ACTIVE" });
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found or inactive",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, employee.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: employee._id,
+        role: employee.role, // EMPLOYEE
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" },
+    );
+
+    return res.json({
+      success: true,
+      token,
+    });
+  } catch (error) {
+    console.error("EMPLOYEE LOGIN ERROR:", error);
+    return res.status(500).json({
+      success: false,
     });
   }
 };
