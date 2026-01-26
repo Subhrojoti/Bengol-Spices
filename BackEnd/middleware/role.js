@@ -38,3 +38,19 @@ export const isAdminOrEmployee = (req, res, next) => {
     message: "Access denied",
   });
 };
+
+export const isAdminOrAllowedEmployee = (req, res, next) => {
+  // console.log("DEBUG - User Role:", req.user.role);
+  // console.log("DEBUG - Can Manage:", req.user.canManageProducts);
+
+  if (req.user.role === "ADMIN") return next();
+
+  if (req.user.role === "EMPLOYEE" && req.user.canManageProducts === true) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    message: "Access denied",
+  });
+};

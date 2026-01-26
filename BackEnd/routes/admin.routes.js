@@ -3,6 +3,7 @@ import {
   approveAgent,
   getAllAgents,
   rejectAgent,
+  updateProductPermission,
 } from "../controllers/admin.controller.js";
 import { protect } from "../middleware/auth.js";
 import { isAdmin } from "../middleware/role.js";
@@ -14,23 +15,29 @@ router.post(
   "/agents/:agentId/approve",
   protect, // 1️⃣ Check login (JWT)
   isAdmin, // 2️⃣ Check role = ADMIN
-  approveAgent // 3️⃣ Run controller
+  approveAgent, // 3️⃣ Run controller
 );
 // 🔒 ADMIN ONLY – GET ALL AGENTS
 router.get(
   "/agents",
   protect, // JWT check
   isAdmin, // ADMIN role check
-  getAllAgents
+  getAllAgents,
 );
 // 🔒 ADMIN ONLY – REJECT AGENT
 router.post(
   "/agents/:agentId/reject",
   protect, // JWT check
   isAdmin, // ADMIN role check
-  rejectAgent
+  rejectAgent,
 );
-
+// Admin Give Role to Employee
+router.patch(
+  "/employees/:employeeId/product-permission",
+  protect,
+  isAdmin,
+  updateProductPermission,
+);
 router.post("/agents/:agentId/approve", approveAgent);
 
 export default router;
