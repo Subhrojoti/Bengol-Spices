@@ -4,6 +4,7 @@ import {
   sendAgentApprovalMail,
   sendAgentRejectionMail,
 } from "../utils/email.js";
+import Employee from "../models/Employee.js";
 
 export const approveAgent = async (req, res) => {
   try {
@@ -112,6 +113,36 @@ export const rejectAgent = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to reject agent",
+    });
+  }
+};
+
+// To Give Permission to a specific Employee
+export const updateProductPermission = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { canManageProducts } = req.body;
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    employee.canManageProducts = canManageProducts;
+    await employee.save();
+
+    return res.json({
+      success: true,
+      message: "Product permission updated successfully",
+      canManageProducts: employee.canManageProducts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update permission",
     });
   }
 };

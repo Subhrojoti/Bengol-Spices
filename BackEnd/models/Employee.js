@@ -23,6 +23,11 @@ const employeeSchema = new mongoose.Schema(
       default: "EMPLOYEE",
     },
 
+    canManageProducts: {
+      type: Boolean,
+      default: false,
+    },
+
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],

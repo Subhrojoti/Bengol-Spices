@@ -16,6 +16,10 @@ const storage = new CloudinaryStorage({
     if (req.originalUrl.includes("/agent")) {
       folder = "bengol_spices/agents";
     }
+    // Products documents
+    if (req.originalUrl.includes("/products")) {
+      folder = "bengol_spices/products";
+    }
 
     return {
       folder,
