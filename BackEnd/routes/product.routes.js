@@ -2,6 +2,7 @@ import express from "express";
 import {
   createProduct,
   deleteProduct,
+  getAllProductsInternal,
   getAllPublicProducts,
   getProductById,
   getSinglePublicProduct,
@@ -23,6 +24,7 @@ router.post(
   ]),
   createProduct,
 );
+router.get("/all", protect, isAdminOrAllowedEmployee, getAllProductsInternal);
 
 router.get(
   "/single/:productId",
