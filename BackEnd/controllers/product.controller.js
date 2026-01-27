@@ -80,6 +80,24 @@ export const createProduct = async (req, res) => {
   }
 };
 
+//Get All product For Admin and Allowed Employees
+export const getAllProductsInternal = async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+    });
+  }
+};
+
 // Admin and AllowedEmployee
 export const getProductById = async (req, res) => {
   try {
@@ -211,6 +229,7 @@ export const getAllPublicProducts = async (req, res) => {
 
     return res.json({
       success: true,
+      count: products.length,
       products,
     });
   } catch (error) {
@@ -241,6 +260,7 @@ export const getSinglePublicProduct = async (req, res) => {
 
     return res.json({
       success: true,
+
       product,
     });
   } catch (error) {
