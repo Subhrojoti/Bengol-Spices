@@ -144,6 +144,60 @@ export const placeOrder = async (req, res) => {
   }
 };
 
+//GET STOREWISE ORDERS
+export const getOrdersByStoreConsumerId = async (req, res) => {
+  try {
+    const { consumerId } = req.params;
+    const user = req.user;
+
+    if (!consumerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Consumer ID is required",
+      });
+    }
+
+    // 🔐 AGENT ACCESS CONTROL
+    // Agent can only see orders of stores created by himself
+    if (user.role === "AGENT") {
+      const orders = await Order.find({
+        consumerId,
+        agentId: user.agentId, // IMPORTANT
+      }).sort({ createdAt: -1 });
+
+      return res.json({
+        success: true,
+        totalOrders: orders.length,
+        orders,
+      });
+    }
+
+    // 🔐 ADMIN & EMPLOYEE ACCESS
+    if (user.role === "ADMIN" || user.role === "EMPLOYEE") {
+      const orders = await Order.find({ consumerId }).sort({
+        createdAt: -1,
+      });
+
+      return res.json({
+        success: true,
+        totalOrders: orders.length,
+        orders,
+      });
+    }
+
+    return res.status(403).json({
+      success: false,
+      message: "Access denied",
+    });
+  } catch (error) {
+    console.error("STORE WISE ORDER ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch store orders",
+    });
+  }
+};
+
 // GET ORDERS PLACED BY LOGGED-IN AGENT
 export const getMyOrders = async (req, res) => {
   try {
