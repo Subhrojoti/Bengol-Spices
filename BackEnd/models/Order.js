@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema(
           min: 0,
         },
 
-        UOM: {
+        uom: {
           type: String,
           required: true,
         },
