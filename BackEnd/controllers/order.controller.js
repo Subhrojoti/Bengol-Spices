@@ -8,7 +8,7 @@ export const placeOrder = async (req, res) => {
     const {
       consumerId,
       products,
-      UOM,
+      uom,
       paidAmount,
       paymentMode,
       latitude,
@@ -25,7 +25,6 @@ export const placeOrder = async (req, res) => {
       !consumerId ||
       !Array.isArray(products) ||
       products.length === 0 ||
-      !UOM ||
       !paidAmount ||
       !paymentMode ||
       latitude === undefined ||
@@ -70,6 +69,7 @@ export const placeOrder = async (req, res) => {
     products.forEach((item) => {
       if (
         !item.name ||
+        !item.uom ||
         !item.quantity ||
         !item.unitPrice ||
         item.quantity <= 0 ||
@@ -116,7 +116,7 @@ export const placeOrder = async (req, res) => {
       consumerId,
       agentId,
       products,
-      UOM,
+      uom,
       totalAmount,
       paidAmount,
       dueAmount,
