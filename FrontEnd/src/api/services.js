@@ -76,3 +76,40 @@ export const setPassword = async ({ token, password }) => {
 
   return response.data;
 };
+
+export const createStore = async ({
+  storeName,
+  ownerName,
+  phone,
+  address,
+  latitude,
+  longitude,
+  storeType,
+}) => {
+  const response = await axiosInstance.post("/agent/store/register", {
+    storeName,
+    ownerName,
+    phone,
+    address,
+    latitude,
+    longitude,
+    storeType,
+  });
+
+  return response.data;
+};
+
+export const myStores = async () => {
+  const response = await axiosInstance.get("/agent/store/my-stores");
+  return response.data;
+};
+
+export const fetchProducts = async () => {
+  const response = await axiosInstance.get("/products/public/allProduct");
+  return response.data;
+};
+
+export const createOrder = async (payload) => {
+  const response = await axiosInstance.post("/agent/orders", payload);
+  return response.data;
+};

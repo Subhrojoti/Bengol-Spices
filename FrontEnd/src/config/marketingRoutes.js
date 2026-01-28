@@ -1,7 +1,7 @@
 import { lazy } from "react";
 
-export const MarketingHub = lazy(() =>
-  import("../pages/MarketingHub/MarketingHub")
+export const MarketingHub = lazy(
+  () => import("../pages/MarketingHub/MarketingHub"),
 );
 
 export const marketingRoutes = [
@@ -18,11 +18,14 @@ export const marketingRoutes = [
     component: lazy(() => import("../pages/MarketingHub/Tabs/StoreCreation")),
   },
   {
-    label: "Order Create",
-    path: "orderCreation",
-    fullPath: "/marketing/orderCreation",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/OrderCreation")),
+    label: "My Stores",
+    path: "myStores",
+    fullPath: "/marketing/myStores",
+    component: lazy(
+      () => import("../pages/MarketingHub/Tabs/MyStores/MyStoresBase"),
+    ),
   },
+
   {
     label: "Payments",
     path: "payments",
