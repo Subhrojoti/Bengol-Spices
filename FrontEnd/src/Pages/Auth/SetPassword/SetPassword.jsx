@@ -8,7 +8,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { setPassword } from "../../../api/services";
+import { setPassword as setPasswordApi } from "../../../api/services";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -18,17 +18,26 @@ const SetPassword = () => {
 
   const token = searchParams.get("token");
 
-  useEffect(() => {
-    if (!token) {
-      navigate("/onboarding", { replace: true });
-    }
-  }, [token, navigate]);
-
+  if (!token) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh">
+        <Typography color="error">
+          Invalid or expired password setup link.
+        </Typography>
+      </Box>
+    );
+  }
   const [password, setPasswordState] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
+    if (loading) return;
     e.preventDefault();
     setError("");
 
@@ -45,7 +54,7 @@ const SetPassword = () => {
     try {
       setLoading(true);
 
-      await setPassword({
+      await setPasswordApi({
         token,
         password,
       });
@@ -56,7 +65,7 @@ const SetPassword = () => {
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Failed to set password. Please try again."
+          "Failed to set password. Please try again.",
       );
     } finally {
       setLoading(false);
