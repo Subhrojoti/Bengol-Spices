@@ -13,7 +13,14 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-const StoresList = ({ stores, selectedStore, onSelectStore, onCreate }) => {
+const StoresList = ({
+  stores,
+  selectedStore,
+  onSelectStore,
+  onCreateOrder,
+  onCreate,
+  onViewOrders,
+}) => {
   return (
     <Box p={2}>
       <Grid container spacing={3}>
@@ -97,13 +104,14 @@ const StoresList = ({ stores, selectedStore, onSelectStore, onCreate }) => {
                     startIcon={<ReceiptLongIcon sx={{ fontSize: 14 }} />}
                     onClick={(e) => {
                       e.stopPropagation();
+                      onViewOrders(store);
                     }}
                     sx={{
                       textTransform: "uppercase",
                       fontWeight: 600,
                       fontSize: 11.5,
 
-                      lineHeight: 1, // 🔑 reduce vertical text spacing
+                      lineHeight: 1,
 
                       paddingY: 1,
                       minHeight: 26,
@@ -119,7 +127,7 @@ const StoresList = ({ stores, selectedStore, onSelectStore, onCreate }) => {
                     size="small"
                     variant="contained"
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 14 }} />}
-                    onClick={onCreate}
+                    onClick={onCreateOrder}
                     sx={{
                       textTransform: "uppercase",
                       fontWeight: 600,

@@ -10,17 +10,28 @@ import {
   Button,
   Badge,
 } from "@mui/material";
+
+import { ShoppingCartOutlined } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { fetchProducts } from "../../../../../api/services";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart } from "../../../../../redux/slices/addToCart/addToCart";
+import { setLeftView } from "../../../../../redux/slices/myStoresUi/myStoresUi";
 
-const CreateOrder = ({ onBack, onOpenCart }) => {
+const ProductList = ({ onBack }) => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [cartItems, setCartItems] = useState({});
   const [imageIndex, setImageIndex] = useState({});
+  const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
+  const dispatch = useDispatch();
+  const consumerId = selectedStore?.consumerId;
+  const cartCount = useSelector((state) =>
+    consumerId ? state.addToCart.carts[consumerId]?.items.length || 0 : 0,
+  );
+  const storeName = selectedStore?.storeName;
 
   const FallBackImage =
     "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2";
@@ -53,14 +64,28 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
     }));
   };
 
-  const handleAddToCart = (id) => {
+  const handleAddToCart = (product) => {
+    if (!consumerId) return;
+
+    dispatch(
+      addToCart({
+        consumerId,
+        product: {
+          id: product._id,
+          name: product.name,
+          uom: product.uom,
+          unitPrice: product.discountPrice ?? product.price,
+          quantity: Number(quantities[product._id]),
+          image: product.images?.front?.url,
+        },
+      }),
+    );
+
     setCartItems((prev) => ({
       ...prev,
-      [id]: true,
+      [product._id]: true,
     }));
   };
-
-  const cartCount = Object.keys(cartItems).length;
 
   /* ---------------- UI ---------------- */
   return (
@@ -70,19 +95,31 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        mb={3}>
-        <Box display="flex" alignItems="center" gap={1}>
+        mb={2}>
+        {/* LEFT: BACK + STORE NAME */}
+        <Box display="flex" alignItems="center" gap={1.5}>
           <IconButton onClick={onBack}>
             <ArrowBackIcon />
           </IconButton>
+
+          <Box>
+            <Typography fontWeight={700} fontSize={16} lineHeight={1.2}>
+              {storeName || "Selected Store"}
+            </Typography>
+
+            <Typography variant="caption" color="text.secondary">
+              Ordering products for this store
+            </Typography>
+          </Box>
         </Box>
 
-        <IconButton onClick={onOpenCart}>
+        {/* RIGHT: CART */}
+        <IconButton size="small" onClick={() => dispatch(setLeftView("CART"))}>
           <Badge
             badgeContent={cartCount}
             color="warning"
             invisible={cartCount === 0}>
-            <AddShoppingCartIcon />
+            <ShoppingCartOutlined />
           </Badge>
         </IconButton>
       </Box>
@@ -106,28 +143,33 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
             <Grid item xs={12} sm={6} md={4} key={product._id}>
               <Card
                 sx={{
-                  height: "100%",
+                  width: 280,
+                  height: 420,
+                  display: "flex",
+                  flexDirection: "column",
                   borderRadius: 3,
+                  overflow: "hidden",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
                 }}>
                 {/* IMAGE SLIDER (CARD WIDTH FIXED) */}
                 <Box
                   position="relative"
-                  height={200}
-                  width={250}
                   sx={{
-                    backgroundColor: "#e6e3e3",
-                    borderBottom: "1px solid #e5e7eb",
+                    height: 220,
+                    width: "100%",
+                    backgroundColor: "#000",
                     overflow: "hidden",
+                    flexShrink: 0,
                   }}>
                   <Box
                     component="img"
                     src={images[activeImage] || FallBackImage}
                     alt={product.name}
                     sx={{
-                      height: "100%",
                       width: "100%",
-                      objectFit: "contain",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
                     }}
                   />
 
@@ -143,9 +185,10 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
                           top: "50%",
                           left: 8,
                           transform: "translateY(-50%)",
-                          backgroundColor: "rgba(255,255,255,0.85)",
+                          backgroundColor: "rgba(0,0,0,0.5)",
+                          color: "#fff",
                         }}>
-                        <ChevronLeftIcon />
+                        <ChevronLeftIcon fontSize="small" />
                       </IconButton>
 
                       <IconButton
@@ -158,9 +201,10 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
                           top: "50%",
                           right: 8,
                           transform: "translateY(-50%)",
-                          backgroundColor: "rgba(255,255,255,0.85)",
+                          backgroundColor: "rgba(0,0,0,0.5)",
+                          color: "#fff",
                         }}>
-                        <ChevronRightIcon />
+                        <ChevronRightIcon fontSize="small" />
                       </IconButton>
                     </>
                   )}
@@ -203,7 +247,7 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
                     display="flex"
                     justifyContent="space-between"
                     alignItems="flex-end"
-                    mb={2}>
+                    mb={1}>
                     <Box>
                       <Typography variant="caption" color="text.secondary">
                         Total
@@ -234,29 +278,50 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
                       </Typography>
                     </Box>
                   </Box>
-
-                  {/* ADD TO CART */}
+                </CardContent>
+                {/* ADD TO CART */}
+                <Box sx={{ mt: "auto" }}>
                   <Button
                     fullWidth
-                    variant="contained"
-                    disabled={qty <= 0 || isAdded}
-                    onClick={() => handleAddToCart(product._id)}
+                    onClick={() => {
+                      if (qty <= 0 || isAdded) return;
+                      handleAddToCart(product);
+                    }}
                     sx={{
+                      height: 56,
+                      borderRadius: "0 0 12px 12px",
+                      fontSize: 16,
+                      fontWeight: 700,
                       textTransform: "none",
-                      fontWeight: 600,
-                      backgroundColor: isAdded ? "#22c55e" : "#f59e0b",
+                      color: "#ffffff",
+
+                      /* ---------------- STATE COLORS ---------------- */
+                      backgroundColor: isAdded
+                        ? "#16a34a" // ✅ green (added)
+                        : qty > 0
+                          ? "#f59e0b" // ✅ orange (ready)
+                          : "#e5e7eb", // ✅ light grey (initial)
+
+                      cursor: qty <= 0 || isAdded ? "not-allowed" : "pointer",
+
+                      /* ---------------- HOVER ---------------- */
                       "&:hover": {
-                        backgroundColor: isAdded ? "#22c55e" : "#b45309",
+                        backgroundColor: isAdded
+                          ? "#16a34a"
+                          : qty > 0
+                            ? "#d97706"
+                            : "#e5e7eb",
                       },
-                      "&.Mui-disabled": {
-                        backgroundColor: "#22c55e",
-                        color: "#fff",
-                        opacity: 1,
-                      },
+
+                      /* ---------------- TEXT COLOR FOR GREY STATE ---------------- */
+                      ...(qty <= 0 &&
+                        !isAdded && {
+                          color: "#6b7280", // softer text on grey
+                        }),
                     }}>
-                    {isAdded ? "Added to Cart" : "Add to Cart"}
+                    {isAdded ? "Added to Cart" : "Add to cart"}
                   </Button>
-                </CardContent>
+                </Box>
               </Card>
             </Grid>
           );
@@ -266,4 +331,4 @@ const CreateOrder = ({ onBack, onOpenCart }) => {
   );
 };
 
-export default CreateOrder;
+export default ProductList;

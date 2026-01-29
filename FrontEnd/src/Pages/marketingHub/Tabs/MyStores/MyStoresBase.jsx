@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { myStores } from "../../../../api/services";
-import OrderDetails from "./SubComponents/OrderDetails";
 import StoresList from "./SubComponents/StoresList";
-import CreateOrder from "./SubComponents/CreateOrder";
+import ProductList from "./SubComponents/ProductList";
 import MyCart from "./SubComponents/MyCart";
-
-const LEFT_VIEW = {
-  LIST: "LIST",
-  CREATE: "CREATE",
-  CART: "CART",
-};
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setLeftView,
+  setSelectedStore,
+} from "../../../../redux/slices/myStoresUi/myStoresUi";
+import ViewOrders from "./SubComponents/ViewOrders";
 
 const MyStoresBase = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStore, setSelectedStore] = useState(null);
-  const [leftView, setLeftView] = useState(LEFT_VIEW.LIST);
+  const dispatch = useDispatch();
+  const leftView = useSelector((state) => state.myStoresUi.leftView);
+  const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -58,26 +58,35 @@ const MyStoresBase = () => {
         sx={{
           borderRight: "1px solid #e5e7eb",
         }}>
-        {leftView === LEFT_VIEW.LIST && (
+        {leftView === "LIST" && (
           <StoresList
             stores={stores}
             selectedStore={selectedStore}
-            onSelectStore={setSelectedStore}
-            onCreate={() => setLeftView(LEFT_VIEW.CREATE)}
+            onSelectStore={(store) => {
+              dispatch(setSelectedStore(store));
+            }}
+            onViewOrders={(store) => {
+              dispatch(setSelectedStore(store));
+              dispatch(setLeftView("VIEW"));
+            }}
+            onCreateOrder={(store) => {
+              dispatch(setLeftView("CREATE"));
+            }}
           />
         )}
 
-        {leftView === LEFT_VIEW.CREATE && (
-          <CreateOrder
-            onBack={() => setLeftView(LEFT_VIEW.LIST)}
-            onOpenCart={() => setLeftView(LEFT_VIEW.CART)}
-          />
+        {leftView === "CREATE" && (
+          <ProductList onBack={() => dispatch(setLeftView("LIST"))} />
         )}
 
-        {leftView === LEFT_VIEW.CART && (
-          <MyCart
-            onBack={() => setLeftView(LEFT_VIEW.CREATE)}
-            consumerId={selectedStore?.consumerId}
+        {leftView === "CART" && (
+          <MyCart onBack={() => dispatch(setLeftView("CREATE"))} />
+        )}
+
+        {leftView === "VIEW" && (
+          <ViewOrders
+            onBack={() => dispatch(setLeftView("LIST"))}
+            onCreate={() => dispatch(setLeftView("CREATE"))}
           />
         )}
       </Box>

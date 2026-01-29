@@ -113,3 +113,13 @@ export const createOrder = async (payload) => {
   const response = await axiosInstance.post("/agent/orders", payload);
   return response.data;
 };
+
+export const getStoreOrders = async (consumerId) => {
+  if (!consumerId) {
+    throw new Error("consumerId is required to fetch store orders");
+  }
+
+  const response = await axiosInstance.get(`/agent/orders/store/${consumerId}`);
+
+  return response.data;
+};
