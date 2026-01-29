@@ -7,13 +7,13 @@ import {
   Tab,
   IconButton,
   InputBase,
-  Avatar,
   Typography,
   Drawer,
   List,
   ListItemButton,
   ListItemText,
   useMediaQuery,
+  Badge,
 } from "@mui/material";
 import {
   Search,
@@ -39,7 +39,7 @@ const Header = () => {
   // Active tab derived from URL
   const activeTab = React.useMemo(() => {
     const index = marketingRoutes.findIndex((route) =>
-      location.pathname.startsWith(route.fullPath)
+      location.pathname.startsWith(route.fullPath),
     );
     return index === -1 ? 0 : index;
   }, [location.pathname]);
