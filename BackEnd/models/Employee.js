@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const employeeSchema = new mongoose.Schema(
   {
+    employeeId: {
+      type: String, // EMP2026-001
+      unique: true,
+      index: true,
+    },
+
     name: {
       type: String,
       required: true,

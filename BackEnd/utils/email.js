@@ -120,3 +120,52 @@ Bengol Spices Team
 `,
   });
 };
+
+export const sendEmployeeWelcomeMail = async ({ name, email, employeeId }) => {
+  try {
+    const mailOptions = {
+      from: `"Bengol Spices" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Bengol Spices – Employee Access Details",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Welcome to Bengol Spices 👋</h2>
+
+          <p>Hello <strong>${name}</strong>,</p>
+
+          <p>
+            You have been successfully added as an <strong>Employee</strong> at
+            <strong>Bengol Spices</strong>.
+          </p>
+
+          <p><strong>Your Employee ID:</strong></p>
+          <h3 style="color: #2c3e50;">${employeeId}</h3>
+
+          <p>
+            This <strong>Employee ID</strong> will be used to log in to the system.
+          </p>
+
+          <p style="color: #c0392b;">
+            🔒 <strong>Password Information:</strong><br/>
+            Your password is currently managed by the <strong>Admin</strong>.
+            Please contact the admin directly to obtain your login password.
+          </p>
+
+          <p>
+            For security reasons, do not share your login credentials with anyone.
+          </p>
+
+          <br/>
+          <p>Regards,</p>
+          <p><strong>Bengol Spices Team</strong></p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Employee welcome email sent to:", email);
+  } catch (error) {
+    console.error("SEND EMPLOYEE EMAIL ERROR:", error);
+    // ❗ Email failure should NOT block employee creation
+  }
+};
