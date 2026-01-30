@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Agent from "../models/Agent.js";
+import Employee from "../models/Employee.js";
 
 // Generate link for the Password
 
@@ -186,25 +187,24 @@ export const logout = async (req, res) => {
   }
 };
 
-import Employee from "../models/Employee.js";
-
 // EMPLOYEE LOGIN
 export const employeeLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { employeeId, password } = req.body;
 
-    if (!email || !password) {
+    if (!employeeId || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password required",
+        message: "Employee ID and password are required",
       });
     }
 
-    const employee = await Employee.findOne({ email, status: "ACTIVE" });
-    if (!employee) {
-      return res.status(404).json({
+    const employee = await Employee.findOne({ employeeId });
+
+    if (!employee || employee.status !== "ACTIVE") {
+      return res.status(401).json({
         success: false,
-        message: "Employee not found or inactive",
+        message: "Invalid credentials",
       });
     }
 
@@ -219,8 +219,9 @@ export const employeeLogin = async (req, res) => {
     const token = jwt.sign(
       {
         id: employee._id,
-        role: employee.role, // EMPLOYEE
-        canManageProducts: employee.canManageProducts, // To check Permission
+        role: employee.role,
+        employeeId: employee.employeeId,
+        canManageProducts: employee.canManageProducts,
       },
       process.env.JWT_SECRET,
       { expiresIn: "30d" },
@@ -231,9 +232,9 @@ export const employeeLogin = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("EMPLOYEE LOGIN ERROR:", error);
     return res.status(500).json({
       success: false,
+      message: "Login failed",
     });
   }
 };
