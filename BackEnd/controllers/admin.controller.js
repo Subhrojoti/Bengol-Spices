@@ -123,7 +123,7 @@ export const updateProductPermission = async (req, res) => {
     const { employeeId } = req.params;
     const { canManageProducts } = req.body;
 
-    const employee = await Employee.findById(employeeId);
+    const employee = await Employee.findOne({ employeeId });
     if (!employee) {
       return res.status(404).json({
         success: false,
@@ -142,7 +142,7 @@ export const updateProductPermission = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Failed to update permission",
+      message: error,
     });
   }
 };
