@@ -1,10 +1,5 @@
 import axios from "axios";
 
-/* RESET GLOBAL AXIOS DEFAULTS */
-axios.defaults.headers.post = {};
-axios.defaults.headers.common = {};
-axios.defaults.transformRequest = [(data) => data];
-
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8000",
 });
@@ -18,9 +13,12 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // CRITICAL: NEVER force Content-Type for FormData
+    // Handle FormData correctly
     if (config.data instanceof FormData) {
-      delete config.headers["Content-Type"];
+      delete config.headers["Content-Type"]; // browser sets boundary
+    } else {
+      // Ensure JSON for normal requests (login, etc.)
+      config.headers["Content-Type"] = "application/json";
     }
 
     return config;
