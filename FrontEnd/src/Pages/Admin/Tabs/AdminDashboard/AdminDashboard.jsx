@@ -35,7 +35,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import IconButton from "@mui/material/IconButton";
 import Collapse from "@mui/material/Collapse";
 import Stack from "@mui/material/Stack";
-import { agentList, approveAgent, rejectAgent } from "../../api/services";
+import { agentList, approveAgent, rejectAgent } from "../../../../api/services";
 import React from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -56,8 +56,8 @@ export default function AdminDashboard() {
       // Update UI locally
       setAgents((prev) =>
         prev.map((a) =>
-          a.agentId === agent.agentId ? { ...a, status: "APPROVED" } : a
-        )
+          a.agentId === agent.agentId ? { ...a, status: "APPROVED" } : a,
+        ),
       );
     } catch (error) {
       console.error(error);
@@ -73,8 +73,8 @@ export default function AdminDashboard() {
 
       setAgents((prev) =>
         prev.map((a) =>
-          a.agentId === agent.agentId ? { ...a, status: "REJECTED" } : a
-        )
+          a.agentId === agent.agentId ? { ...a, status: "REJECTED" } : a,
+        ),
       );
     } catch (error) {
       console.error(error);
@@ -125,7 +125,14 @@ export default function AdminDashboard() {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box
+      sx={{
+        p: 4,
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}>
       {/* ===================== HEADER ===================== */}
       <Box
         sx={{
@@ -172,8 +179,18 @@ export default function AdminDashboard() {
       </Card>
 
       {/* ===================== AGENT TABLE ===================== */}
-      <Card>
-        <TableContainer>
+      <Card
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}>
+        <TableContainer
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+          }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -450,13 +467,13 @@ export default function AdminDashboard() {
                                                   onClick={() =>
                                                     window.open(
                                                       doc.url,
-                                                      "_blank"
+                                                      "_blank",
                                                     )
                                                   }>
                                                   <VisibilityIcon fontSize="small" />
                                                 </IconButton>
                                               </Stack>
-                                            )
+                                            ),
                                         )}
                                       </Stack>
                                     </Box>
