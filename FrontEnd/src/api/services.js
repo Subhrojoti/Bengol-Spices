@@ -123,3 +123,28 @@ export const getStoreOrders = async (consumerId) => {
 
   return response.data;
 };
+
+export const createProduct = async (formData) => {
+  const response = await axiosInstance.post("/products/create", formData);
+  return response.data;
+};
+
+export const getAllProducts = async () => {
+  const response = await axiosInstance.get("/products/all");
+  return response.data;
+};
+
+// UPDATE PRODUCT (multipart)
+export const updateProduct = async (productId, formData) => {
+  const response = await axiosInstance.put(
+    `/products/update/${productId}`,
+    formData,
+  );
+  return response.data;
+};
+
+// DELETE PRODUCT
+export const deleteProduct = async (productId) => {
+  const response = await axiosInstance.delete(`/products/delete/${productId}`);
+  return response.data;
+};

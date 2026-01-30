@@ -4,9 +4,10 @@ import AgentLogin from "../pages/Auth/Login/AgentLogin";
 import AdminLogin from "../pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../pages/Auth/Onboarding";
-import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
+import { adminRoutes } from "../config/adminRoutes";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import SetPassword from "../pages/Auth/SetPassword/SetPassword";
+import AdminBase from "../pages/Admin/AdminBase";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -32,8 +33,23 @@ export const routes = [
     element: <ProtectedRoute redirectTo="/admin/login" />,
     children: [
       {
-        path: "/admin/dashboard",
-        element: <AdminDashboard />,
+        path: "/admin",
+        element: <AdminBase />,
+        children: [
+          ...adminRoutes.map((route) => {
+            const Component = route.component;
+            return {
+              path: route.path,
+              element: <Component />,
+            };
+          }),
+
+          // default → dashboard
+          {
+            index: true,
+            element: adminRoutes[0].element,
+          },
+        ],
       },
     ],
   },
