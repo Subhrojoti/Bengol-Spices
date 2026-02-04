@@ -1,7 +1,10 @@
 import Store from "../models/store.js";
+import cloudinary from "../config/cloudinary.js";
+import { generateOTP, sendOtpSMS } from "../utils/otp.js";
 
-// REGISTER NEW STORE (AGENT)
-export const registerStore = async (req, res) => {
+export const initiateStoreRegistration = async (req, res) => {
+  let uploadedImageId = null;
+
   try {
     const {
       storeName,
@@ -13,7 +16,6 @@ export const registerStore = async (req, res) => {
       storeType,
     } = req.body;
 
-    // 🔒 Validation (location MUST come from frontend)
     if (
       !storeName ||
       !ownerName ||
@@ -23,38 +25,27 @@ export const registerStore = async (req, res) => {
       longitude === undefined ||
       !storeType
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields including location are required",
-      });
+      throw new Error("All fields are required");
     }
 
-    // 🚫 Prevent duplicate store
-    const existingStore = await Store.findOne({ phone });
-    if (existingStore) {
-      return res.status(400).json({
-        success: false,
-        message: "Store already registered with this phone number",
-      });
+    if (!req.file) {
+      throw new Error("Store image is required");
     }
 
-    /* =============================
-       CONSUMER ID GENERATION
-       ============================= */
-    const currentYear = new Date().getFullYear();
+    uploadedImageId = req.file.filename;
 
-    const storeCount = await Store.countDocuments({
-      consumerId: { $regex: `^CS${currentYear}` },
+    const exists = await Store.findOne({
+      phone,
+      isVerified: true,
     });
 
-    const serial = String(storeCount + 1).padStart(4, "0");
-    const consumerId = `CS${currentYear}-${serial}`;
+    if (exists) {
+      throw new Error("Store already registered with this phone");
+    }
 
-    /* =============================
-       CREATE STORE
-       ============================= */
+    const otp = generateOTP();
+
     const store = await Store.create({
-      consumerId,
       storeName,
       ownerName,
       phone,
@@ -64,28 +55,83 @@ export const registerStore = async (req, res) => {
         longitude: Number(longitude),
       },
       storeType,
-      registeredBy: req.user.agentId, // comes from JWT
-      status: "ACTIVE",
+      registeredBy: req.user.agentId,
+      image: {
+        url: req.file.path,
+        publicId: req.file.filename,
+      },
+      otp,
+      otpExpiresAt: Date.now() + 5 * 60 * 1000, // 5 min
+      isVerified: false,
     });
 
-    return res.status(201).json({
+    await sendOtpSMS(phone, otp);
+
+    return res.json({
+      success: true,
+      message: "OTP sent to store mobile number",
+      storeId: store._id,
+    });
+  } catch (error) {
+    // 🔥 cleanup image if failed
+    if (uploadedImageId) {
+      await cloudinary.uploader.destroy(uploadedImageId);
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const verifyStoreOtp = async (req, res) => {
+  try {
+    const { storeId, otp } = req.body;
+
+    if (!storeId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Store ID and OTP are required",
+      });
+    }
+
+    const store = await Store.findById(storeId);
+
+    if (
+      !store ||
+      store.isVerified ||
+      store.otp !== otp ||
+      store.otpExpiresAt < Date.now()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // 🔑 Generate consumerId
+    const year = new Date().getFullYear();
+    const count = await Store.countDocuments({
+      consumerId: { $regex: `^CS${year}` },
+    });
+
+    store.consumerId = `CS${year}-${String(count + 1).padStart(4, "0")}`;
+    store.isVerified = true;
+    store.otp = undefined;
+    store.otpExpiresAt = undefined;
+
+    await store.save();
+
+    return res.json({
       success: true,
       message: "Store registered successfully",
       consumerId: store.consumerId,
     });
   } catch (error) {
-    console.error("REGISTER STORE ERROR:", error);
-
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: "Consumer ID conflict, please retry",
-      });
-    }
-
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: "OTP verification failed",
     });
   }
 };
