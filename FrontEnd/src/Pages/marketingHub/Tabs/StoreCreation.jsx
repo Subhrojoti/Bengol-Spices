@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { createStore } from "../../../api/services";
+import { createStore, verifyStoreOtp } from "../../../api/services";
 
 const StoreCreation = () => {
   const [formData, setFormData] = useState({
@@ -58,18 +58,19 @@ const StoreCreation = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 4) {
-      toast.error("Please enter a valid OTP");
+    if (!/^\d{6}$/.test(otp)) {
+      toast.error("Please enter a valid 6-digit OTP");
       return;
     }
 
     try {
       setLoading(true);
+      console.log("VERIFY PAYLOAD:", { storeId, otp });
 
-      //  replace with actual API
-      // await verifyStoreOtp({ storeId, otp });
+      await verifyStoreOtp({ storeId, otp });
 
       toast.success("Store created successfully");
+
       setShowOtpModal(false);
       setOtp("");
       setStoreId(null);
@@ -83,7 +84,7 @@ const StoreCreation = () => {
         image: null,
       });
     } catch (err) {
-      toast.error("Invalid OTP");
+      toast.error(err?.response?.data?.message || "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -114,7 +115,7 @@ const StoreCreation = () => {
       // assuming backend returns this
       console.log("OTP:", res?.data?.otp);
 
-      setStoreId(res?.data?.storeId);
+      setStoreId(res?.storeId);
       setShowOtpModal(true);
     } catch (err) {
       toast.error(

@@ -158,3 +158,16 @@ export const deleteProduct = async (productId) => {
   const response = await axiosInstance.delete(`/products/delete/${productId}`);
   return response.data;
 };
+
+// Verify OTP
+export const verifyStoreOtp = async ({ storeId, otp }) => {
+  const response = await axiosInstance.post(
+    "/agent/store/register/verify-otp",
+    {
+      storeId,
+      otp,
+    },
+  );
+
+  return response.data;
+};
