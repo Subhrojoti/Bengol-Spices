@@ -85,16 +85,26 @@ export const createStore = async ({
   latitude,
   longitude,
   storeType,
+  image,
 }) => {
-  const response = await axiosInstance.post("/agent/store/register", {
-    storeName,
-    ownerName,
-    phone,
-    address,
-    latitude,
-    longitude,
-    storeType,
-  });
+  const formData = new FormData();
+
+  formData.append("storeName", storeName);
+  formData.append("ownerName", ownerName);
+  formData.append("phone", phone);
+  formData.append("address", address);
+  formData.append("latitude", latitude);
+  formData.append("longitude", longitude);
+  formData.append("storeType", storeType);
+
+  if (image) {
+    formData.append("image", image);
+  }
+
+  const response = await axiosInstance.post(
+    "/agent/store/register/initiate",
+    formData,
+  );
 
   return response.data;
 };
