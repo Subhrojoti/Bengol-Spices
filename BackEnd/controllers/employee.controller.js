@@ -62,3 +62,24 @@ export const createEmployee = async (req, res) => {
     });
   }
 };
+
+// ADMIN - GET ALL EMPLOYEES
+export const getAllEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.find()
+      .select("employeeId name email role canManageProducts status createdAt")
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      count: employees.length,
+      employees,
+    });
+  } catch (error) {
+    console.error("GET ALL EMPLOYEES ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch employees",
+    });
+  }
+};
