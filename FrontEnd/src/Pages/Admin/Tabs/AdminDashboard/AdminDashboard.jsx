@@ -27,8 +27,6 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-
-import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -97,13 +95,6 @@ export default function AdminDashboard() {
     fetchAgents();
   }, []);
 
-  /* ===================== LOGOUT ===================== */
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("role");
-    navigate("/admin/login", { replace: true });
-  };
-
   /* ===================== FILTER LOGIC ===================== */
   const filteredAgents =
     statusFilter === "ALL"
@@ -149,15 +140,6 @@ export default function AdminDashboard() {
             Manage agent applications and approval status
           </Typography>
         </Box>
-
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<LogoutIcon />}
-          onClick={handleLogout}
-          sx={{ textTransform: "none", fontWeight: 600 }}>
-          Logout
-        </Button>
       </Box>
 
       {/* ===================== FILTER ===================== */}

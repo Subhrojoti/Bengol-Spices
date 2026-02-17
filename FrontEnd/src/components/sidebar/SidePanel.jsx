@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { adminRoutes } from "../../config/adminRoutes";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const COLLAPSED_WIDTH = 64;
 const EXPANDED_WIDTH = 260;
@@ -19,18 +20,27 @@ const SidePanel = () => {
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
 
+  /* ===================== LOGOUT ===================== */
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("role");
+    navigate("/admin/login", { replace: true });
+  };
+
   return (
     <Box
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
       sx={{
         width: expanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
-        height: "100vh",
         position: "fixed",
         top: 0,
+        bottom: 0, // ✅ stretch to bottom
         left: 0,
         zIndex: 1300,
-        overflowX: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
         transition: "width 220ms ease",
         backdropFilter: "blur(20px)",
         background:
@@ -58,57 +68,99 @@ const SidePanel = () => {
       </Box>
 
       {/* Menu */}
-      <List sx={{ px: 1 }}>
-        {adminRoutes.map((route) => {
-          const Icon = route.icon;
-          const isActive = matchPath(
-            { path: `/admin/${route.path}`, end: true },
-            location.pathname,
-          );
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <List
+          sx={{
+            px: 1,
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}>
+          {adminRoutes.map((route) => {
+            const Icon = route.icon;
+            const isActive = matchPath(
+              { path: `/admin/${route.path}`, end: true },
+              location.pathname,
+            );
 
-          return (
-            <ListItem key={route.path} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => navigate(`/admin/${route.path}`)}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: expanded ? "flex-start" : "center",
-                  px: expanded ? 2 : 1.5,
-                  borderRadius: 2,
-                  backgroundColor: isActive
-                    ? "rgba(59,130,246,0.18)"
-                    : "transparent",
-                  transition: "all 200ms ease",
-                }}>
-                <ListItemIcon
+            return (
+              <ListItem key={route.path} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  onClick={() => navigate(`/admin/${route.path}`)}
                   sx={{
-                    minWidth: 0,
-                    mr: expanded ? 2 : 0,
-                    justifyContent: "center",
-                    color: isActive ? "#2563eb" : "#334155",
-                    transition: "margin 200ms ease",
+                    minHeight: 48,
+                    justifyContent: expanded ? "flex-start" : "center",
+                    px: expanded ? 2 : 1.5,
+                    borderRadius: 2,
+                    backgroundColor: isActive
+                      ? "rgba(59,130,246,0.18)"
+                      : "transparent",
+                    transition: "all 200ms ease",
                   }}>
-                  <Icon />
-                </ListItemIcon>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: expanded ? 2 : 0,
+                      justifyContent: "center",
+                      color: isActive ? "#2563eb" : "#334155",
+                    }}>
+                    <Icon />
+                  </ListItemIcon>
 
-                {/* Label – fades in */}
-                <ListItemText
-                  primary={route.label}
-                  sx={{
-                    opacity: expanded ? 1 : 0,
-                    whiteSpace: "nowrap",
-                    transition: "opacity 150ms ease",
-                  }}
-                  primaryTypographyProps={{
-                    fontSize: 14,
-                    fontWeight: isActive ? 600 : 500,
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+                  <ListItemText
+                    primary={route.label}
+                    sx={{
+                      opacity: expanded ? 1 : 0,
+                      whiteSpace: "nowrap",
+                      transition: "opacity 150ms ease",
+                    }}
+                    primaryTypographyProps={{
+                      fontSize: 14,
+                      fontWeight: isActive ? 600 : 500,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+
+          {/* LOGOUT — pushed to bottom */}
+          <ListItem disablePadding sx={{ mt: "auto" }}>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                minHeight: 48,
+                justifyContent: expanded ? "flex-start" : "center",
+                px: expanded ? 2 : 1.5,
+                borderRadius: 2,
+              }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: expanded ? 2 : 0,
+                  justifyContent: "center",
+                  color: "#dc2626",
+                }}>
+                <LogoutIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary="Logout"
+                sx={{
+                  opacity: expanded ? 1 : 0,
+                  whiteSpace: "nowrap",
+                  transition: "opacity 150ms ease",
+                }}
+                primaryTypographyProps={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#dc2626",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Box>
     </Box>
   );
 };
