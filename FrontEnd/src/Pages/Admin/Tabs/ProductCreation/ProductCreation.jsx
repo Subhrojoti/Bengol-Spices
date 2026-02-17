@@ -202,6 +202,21 @@ const ProductCreation = () => {
                     onChange={handleChange}
                   />
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <Input
+                    label="Min Order Qty"
+                    type="number"
+                    name="minOrderQty"
+                    value={form.minOrderQty}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Certificates"
+                    name="certificates"
+                    value={form.certificates}
+                    onChange={handleChange}
+                  />
+                </div>
               </Section>
 
               <Section title="Product Images">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSingleProduct } from "../../../../api/services";
 import { toast } from "react-toastify";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 
 const ProductDetails = () => {
   const { productId } = useParams();
@@ -45,23 +46,6 @@ const ProductDetails = () => {
     );
   }
 
-  const increaseQty = () => {
-    if (quantity < product.stock) {
-      setQuantity((prev) => prev + 1);
-    }
-  };
-
-  const decreaseQty = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
-
-  const handleAddToCart = () => {
-    console.log("Add to cart:", product._id, quantity);
-    toast.success("Product added to cart");
-  };
-
   const discount =
     product.price && product.discountPrice
       ? product.price - product.discountPrice
@@ -76,12 +60,18 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-slate-50 px-8 py-10">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
+
         <button
           onClick={() => navigate(-1)}
-          className="mb-6 text-blue-600 hover:text-blue-800 font-medium">
-          ← Back to Products
+          className="group inline-flex items-center gap-2 mb-6 
+             text-sm font-semibold text-slate-800 
+             hover:text-blue-600 transition-colors duration-200">
+          <ArrowBackRoundedIcon
+            sx={{ fontSize: 26 }}
+            className="transition-transform duration-200 group-hover:-translate-x-1"
+          />
+          Back to Products
         </button>
-
         {/* MAIN SECTION */}
         <div className="bg-white rounded-2xl shadow p-10">
           <div className="grid lg:grid-cols-2 gap-16">
@@ -147,41 +137,17 @@ const ProductDetails = () => {
                 )}
               </div>
 
-              {/* Quantity + Add to Cart */}
-              <div className="mt-8 flex items-center gap-6">
-                {/* Quantity Selector */}
-                <div className="flex items-center bg-slate-100 rounded-full px-4 py-2">
-                  <button
-                    onClick={decreaseQty}
-                    className="text-lg px-3 text-blue-600 font-medium">
-                    −
-                  </button>
-
-                  <span className="w-10 text-center font-semibold text-slate-800">
-                    {quantity.toString().padStart(2, "0")}
-                  </span>
-
-                  <button
-                    onClick={increaseQty}
-                    className="text-lg px-3 text-blue-600 font-medium">
-                    +
-                  </button>
-                </div>
-
-                {/* Add to Cart Button */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 transition disabled:opacity-50">
-                  ADD TO CART
-                </button>
-              </div>
-
               {/* Stock */}
               <div className="mt-6">
                 <p className="text-sm">
                   Availability:{" "}
-                  <span className="text-blue-600 font-medium">
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-opacity-10 backdrop-blur-sm
+                  ${
+                    product.stock > 0
+                      ? "bg-green-500 text-green-600"
+                      : "bg-red-500 text-red-600"
+                  }`}>
                     {product.stock > 0 ? "In Stock" : "Out of Stock"}
                   </span>
                 </p>
