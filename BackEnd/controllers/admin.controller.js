@@ -155,9 +155,20 @@ export const updateProductPermission = async (req, res) => {
 export const getDashboardSummary = async (req, res) => {
   try {
     const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // 🔹 COUNTS
+    /* =============================
+       YEAR FILTER (Optional)
+       ============================= */
+
+    const year = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear = new Date(year, 11, 31, 23, 59, 59);
+
+    /* =============================
+       PARALLEL DATABASE QUERIES
+       ============================= */
+
     const [
       totalOrders,
       totalAgents,
@@ -170,6 +181,7 @@ export const getDashboardSummary = async (req, res) => {
       monthlyRevenueData,
       totalRevenueData,
     ] = await Promise.all([
+      // Counts
       Order.countDocuments(),
       Agent.countDocuments(),
       Employee.countDocuments(),
@@ -177,33 +189,36 @@ export const getDashboardSummary = async (req, res) => {
       Product.countDocuments(),
       DeliveryPartner.countDocuments(),
 
+      // Order stats
       Order.countDocuments({ status: "DELIVERED" }),
       Order.countDocuments({
         status: { $in: ["PLACED", "CONFIRMED", "SHIPPED", "OUT_FOR_DELIVERY"] },
       }),
 
-      // Monthly revenue
+      // Monthly revenue for selected year
       Order.aggregate([
         {
           $match: {
-            createdAt: { $gte: firstDayOfMonth },
             status: "DELIVERED",
+            createdAt: {
+              $gte: startOfYear,
+              $lte: endOfYear,
+            },
           },
         },
         {
           $group: {
-            _id: null,
-            total: { $sum: "$totalAmount" },
+            _id: { $month: "$createdAt" },
+            revenue: { $sum: "$totalAmount" },
           },
         },
+        { $sort: { _id: 1 } },
       ]),
 
-      // Total revenue
+      // Total lifetime revenue
       Order.aggregate([
         {
-          $match: {
-            status: "DELIVERED",
-          },
+          $match: { status: "DELIVERED" },
         },
         {
           $group: {
@@ -214,11 +229,45 @@ export const getDashboardSummary = async (req, res) => {
       ]),
     ]);
 
-    const monthlyRevenue =
-      monthlyRevenueData.length > 0 ? monthlyRevenueData[0].total : 0;
+    /* =============================
+       MONTHLY BREAKDOWN STRUCTURE
+       ============================= */
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const monthlyBreakdown = months.map((month, index) => {
+      const found = monthlyRevenueData.find((m) => m._id === index + 1);
+
+      return {
+        month,
+        revenue: found ? found.revenue : 0,
+      };
+    });
+
+    const totalMonthlyRevenue = monthlyBreakdown.reduce(
+      (sum, m) => sum + m.revenue,
+      0,
+    );
 
     const totalRevenue =
       totalRevenueData.length > 0 ? totalRevenueData[0].total : 0;
+
+    /* =============================
+       FINAL RESPONSE
+       ============================= */
 
     return res.json({
       success: true,
@@ -236,13 +285,20 @@ export const getDashboardSummary = async (req, res) => {
           pending: pendingOrders,
         },
         revenue: {
-          monthly: monthlyRevenue,
-          total: totalRevenue,
+          year,
+          totalMonthlyRevenue,
+          totalRevenue,
+          currency: "INR",
+          monthlyBreakdown,
         },
+      },
+      meta: {
+        lastUpdated: new Date(),
       },
     });
   } catch (error) {
     console.error("DASHBOARD SUMMARY ERROR:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard summary",
