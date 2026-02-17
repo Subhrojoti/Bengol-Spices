@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSingleProduct } from "../../../../api/services";
 import { toast } from "react-toastify";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 
 const ProductDetails = () => {
   const { productId } = useParams();
@@ -76,12 +77,18 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-slate-50 px-8 py-10">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
+
         <button
           onClick={() => navigate(-1)}
-          className="mb-6 text-blue-600 hover:text-blue-800 font-medium">
-          ← Back to Products
+          className="group inline-flex items-center gap-2 mb-6 
+             text-sm font-semibold text-slate-800 
+             hover:text-blue-600 transition-colors duration-200">
+          <ArrowBackRoundedIcon
+            sx={{ fontSize: 26 }}
+            className="transition-transform duration-200 group-hover:-translate-x-1"
+          />
+          Back to Products
         </button>
-
         {/* MAIN SECTION */}
         <div className="bg-white rounded-2xl shadow p-10">
           <div className="grid lg:grid-cols-2 gap-16">
