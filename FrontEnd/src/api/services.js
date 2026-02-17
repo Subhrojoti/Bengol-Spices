@@ -208,3 +208,10 @@ export const getSingleProduct = async (productId) => {
   const response = await axiosInstance.get(`/products/single/${productId}`);
   return response.data;
 };
+
+// Dashboard summary
+
+export const getDashboardSummary = async () => {
+  const response = await axiosInstance.get("/admin/dashboard-summary/");
+  return response.data;
+};
