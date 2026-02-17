@@ -2,6 +2,7 @@ import express from "express";
 import {
   approveAgent,
   getAllAgents,
+  getDashboardSummary,
   rejectAgent,
   updateProductPermission,
 } from "../controllers/admin.controller.js";
@@ -38,6 +39,8 @@ router.patch(
   isAdmin,
   updateProductPermission,
 );
+//Admin Dashboard Data
+router.get("/dashboard-summary", protect, isAdmin, getDashboardSummary);
 router.post("/agents/:agentId/approve", approveAgent);
 
 export default router;

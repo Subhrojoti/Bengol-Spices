@@ -1,3 +1,7 @@
+import Order from "../models/Order.js";
+import Store from "../models/store.js";
+import Product from "../models/Product.js";
+import DeliveryPartner from "../models/DeliveryPartner.js";
 import crypto from "crypto";
 import Agent from "../models/Agent.js";
 import {
@@ -143,6 +147,105 @@ export const updateProductPermission = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error,
+    });
+  }
+};
+
+//Dashboard Summary API
+export const getDashboardSummary = async (req, res) => {
+  try {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // 🔹 COUNTS
+    const [
+      totalOrders,
+      totalAgents,
+      totalEmployees,
+      totalStores,
+      totalProducts,
+      totalDeliveryPartners,
+      deliveredOrders,
+      pendingOrders,
+      monthlyRevenueData,
+      totalRevenueData,
+    ] = await Promise.all([
+      Order.countDocuments(),
+      Agent.countDocuments(),
+      Employee.countDocuments(),
+      Store.countDocuments({ isVerified: true }),
+      Product.countDocuments(),
+      DeliveryPartner.countDocuments(),
+
+      Order.countDocuments({ status: "DELIVERED" }),
+      Order.countDocuments({
+        status: { $in: ["PLACED", "CONFIRMED", "SHIPPED", "OUT_FOR_DELIVERY"] },
+      }),
+
+      // Monthly revenue
+      Order.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: firstDayOfMonth },
+            status: "DELIVERED",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$totalAmount" },
+          },
+        },
+      ]),
+
+      // Total revenue
+      Order.aggregate([
+        {
+          $match: {
+            status: "DELIVERED",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$totalAmount" },
+          },
+        },
+      ]),
+    ]);
+
+    const monthlyRevenue =
+      monthlyRevenueData.length > 0 ? monthlyRevenueData[0].total : 0;
+
+    const totalRevenue =
+      totalRevenueData.length > 0 ? totalRevenueData[0].total : 0;
+
+    return res.json({
+      success: true,
+      summary: {
+        counts: {
+          orders: totalOrders,
+          agents: totalAgents,
+          employees: totalEmployees,
+          stores: totalStores,
+          products: totalProducts,
+          deliveryPartners: totalDeliveryPartners,
+        },
+        orderStats: {
+          delivered: deliveredOrders,
+          pending: pendingOrders,
+        },
+        revenue: {
+          monthly: monthlyRevenue,
+          total: totalRevenue,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("DASHBOARD SUMMARY ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard summary",
     });
   }
 };
