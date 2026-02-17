@@ -2,9 +2,23 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { createProduct } from "../../../../api/services";
 import ImageIcon from "@mui/icons-material/Image";
+import {
+  Editor,
+  EditorProvider,
+  Toolbar,
+  BtnBold,
+  BtnItalic,
+  BtnUnderline,
+  BtnBulletList,
+  BtnNumberedList,
+  BtnUndo,
+  BtnRedo,
+  BtnLink,
+  BtnClearFormatting,
+} from "react-simple-wysiwyg";
 
 const HEADER_HEIGHT = 64;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const ProductCreation = () => {
   const [loading, setLoading] = useState(false);
@@ -58,7 +72,6 @@ const ProductCreation = () => {
 
   return (
     <div className="h-screen overflow-hidden bg-slate-50">
-      {/* ================= HEADER (FIXED) ================= */}
       <div
         className="fixed top-0 left-[3%] right-0 z-10 bg-white border-b border-slate-200 px-8 flex items-center"
         style={{ height: HEADER_HEIGHT }}>
@@ -72,14 +85,12 @@ const ProductCreation = () => {
         </div>
       </div>
 
-      {/* ================= SCROLLABLE FORM ================= */}
       <div
         className="h-full overflow-y-auto"
         style={{ paddingTop: HEADER_HEIGHT }}>
         <div className="px-8 py-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200">
             <form onSubmit={handleSubmit} className="p-6 space-y-10">
-              {/* BASIC INFO */}
               <Section title="Basic Information">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
@@ -98,15 +109,44 @@ const ProductCreation = () => {
                   />
                 </div>
 
-                <Textarea
-                  label="Description"
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                />
+                {/* DESCRIPTION */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-2">
+                    Description
+                  </label>
+
+                  <div className="border border-slate-300 rounded-lg overflow-hidden bg-white">
+                    <EditorProvider>
+                      <Toolbar className="bg-slate-50 border-b border-slate-200 flex flex-wrap gap-2 p-2">
+                        <BtnBold />
+                        <BtnItalic />
+                        <BtnUnderline />
+                        <BtnBulletList />
+                        <BtnNumberedList />
+                        <BtnLink />
+                        <BtnUndo />
+                        <BtnRedo />
+                        <BtnClearFormatting />
+                      </Toolbar>
+
+                      <Editor
+                        value={form.description}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        containerProps={{
+                          className:
+                            "min-h-[180px] p-4 text-sm text-slate-700 focus:outline-none border-0 outline-none",
+                        }}
+                      />
+                    </EditorProvider>
+                  </div>
+                </div>
               </Section>
 
-              {/* CLASSIFICATION */}
               <Section title="Classification">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
@@ -131,7 +171,6 @@ const ProductCreation = () => {
                 </div>
               </Section>
 
-              {/* PRICING */}
               <Section title="Pricing & Inventory">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Input
@@ -163,25 +202,8 @@ const ProductCreation = () => {
                     onChange={handleChange}
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <Input
-                    label="Min Order Qty"
-                    type="number"
-                    name="minOrderQty"
-                    value={form.minOrderQty}
-                    onChange={handleChange}
-                  />
-                  <Input
-                    label="Certificates"
-                    name="certificates"
-                    value={form.certificates}
-                    onChange={handleChange}
-                  />
-                </div>
               </Section>
 
-              {/* IMAGES */}
               <Section title="Product Images">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FileInput
@@ -189,7 +211,6 @@ const ProductCreation = () => {
                     file={frontImage}
                     onFileSelect={setFrontImage}
                   />
-
                   <FileInput
                     label="Back Image"
                     file={backImage}
@@ -198,7 +219,6 @@ const ProductCreation = () => {
                 </div>
               </Section>
 
-              {/* ACTION */}
               <div className="pt-6 border-t border-slate-200 flex justify-end">
                 <button
                   type="submit"
@@ -215,7 +235,7 @@ const ProductCreation = () => {
   );
 };
 
-/* ================= REUSABLE UI ================= */
+/* REUSABLE COMPONENTS */
 
 const Section = ({ title, children }) => (
   <div className="space-y-4">
@@ -231,19 +251,6 @@ const Input = ({ label, ...props }) => (
     </label>
     <input
       {...props}
-      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    />
-  </div>
-);
-
-const Textarea = ({ label, ...props }) => (
-  <div>
-    <label className="block text-xs font-medium text-slate-600 mb-1">
-      {label}
-    </label>
-    <textarea
-      {...props}
-      rows={3}
       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
     />
   </div>
@@ -274,7 +281,7 @@ const FileInput = ({ label, file, onFileSelect }) => {
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error("Image size should not exceed 5 MB");
-      e.target.value = ""; // reset input
+      e.target.value = "";
       return;
     }
 
@@ -282,16 +289,7 @@ const FileInput = ({ label, file, onFileSelect }) => {
   };
 
   return (
-    <label
-      className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition
-        border-2
-        ${
-          file
-            ? "border-blue-500 bg-blue-50"
-            : "border-dashed border-slate-300 hover:border-blue-500"
-        }
-      `}>
-      {/* LEFT: Preview / Icon */}
+    <label className="flex items-center gap-4 p-4 rounded-lg cursor-pointer border-2 border-dashed border-slate-300 hover:border-blue-500">
       <div className="w-20 h-20 flex items-center justify-center rounded-md bg-white border border-slate-200 overflow-hidden">
         {file ? (
           <img
@@ -304,24 +302,11 @@ const FileInput = ({ label, file, onFileSelect }) => {
         )}
       </div>
 
-      {/* RIGHT: Text */}
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-medium text-slate-700">{label}</span>
-
-        {file ? (
-          <>
-            <span className="text-xs text-slate-600 truncate max-w-[240px]">
-              {file.name}
-            </span>
-            <span className="text-xs text-green-600 font-medium">
-              Image uploaded
-            </span>
-          </>
-        ) : (
-          <span className="text-xs text-slate-500">
-            Click to upload image (max 5 MB)
-          </span>
-        )}
+        <span className="text-xs text-slate-500">
+          Click to upload image (max 5 MB)
+        </span>
       </div>
 
       <input type="file" accept="image/*" hidden onChange={handleFileChange} />

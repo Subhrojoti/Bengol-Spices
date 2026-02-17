@@ -5,7 +5,7 @@ import {
   deleteProduct,
 } from "../../../../api/services";
 import { toast } from "react-toastify";
-
+import { useNavigate } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
@@ -18,6 +18,8 @@ const AllProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
@@ -65,7 +67,7 @@ const AllProducts = () => {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       {/* HEADER */}
       <div
         className="fixed top-0 left-[3%] right-0 z-10 bg-white border-b px-8 flex items-center"
@@ -76,7 +78,7 @@ const AllProducts = () => {
         </div>
       </div>
 
-      {/* PRODUCTS */}
+      {/* PRODUCTS GRID */}
       <div
         className="h-full overflow-y-auto px-8 py-6"
         style={{ paddingTop: HEADER_HEIGHT + 20 }}>
@@ -85,6 +87,7 @@ const AllProducts = () => {
             <ProductCard
               key={product._id}
               product={product}
+              onView={() => navigate(`/admin/allproducts/${product._id}`)}
               onEdit={() => {
                 setSelectedProduct(product);
                 setShowEditModal(true);
@@ -121,28 +124,57 @@ const AllProducts = () => {
 
 /* ================= PRODUCT CARD ================= */
 
-const ProductCard = ({ product, onEdit, onDelete }) => (
-  <div className="bg-white border rounded-xl shadow-sm group">
-    <div className="relative h-44 overflow-hidden">
+const ProductCard = ({ product, onEdit, onDelete, onView }) => (
+  <div
+    onClick={onView}
+    className="bg-white border rounded-2xl shadow-sm group cursor-pointer hover:shadow-md transition flex flex-col">
+    {/* IMAGE SECTION (1:1 ratio) */}
+    <div className="relative w-full aspect-square bg-white rounded-t-2xl flex items-center justify-center overflow-hidden border-b">
       <img
         src={product.images?.front?.url}
         alt={product.name}
-        className="w-full h-full object-cover"
+        className="max-h-full max-w-full object-contain"
       />
 
-      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100">
-        <button onClick={onEdit} className="p-2 bg-white rounded shadow">
+      {/* Action Buttons */}
+      <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          className="p-2 bg-white rounded shadow">
           <EditIcon fontSize="small" className="text-blue-600" />
         </button>
-        <button onClick={onDelete} className="p-2 bg-white rounded shadow">
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-2 bg-white rounded shadow">
           <DeleteOutlineIcon fontSize="small" className="text-red-600" />
         </button>
       </div>
     </div>
 
-    <div className="p-4">
-      <h3 className="font-semibold truncate">{product.name}</h3>
-      <p className="text-xs text-slate-500 truncate">{product.title}</p>
+    {/* TEXT SECTION */}
+    <div className="p-4 flex flex-col flex-1">
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex-1">
+          <h3 className="font-semibold text-slate-900 truncate">
+            {product.name}
+          </h3>
+          <p className="text-xs text-slate-500 truncate">{product.title}</p>
+        </div>
+
+        {/* PRICE RIGHT SIDE */}
+        <div className="text-right">
+          <p className="text-sm font-semibold text-blue-600">
+            ₹ {product.discountPrice || product.price}
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 );

@@ -4,7 +4,7 @@ import AdminDashboard from "../pages/Admin/Tabs/AdminDashboard/AdminDashboard";
 import EmpCreation from "../pages/Admin/Tabs/EmpCreation/EmpCreation";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
 import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
-
+import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
@@ -20,7 +20,7 @@ export const adminRoutes = [
     component: AdminDashboard,
   },
   {
-    label: "Employee Creation",
+    label: "Employee",
     path: "employees",
     icon: PeopleAltIcon,
     component: EmpCreation,

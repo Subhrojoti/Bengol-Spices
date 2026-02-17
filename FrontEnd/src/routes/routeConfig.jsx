@@ -8,6 +8,7 @@ import { adminRoutes } from "../config/adminRoutes";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import SetPassword from "../pages/Auth/SetPassword/SetPassword";
 import AdminBase from "../pages/Admin/AdminBase";
+import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -43,8 +44,10 @@ export const routes = [
               element: <Component />,
             };
           }),
-
-          // default → dashboard
+          {
+            path: "allproducts/:productId",
+            element: <ProductDetails />,
+          },
           {
             index: true,
             element: adminRoutes[0].element,

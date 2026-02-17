@@ -171,3 +171,40 @@ export const verifyStoreOtp = async ({ storeId, otp }) => {
 
   return response.data;
 };
+
+// Employee Creation
+
+export const createEmployee = async ({ name, email, password }) => {
+  const response = await axiosInstance.post("/employee/create", {
+    name,
+    email,
+    password,
+  });
+
+  return response.data;
+};
+
+// Get all Employees
+
+export const getAllEmployees = async () => {
+  const response = await axiosInstance.get("/employee/all");
+  return response.data;
+};
+
+// Permission for Emp
+
+export const updateProductPermission = async (employeeId, payload) => {
+  const response = await axiosInstance.patch(
+    `/admin/employees/${employeeId}/product-permission`,
+    payload,
+  );
+
+  return response.data;
+};
+
+// Product details
+
+export const getSingleProduct = async (productId) => {
+  const response = await axiosInstance.get(`/products/single/${productId}`);
+  return response.data;
+};
