@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditProductDetails from "./EditProductDetails";
+import { Tooltip } from "@mui/material";
 
 const HEADER_HEIGHT = 80;
 
@@ -128,23 +129,27 @@ const ProductCard = ({ product, onEdit, onDelete, onView }) => (
 
       {/* Action Buttons */}
       <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="p-2 bg-white rounded shadow">
-          <EditIcon fontSize="small" className="text-blue-600" />
-        </button>
+        <Tooltip title="Edit Product" arrow>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="p-2 bg-white rounded shadow hover:bg-blue-50 transition">
+            <EditIcon fontSize="small" className="text-blue-600" />
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="p-2 bg-white rounded shadow">
-          <DeleteOutlineIcon fontSize="small" className="text-red-600" />
-        </button>
+        <Tooltip title="Delete Product" arrow>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-2 bg-white rounded shadow hover:bg-red-50 transition">
+            <DeleteOutlineIcon fontSize="small" className="text-red-600" />
+          </button>
+        </Tooltip>
       </div>
     </div>
 

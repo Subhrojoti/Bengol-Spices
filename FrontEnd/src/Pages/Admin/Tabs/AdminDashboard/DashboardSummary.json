@@ -1,0 +1,33 @@
+{
+  "summary": {
+    "totalOrders": 1284,
+    "totalAgents": 42,
+    "totalEmployees": 67,
+    "ordersDelivered": 1032,
+    "ordersPending": 252,
+    "totalProducts": 589,
+    "totalStores": 18,
+    "deliveryPartners": 6
+  },
+  "revenue": {
+    "totalMonthlyRevenue": 245000,
+    "currency": "INR",
+    "monthlyBreakdown": [
+      { "month": "Jan", "revenue": 18000 },
+      { "month": "Feb", "revenue": 22000 },
+      { "month": "Mar", "revenue": 21000 },
+      { "month": "Apr", "revenue": 24000 },
+      { "month": "May", "revenue": 26000 },
+      { "month": "Jun", "revenue": 28000 },
+      { "month": "Jul", "revenue": 30000 },
+      { "month": "Aug", "revenue": 27000 },
+      { "month": "Sep", "revenue": 29000 },
+      { "month": "Oct", "revenue": 31000 },
+      { "month": "Nov", "revenue": 33000 },
+      { "month": "Dec", "revenue": 35000 }
+    ]
+  },
+  "meta": {
+    "lastUpdated": "2026-02-17T10:30:00Z"
+  }
+}

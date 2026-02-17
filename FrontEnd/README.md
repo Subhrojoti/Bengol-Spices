@@ -76,6 +76,10 @@ src/redux/slices
 
 ---
 
+### Bugs to be fixed
+
+- Store creation OTP issue with duplicate cust id still exists
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

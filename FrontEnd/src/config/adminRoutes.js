@@ -1,12 +1,13 @@
 // import AdminSettings from "../pages/Admin/AdminSettings";
 // import AdminProfile from "../pages/Admin/AdminProfile";
 import AdminDashboard from "../pages/Admin/Tabs/AdminDashboard/AdminDashboard";
+import Agent from "../pages/Admin/Tabs/Agent/Agent";
 import EmpCreation from "../pages/Admin/Tabs/EmpCreation/EmpCreation";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
 import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
-import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import Groups3Icon from "@mui/icons-material/Groups3";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -18,6 +19,12 @@ export const adminRoutes = [
     path: "dashboard",
     icon: DashboardIcon,
     component: AdminDashboard,
+  },
+  {
+    label: "Agent",
+    path: "agent",
+    icon: Groups3Icon,
+    component: Agent,
   },
   {
     label: "Employee",
