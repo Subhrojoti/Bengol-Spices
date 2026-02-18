@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import UploadIcon from "@mui/icons-material/Upload";
-import { agentRegistration } from "../../api/services";
+import { agentRegistration } from "../../../api/services";
 
 export default function Onboarding() {
   const [form, setForm] = useState({

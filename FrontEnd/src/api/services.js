@@ -215,3 +215,29 @@ export const getDashboardSummary = async () => {
   const response = await axiosInstance.get("/admin/dashboard-summary/");
   return response.data;
 };
+
+// DELIVERY LOGIN
+export const deliveryLogin = async (phone, password) => {
+  const response = await axiosInstance.post("/delivery-partner/login", {
+    phone,
+    password,
+  });
+
+  return response.data;
+};
+
+// Delivery Partner Register
+
+export const deliveryPartnerRegister = async (formData) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/delivery-partner/register`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+
+  return response.data;
+};

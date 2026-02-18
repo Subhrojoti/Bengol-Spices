@@ -3,12 +3,14 @@ import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import AgentLogin from "../pages/Auth/Login/AgentLogin";
 import AdminLogin from "../pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
-import Onboarding from "../pages/Auth/Onboarding";
+import Onboarding from "../pages/Auth/Agent/AgentOnboarding";
 import { adminRoutes } from "../config/adminRoutes";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
-import SetPassword from "../pages/Auth/SetPassword/SetPassword";
+import SetPassword from "../pages/Auth/Agent/AgentSetPassword";
+import DeliveryPartnerRegister from "../pages/Auth/DeliveryPartner/DeliveryPartnerRegister";
 import AdminBase from "../pages/Admin/AdminBase";
 import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
+import DeliveryLogin from "../pages/Auth/Login/DeliveryLogin";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -17,16 +19,24 @@ export const routes = [
     element: <AgentLogin />,
   },
   {
+    path: "/delivery/login",
+    element: <DeliveryLogin />,
+  },
+  {
     path: "/admin/login",
     element: <AdminLogin />,
   },
   {
-    path: "/onboarding",
+    path: "/agent-onboarding",
     element: <Onboarding />,
   },
   {
-    path: "/set-password",
+    path: "/agent-set-password",
     element: <SetPassword />,
+  },
+  {
+    path: "/delivery-partner-register",
+    element: <DeliveryPartnerRegister />,
   },
 
   /* ===================== ADMIN PROTECTED ===================== */
