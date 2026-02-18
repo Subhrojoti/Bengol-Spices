@@ -25,6 +25,9 @@ import { useTheme } from "@mui/material/styles";
 import { useLocation, useNavigate } from "react-router-dom";
 import { marketingRoutes } from "../../config/marketingRoutes";
 import ProfileMenu from "../profile/ProfileMenu";
+import { Divider } from "@mui/material";
+import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
+import Logout from "@mui/icons-material/Logout";
 
 const Header = () => {
   const theme = useTheme();
@@ -43,6 +46,12 @@ const Header = () => {
     );
     return index === -1 ? 0 : index;
   }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("role");
+    navigate("/agent/login", { replace: true });
+  };
 
   return (
     <>
@@ -163,34 +172,67 @@ const Header = () => {
         anchor="left"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}>
-        <Box width={260} p={2}>
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={1}
-            mb={2}
-            sx={{ cursor: "pointer" }}
-            onClick={() => {
-              navigate("/marketing");
-              setDrawerOpen(false);
-            }}>
-            <Restaurant color="secondary" />
-            <Typography fontWeight={600}>Marketing Hub</Typography>
+        <Box
+          width={260}
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          p={2}>
+          {/* Top Section */}
+          <Box>
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1}
+              mb={2}
+              sx={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate("/marketing");
+                setDrawerOpen(false);
+              }}>
+              <Restaurant color="secondary" />
+              <Typography fontWeight={600}>Marketing Hub</Typography>
+            </Box>
+
+            <List>
+              {marketingRoutes.map((route) => (
+                <ListItemButton
+                  key={route.fullPath}
+                  selected={location.pathname.startsWith(route.fullPath)}
+                  onClick={() => {
+                    navigate(route.fullPath);
+                    setDrawerOpen(false);
+                  }}>
+                  <ListItemText primary={route.label} />
+                </ListItemButton>
+              ))}
+            </List>
           </Box>
 
-          <List>
-            {marketingRoutes.map((route) => (
+          {/* Bottom Section (Profile Actions) */}
+          <Box mt="auto">
+            <Divider sx={{ my: 2 }} />
+
+            <List>
               <ListItemButton
-                key={route.fullPath}
-                selected={location.pathname.startsWith(route.fullPath)}
                 onClick={() => {
-                  navigate(route.fullPath);
+                  navigate("/profile/settings");
                   setDrawerOpen(false);
                 }}>
-                <ListItemText primary={route.label} />
+                <SettingsOutlined sx={{ mr: 2 }} />
+                <ListItemText primary="Settings" />
               </ListItemButton>
-            ))}
-          </List>
+
+              <ListItemButton
+                onClick={() => {
+                  handleLogout();
+                  setDrawerOpen(false);
+                }}>
+                <Logout sx={{ mr: 2 }} />
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </List>
+          </Box>
         </Box>
       </Drawer>
     </>
