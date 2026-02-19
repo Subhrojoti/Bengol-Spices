@@ -65,7 +65,7 @@ export default function DeliveryLogin() {
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("role", "DELIVERY_PARTNER");
 
-        navigate("/delivery/dashboard", { replace: true });
+        navigate("/delivery/all-orders", { replace: true });
       } else {
         toast.error("Invalid phone or password");
       }

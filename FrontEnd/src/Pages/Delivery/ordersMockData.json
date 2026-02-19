@@ -1,0 +1,25 @@
+[
+  {
+    "id": "ORD-10231",
+    "customerName": "Rahul Sharma",
+    "phone": "9876543210",
+    "address": "Salt Lake, Kolkata, West Bengal 700091",
+    "totalAmount": 1250,
+    "status": "Assigned",
+    "items": [
+      { "name": "Wireless Mouse", "qty": 1, "price": 750 },
+      { "name": "USB-C Cable", "qty": 2, "price": 250 }
+    ],
+    "mapUrl": "https://maps.google.com?q=Salt+Lake+Kolkata"
+  },
+  {
+    "id": "ORD-10232",
+    "customerName": "Ananya Das",
+    "phone": "9123456789",
+    "address": "Park Street, Kolkata, West Bengal 700016",
+    "totalAmount": 2199,
+    "status": "Assigned",
+    "items": [{ "name": "Bluetooth Headphones", "qty": 1, "price": 2199 }],
+    "mapUrl": "https://maps.google.com?q=Park+Street+Kolkata"
+  }
+]

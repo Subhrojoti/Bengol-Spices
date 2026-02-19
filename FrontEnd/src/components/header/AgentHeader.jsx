@@ -29,7 +29,7 @@ import { Divider } from "@mui/material";
 import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
 import Logout from "@mui/icons-material/Logout";
 
-const Header = () => {
+const AgentHeader = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -239,4 +239,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default AgentHeader;
