@@ -82,6 +82,21 @@ export default function DeliveryPartnerRegister() {
     }
   };
 
+  const inputStyles = {
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#0f766e",
+    },
+    "& .MuiInput-underline:before": {
+      borderBottomColor: "rgba(0,0,0,0.42)", // default gray
+    },
+    "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+      borderBottomColor: "#0f766e",
+    },
+    "& .MuiInput-underline:after": {
+      borderBottomColor: "#0f766e",
+    },
+  };
+
   return (
     <Box
       sx={{
@@ -117,17 +132,7 @@ export default function DeliveryPartnerRegister() {
                     onChange={handleChange}
                     error={!!errors.name}
                     helperText={errors.name}
-                    sx={{
-                      "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#0f766e",
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: "#0f766e",
-                      },
-                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                        borderBottomColor: "#0f766e",
-                      },
-                    }}
+                    sx={inputStyles}
                   />
                 </Grid>
 
@@ -141,17 +146,7 @@ export default function DeliveryPartnerRegister() {
                     onChange={handleChange}
                     error={!!errors.phone}
                     helperText={errors.phone}
-                    sx={{
-                      "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#0f766e",
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: "#0f766e",
-                      },
-                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                        borderBottomColor: "#0f766e",
-                      },
-                    }}
+                    sx={inputStyles}
                   />
                 </Grid>
 
@@ -166,17 +161,7 @@ export default function DeliveryPartnerRegister() {
                     onChange={handleChange}
                     error={!!errors.password}
                     helperText={errors.password}
-                    sx={{
-                      "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#0f766e",
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: "#0f766e",
-                      },
-                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                        borderBottomColor: "#0f766e",
-                      },
-                    }}
+                    sx={inputStyles}
                   />
                 </Grid>
 
@@ -189,17 +174,7 @@ export default function DeliveryPartnerRegister() {
                     name="idType"
                     value={form.idType}
                     onChange={handleChange}
-                    sx={{
-                      "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#0f766e",
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: "#0f766e",
-                      },
-                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                        borderBottomColor: "#0f766e",
-                      },
-                    }}>
+                    sx={inputStyles}>
                     <MenuItem value="AADHAAR">AADHAAR</MenuItem>
                     <MenuItem value="PAN">PAN</MenuItem>
                     <MenuItem value="DL">Driving License</MenuItem>
@@ -216,17 +191,7 @@ export default function DeliveryPartnerRegister() {
                     onChange={handleChange}
                     error={!!errors.idNumber}
                     helperText={errors.idNumber}
-                    sx={{
-                      "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#0f766e",
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: "#0f766e",
-                      },
-                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                        borderBottomColor: "#0f766e",
-                      },
-                    }}
+                    sx={inputStyles}
                   />
                 </Grid>
 

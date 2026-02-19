@@ -1,11 +1,11 @@
 import React from "react";
-import Header from "../../components/header/Header.JSX";
+import AgentHeader from "../../components/header/AgentHeader.jsx";
 import { Outlet } from "react-router-dom";
 
 const MarketingHub = () => {
   return (
     <div>
-      <Header />
+      <AgentHeader />
       <Outlet />
     </div>
   );
