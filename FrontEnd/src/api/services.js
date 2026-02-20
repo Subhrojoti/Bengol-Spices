@@ -248,3 +248,10 @@ export const deliveryLogout = async () => {
   const response = await axiosInstance.post("/delivery-partner/logout");
   return response.data;
 };
+
+// All Orders
+
+export const getAllAgentOrders = async () => {
+  const response = await axiosInstance.get("/agent/orders/all");
+  return response.data;
+};

@@ -35,7 +35,7 @@ const SidePanel = () => {
         width: expanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
         position: "fixed",
         top: 0,
-        bottom: 0, // ✅ stretch to bottom
+        bottom: 0,
         left: 0,
         zIndex: 1300,
         display: "flex",
