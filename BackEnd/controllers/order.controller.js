@@ -1,3 +1,4 @@
+import DeliveryPartner from "../models/DeliveryPartner.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
@@ -247,6 +248,270 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+// Confirm order (ADMIN)
+export const confirmOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status !== "PLACED") {
+      return res.status(400).json({
+        success: false,
+        message: "Only PLACED orders can be confirmed",
+      });
+    }
+
+    order.status = "CONFIRMED";
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Order confirmed successfully",
+    });
+  } catch (error) {
+    console.error("CONFIRM ORDER ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to confirm order",
+    });
+  }
+};
+
+//Assign delivery partner (ADMIN / EMPLOYEE)
+export const assignDeliveryPartner = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { partnerId } = req.body; // this will be MongoDB _id
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status !== "CONFIRMED" && order.status !== "ASSIGNED") {
+      return res.status(400).json({
+        success: false,
+        message: "Order cannot be assigned at this stage",
+      });
+    }
+
+    const partner = await DeliveryPartner.findById(partnerId);
+
+    if (!partner || partner.status !== "ACTIVE") {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery partner not found or inactive",
+      });
+    }
+
+    order.delivery = {
+      partnerId: partner._id,
+      assignedBy: req.user.employeeId,
+      assignedAt: new Date(),
+    };
+
+    order.status = "ASSIGNED";
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Delivery partner assigned successfully",
+    });
+  } catch (error) {
+    console.error("ASSIGN DELIVERY ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to assign delivery partner",
+    });
+  }
+};
+// Update Delivery Status (DELIVERY PARTNER)
+export const updateDeliveryStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Must be assigned to this delivery partner
+    if (
+      !order.delivery.partnerId ||
+      order.delivery.partnerId.toString() !== req.user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this order",
+      });
+    }
+
+    // Strict sequence control
+    const allowedTransitions = {
+      ASSIGNED: "SHIPPED",
+      SHIPPED: "OUT_FOR_DELIVERY",
+      OUT_FOR_DELIVERY: "DELIVERED",
+    };
+
+    if (allowedTransitions[order.status] !== status) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status transition",
+      });
+    }
+
+    // Cannot directly mark DELIVERED (OTP required)
+    if (status === "DELIVERED") {
+      return res.status(400).json({
+        success: false,
+        message: "Use OTP verification to complete delivery",
+      });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Status updated successfully",
+    });
+  } catch (error) {
+    console.error("UPDATE DELIVERY STATUS ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update status",
+    });
+  }
+};
+// OTP Generation for Delivery Confirmation
+export const generateDeliveryOtp = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order || order.status !== "OUT_FOR_DELIVERY") {
+      return res.status(400).json({
+        success: false,
+        message: "Order not ready for delivery",
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    order.deliveryOtp = {
+      code: otp,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      verified: false,
+    };
+
+    await order.save();
+
+    console.log("Delivery OTP:", otp);
+
+    res.json({
+      success: true,
+      message: "OTP generated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate OTP",
+    });
+  }
+};
+
+// OTP Verification for Delivery Completion
+export const verifyDeliveryOtp = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { otp } = req.body;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order || !order.deliveryOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not generated",
+      });
+    }
+
+    if (order.deliveryOtp.code !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (order.deliveryOtp.expiresAt < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired",
+      });
+    }
+
+    order.status = "DELIVERED";
+    order.deliveryOtp.verified = true;
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Order delivered successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify OTP",
+    });
+  }
+};
+// Complete Payment (DELIVERY PARTNER)
+export const completePayment = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    order.paymentStatus = "COMPLETED";
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Payment marked as completed",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update payment",
+    });
+  }
+};
 // CREATE SHIPMENT (DUMMY VERSION)
 export const createShipment = async (req, res) => {
   try {

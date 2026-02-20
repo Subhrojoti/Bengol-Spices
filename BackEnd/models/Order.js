@@ -107,12 +107,18 @@ const orderSchema = new mongoose.Schema(
       enum: [
         "PLACED",
         "CONFIRMED",
+        "ASSIGNED",
         "SHIPPED",
         "OUT_FOR_DELIVERY",
         "DELIVERED",
         "CANCELLED",
       ],
       default: "PLACED",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "COMPLETED"],
+      default: "PENDING",
     },
 
     /* =============================
@@ -162,10 +168,26 @@ const orderSchema = new mongoose.Schema(
        ============================= */
 
     delivery: {
-      partnerName: String,
-      driverName: String,
-      vehicleNumber: String,
-      assignedAt: Date,
+      partnerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DeliveryPartner",
+      },
+
+      assignedBy: {
+        type: String, // employeeId
+      },
+
+      assignedAt: {
+        type: Date,
+      },
+    },
+    deliveryOtp: {
+      code: String,
+      expiresAt: Date,
+      verified: {
+        type: Boolean,
+        default: false,
+      },
     },
   },
   {
