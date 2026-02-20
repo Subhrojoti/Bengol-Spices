@@ -241,3 +241,10 @@ export const deliveryPartnerRegister = async (formData) => {
 
   return response.data;
 };
+
+// Delivery Logout
+
+export const deliveryLogout = async () => {
+  const response = await axiosInstance.post("/delivery-partner/logout");
+  return response.data;
+};

@@ -21,6 +21,7 @@ import {
   Menu,
   NotificationsOutlined,
   LocalShipping,
+  PowerSettingsNew,
 } from "@mui/icons-material";
 import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
 import Logout from "@mui/icons-material/Logout";
@@ -28,6 +29,7 @@ import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProfileMenu from "../profile/ProfileMenu";
 import { deliveryRoutes } from "../../config/deliveryRoutes";
+import { deliveryLogout } from "../../api/services";
 
 const DeliveryHeader = () => {
   const theme = useTheme();
@@ -44,10 +46,22 @@ const DeliveryHeader = () => {
     return index === -1 ? 0 : index;
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("role");
-    navigate("/delivery/login", { replace: true });
+  const handleLogout = async () => {
+    try {
+      await deliveryLogout();
+
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("role");
+
+      navigate("/delivery/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("role");
+
+      navigate("/delivery/login", { replace: true });
+    }
   };
 
   return (
@@ -56,7 +70,7 @@ const DeliveryHeader = () => {
         position="sticky"
         elevation={0}
         sx={{
-          backgroundColor: "rgba(15,118,110,0.05)", // subtle transparent teal
+          backgroundColor: "rgba(15,118,110,0.05)",
           backdropFilter: "blur(6px)",
           borderBottom: "1px solid rgba(15,118,110,0.15)",
         }}>
@@ -149,6 +163,14 @@ const DeliveryHeader = () => {
 
               <IconButton size="small">
                 <SettingsOutlined />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => {
+                  handleLogout();
+                  setDrawerOpen(false);
+                }}>
+                <PowerSettingsNew />
               </IconButton>
 
               <ProfileMenu />
