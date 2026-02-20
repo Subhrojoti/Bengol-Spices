@@ -71,12 +71,20 @@ export const applyAgent = async (req, res) => {
 
     const currentYear = new Date().getFullYear();
 
-    const agentCount = await Agent.countDocuments({
+    // Find latest agent for this year
+    const lastAgent = await Agent.findOne({
       agentId: { $regex: `^BS${currentYear}` },
-    });
+    }).sort({ createdAt: -1 });
 
-    const serial = String(agentCount + 1).padStart(3, "0");
-    const customAgentId = `BS${currentYear}-${serial}`;
+    let serialNumber = 1;
+
+    if (lastAgent) {
+      const lastId = lastAgent.agentId; // BS2026-008
+      const lastNumber = parseInt(lastId.split("-")[1]);
+      serialNumber = lastNumber + 1;
+    }
+
+    const customAgentId = `BS${currentYear}-${String(serialNumber).padStart(3, "0")}`;
 
     /* =============================
        CREATE AGENT
@@ -136,7 +144,7 @@ export const getAgentProfile = async (req, res) => {
     const agentMongoId = req.user.id;
 
     const agent = await Agent.findById(agentMongoId).select(
-      "-password -passwordResetToken -passwordResetExpires"
+      "-password -passwordResetToken -passwordResetExpires",
     );
 
     if (!agent) {
