@@ -12,6 +12,9 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { AllInbox, LocalShipping } from "@mui/icons-material";
+import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
+import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
 
 export const adminRoutes = [
   {
@@ -31,6 +34,18 @@ export const adminRoutes = [
     path: "employees",
     icon: PeopleAltIcon,
     component: EmpCreation,
+  },
+  {
+    label: "Delivery Partner",
+    path: "delivery-management",
+    icon: LocalShipping,
+    component: DeliveryManagement,
+  },
+  {
+    label: "Orders",
+    path: "order-management",
+    icon: AllInbox,
+    component: OrderManagement,
   },
   {
     label: "Product Creation",

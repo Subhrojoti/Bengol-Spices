@@ -116,7 +116,7 @@ const EmpCreation = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
       <div
         className="fixed top-0 left-[3%] right-0 z-10 bg-white border-b border-slate-200 px-8 flex items-center justify-between"
         style={{ height: HEADER_HEIGHT }}>
@@ -158,7 +158,7 @@ const EmpCreation = () => {
       </div>
 
       <div
-        className="h-full flex items-center justify-center px-6"
+        className="h-full flex items-center justify-center px-6 min-h-screen overflow-y-auto"
         style={{ paddingTop: HEADER_HEIGHT }}>
         {activeTab === "create" ? (
           <div className="w-full max-w-md">
@@ -216,7 +216,7 @@ const EmpCreation = () => {
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-6xl bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200 overflow-hidden">
+          <div className="w-full my-10 max-w-6xl h-auto bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200 overflow-hidden">
             <div className="px-8 py-6 border-b border-slate-200 flex justify-between items-center">
               <div>
                 <h2 className="text-base font-medium text-slate-800 tracking-tight">
