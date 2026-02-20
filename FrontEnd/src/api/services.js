@@ -255,3 +255,9 @@ export const getAllAgentOrders = async () => {
   const response = await axiosInstance.get("/agent/orders/all");
   return response.data;
 };
+
+// CONFIRM ORDER
+export const confirmOrder = async (orderId) => {
+  const response = await axiosInstance.put(`/agent/orders/${orderId}/confirm`);
+  return response.data;
+};

@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getAllAgentOrders } from "../../../../api/services";
+import { getAllAgentOrders, confirmOrder } from "../../../../api/services";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [selectedConsumer, setSelectedConsumer] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [confirmingId, setConfirmingId] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -59,6 +62,28 @@ const OrderManagement = () => {
     OUT_FOR_DELIVERY: "bg-yellow-400 text-black",
     DELIVERED: "bg-green-500 text-white",
     CANCELLED: "bg-red-600 text-white",
+  };
+
+  const handleConfirmOrder = async (orderId) => {
+    try {
+      setConfirmingId(orderId);
+
+      await confirmOrder(orderId);
+
+      // Optimistically update local state
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.orderId === orderId ? { ...order, status: "CONFIRMED" } : order,
+        ),
+      );
+
+      toast.success("Order confirmed successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to confirm order");
+    } finally {
+      setConfirmingId(null);
+    }
   };
 
   return (
@@ -181,9 +206,20 @@ const OrderManagement = () => {
                       </div>
 
                       <div className="flex justify-end">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                          Confirm Order
-                        </button>
+                        {order.status === "PLACED" && (
+                          <button
+                            onClick={() => handleConfirmOrder(order.orderId)}
+                            disabled={confirmingId === order.orderId}
+                            className={`px-4 py-2 rounded-lg text-white transition ${
+                              confirmingId === order.orderId
+                                ? "bg-blue-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
+                            }`}>
+                            {confirmingId === order.orderId
+                              ? "Confirming..."
+                              : "Confirm Order"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
