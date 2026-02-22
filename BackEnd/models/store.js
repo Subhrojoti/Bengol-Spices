@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const storeSchema = new mongoose.Schema(
   {
-    // 🔑 Business identifier (after OTP verification)
+    // 🔑 Business identifier
     consumerId: {
       type: String,
       unique: true,
@@ -27,13 +27,35 @@ const storeSchema = new mongoose.Schema(
       type: String,
       required: true,
       index: true,
+      trim: true,
     },
 
+    // ✅ STRUCTURED ADDRESS (NEW)
     address: {
-      type: String,
-      required: true,
+      state: {
+        type: String,
+        required: true,
+        trim: true,
+        uppercase: true,
+      },
+      city: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      street: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      pincode: {
+        type: String,
+        required: true,
+        match: /^[0-9]{6}$/,
+      },
     },
 
+    // 📍 GEO LOCATION
     location: {
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true },
@@ -51,18 +73,9 @@ const storeSchema = new mongoose.Schema(
       index: true,
     },
 
-    // 🖼️ Store image (required)
     image: {
       url: { type: String },
       publicId: { type: String },
-    },
-
-    // 🔐 OTP verification
-    otp: String,
-    otpExpiresAt: Date,
-    isVerified: {
-      type: Boolean,
-      default: false,
     },
 
     status: {
@@ -73,5 +86,9 @@ const storeSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// 🔥 Indexes for filtering
+storeSchema.index({ "address.state": 1 });
+storeSchema.index({ "address.pincode": 1 });
 
 export default mongoose.model("Store", storeSchema);

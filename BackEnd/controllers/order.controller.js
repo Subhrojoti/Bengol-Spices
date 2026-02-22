@@ -9,7 +9,6 @@ export const placeOrder = async (req, res) => {
     const {
       consumerId,
       products,
-      uom,
       paidAmount,
       paymentMode,
       latitude,
@@ -45,7 +44,7 @@ export const placeOrder = async (req, res) => {
     }
 
     /* =============================
-       STORE VALIDATION
+       STORE VALIDATION + OWNERSHIP
        ============================= */
 
     const store = await Store.findOne({
@@ -57,7 +56,7 @@ export const placeOrder = async (req, res) => {
       return res.status(403).json({
         success: false,
         message:
-          "You are not allowed to place order for this store or the store doesnot exist",
+          "You are not allowed to place order for this store or the store does not exist",
       });
     }
 
@@ -117,7 +116,6 @@ export const placeOrder = async (req, res) => {
       consumerId,
       agentId,
       products,
-      uom,
       totalAmount,
       paidAmount,
       dueAmount,
@@ -127,6 +125,18 @@ export const placeOrder = async (req, res) => {
         latitude,
         longitude,
       },
+
+      // 🔥 DELIVERY ADDRESS SNAPSHOT FROM STORE
+      deliveryAddress: {
+        storeName: store.storeName,
+        ownerName: store.ownerName,
+        phone: store.phone,
+        state: store.address.state,
+        city: store.address.city,
+        street: store.address.street,
+        pincode: store.address.pincode,
+      },
+
       status: "PLACED",
     });
 

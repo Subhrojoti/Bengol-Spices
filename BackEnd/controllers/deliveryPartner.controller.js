@@ -8,18 +8,44 @@ export const registerDeliveryPartner = async (req, res) => {
   let uploadedPublicId = null;
 
   try {
-    const { name, phone, password, idType, idNumber } = req.body;
+    const {
+      name,
+      phone,
+      password,
+      idType,
+      idNumber,
+      state,
+      city,
+      street,
+      pincode,
+    } = req.body;
 
     if (req.file) {
       uploadedPublicId = req.file.filename; // Cloudinary public_id
     }
 
-    if (!name || !phone || !password || !idType || !idNumber) {
-      throw new Error("All fields are required");
+    // 🔥 Basic Validation
+    if (
+      !name ||
+      !phone ||
+      !password ||
+      !idType ||
+      !idNumber ||
+      !state ||
+      !city ||
+      !street ||
+      !pincode
+    ) {
+      throw new Error("All fields including complete address are required");
     }
 
     if (!req.file) {
       throw new Error("Document is required");
+    }
+
+    // 🔥 Pincode Validation
+    if (!/^[0-9]{6}$/.test(pincode)) {
+      throw new Error("Invalid pincode format");
     }
 
     const exists = await DeliveryPartner.findOne({ phone });
@@ -30,9 +56,15 @@ export const registerDeliveryPartner = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await DeliveryPartner.create({
-      name,
-      phone,
+      name: name.trim(),
+      phone: phone.trim(),
       password: hashedPassword,
+      address: {
+        state: state.trim().toUpperCase(),
+        city: city.trim(),
+        street: street.trim(),
+        pincode: pincode.trim(),
+      },
       documents: {
         idType,
         idNumber,
@@ -42,10 +74,10 @@ export const registerDeliveryPartner = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Delivery partner registered",
+      message: "Delivery partner registered successfully",
     });
   } catch (error) {
-    // 🔥 CLEANUP CLOUDINARY FILE
+    // 🔥 CLOUDINARY CLEANUP ON FAILURE
     if (uploadedPublicId) {
       await cloudinary.uploader.destroy(uploadedPublicId);
     }
