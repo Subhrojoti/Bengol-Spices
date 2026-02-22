@@ -26,24 +26,24 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       PRODUCTS ORDERED (SPICES)
+       PRODUCTS ORDERED
        ============================= */
 
     products: [
       {
         name: {
-          type: String, // Spice name
+          type: String,
           required: true,
         },
 
         quantity: {
-          type: Number, // Quantity ordered
+          type: Number,
           required: true,
           min: 1,
         },
 
         unitPrice: {
-          type: Number, // Price per unit
+          type: Number,
           required: true,
           min: 0,
         },
@@ -54,13 +54,13 @@ const orderSchema = new mongoose.Schema(
         },
 
         totalPrice: {
-          type: Number, // quantity × unitPrice
+          type: Number,
           required: true,
           min: 0,
         },
 
         image: {
-          type: String, // Product image URL (optional)
+          type: String,
         },
       },
     ],
@@ -70,19 +70,19 @@ const orderSchema = new mongoose.Schema(
        ============================= */
 
     totalAmount: {
-      type: Number, // Sum of all products
+      type: Number,
       required: true,
       min: 1,
     },
 
     paidAmount: {
-      type: Number, // Mandatory initial payment
+      type: Number,
       required: true,
       min: 1,
     },
 
     dueAmount: {
-      type: Number, // Remaining amount
+      type: Number,
       required: true,
       min: 0,
     },
@@ -94,7 +94,7 @@ const orderSchema = new mongoose.Schema(
     },
 
     dueDate: {
-      type: Date, // Order date + 7 days
+      type: Date,
       required: true,
     },
 
@@ -115,6 +115,7 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "PLACED",
     },
+
     paymentStatus: {
       type: String,
       enum: ["PENDING", "COMPLETED"],
@@ -122,7 +123,7 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       LOCATION (WHERE ORDER WAS PLACED)
+       LOCATION (COORDINATES)
        ============================= */
 
     orderLocation: {
@@ -137,24 +138,68 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       SHIPMENT DETAILS (IMPORTANT PART)
+       DELIVERY ADDRESS SNAPSHOT
+       (NEW — SAFE ADDITION)
+       ============================= */
+
+    deliveryAddress: {
+      storeName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      ownerName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      state: {
+        type: String,
+        required: true,
+        trim: true,
+        uppercase: true,
+      },
+      city: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      street: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      pincode: {
+        type: String,
+        required: true,
+        match: /^[0-9]{6}$/,
+      },
+    },
+
+    /* =============================
+       SHIPMENT DETAILS
        ============================= */
 
     shipment: {
       provider: {
-        type: String, // e.g. SHIPROCKET
+        type: String,
       },
 
       awb: {
-        type: String, // Courier tracking number
+        type: String,
       },
 
       trackingUrl: {
-        type: String, // Courier tracking link
+        type: String,
       },
 
       status: {
-        type: String, // CREATED, IN_TRANSIT, DELIVERED, FAILED
+        type: String,
       },
 
       createdAt: {
@@ -163,8 +208,7 @@ const orderSchema = new mongoose.Schema(
     },
 
     /* =============================
-       LEGACY / OPTIONAL MANUAL DELIVERY
-       (KEEP EMPTY FOR NOW)
+       DELIVERY PARTNER DETAILS
        ============================= */
 
     delivery: {
@@ -181,6 +225,7 @@ const orderSchema = new mongoose.Schema(
         type: Date,
       },
     },
+
     deliveryOtp: {
       code: String,
       expiresAt: Date,
@@ -191,8 +236,19 @@ const orderSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // createdAt & updatedAt auto
+    timestamps: true,
   },
 );
+
+/* =============================
+   INDEXES (SAFE ADDITION)
+   ============================= */
+
+orderSchema.index({ "deliveryAddress.state": 1 });
+orderSchema.index({ "deliveryAddress.pincode": 1 });
+orderSchema.index({
+  "orderLocation.latitude": 1,
+  "orderLocation.longitude": 1,
+});
 
 export default mongoose.model("Order", orderSchema);

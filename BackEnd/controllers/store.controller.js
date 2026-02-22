@@ -1,8 +1,6 @@
 import Store from "../models/store.js";
 import cloudinary from "../config/cloudinary.js";
-import { generateOTP, sendOtpSMS } from "../utils/otp.js";
-
-export const initiateStoreRegistration = async (req, res) => {
+export const createStore = async (req, res) => {
   let uploadedImageId = null;
 
   try {
@@ -10,7 +8,10 @@ export const initiateStoreRegistration = async (req, res) => {
       storeName,
       ownerName,
       phone,
-      address,
+      state,
+      city,
+      street,
+      pincode,
       latitude,
       longitude,
       storeType,
@@ -20,12 +21,15 @@ export const initiateStoreRegistration = async (req, res) => {
       !storeName ||
       !ownerName ||
       !phone ||
-      !address ||
+      !state ||
+      !city ||
+      !street ||
+      !pincode ||
       latitude === undefined ||
       longitude === undefined ||
       !storeType
     ) {
-      throw new Error("All fields are required");
+      throw new Error("All fields including complete address are required");
     }
 
     if (!req.file) {
@@ -34,22 +38,30 @@ export const initiateStoreRegistration = async (req, res) => {
 
     uploadedImageId = req.file.filename;
 
-    const exists = await Store.findOne({
-      phone,
-      isVerified: true,
-    });
-
+    const exists = await Store.findOne({ phone });
     if (exists) {
       throw new Error("Store already registered with this phone");
     }
 
-    const otp = generateOTP();
+    // 🔑 Generate consumerId
+    const year = new Date().getFullYear();
+    const count = await Store.countDocuments({
+      consumerId: { $regex: `^CS${year}` },
+    });
+
+    const consumerId = `CS${year}-${String(count + 1).padStart(4, "0")}`;
 
     const store = await Store.create({
-      storeName,
-      ownerName,
-      phone,
-      address,
+      consumerId,
+      storeName: storeName.trim(),
+      ownerName: ownerName.trim(),
+      phone: phone.trim(),
+      address: {
+        state: state.trim().toUpperCase(),
+        city: city.trim(),
+        street: street.trim(),
+        pincode: pincode.trim(),
+      },
       location: {
         latitude: Number(latitude),
         longitude: Number(longitude),
@@ -60,20 +72,15 @@ export const initiateStoreRegistration = async (req, res) => {
         url: req.file.path,
         publicId: req.file.filename,
       },
-      otp,
-      otpExpiresAt: Date.now() + 5 * 60 * 1000, // 5 min
-      isVerified: false,
+      status: "ACTIVE",
     });
 
-    await sendOtpSMS(phone, otp);
-
-    return res.json({
+    return res.status(201).json({
       success: true,
-      message: "OTP sent to store mobile number",
-      storeId: store._id,
+      message: "Store registered successfully",
+      consumerId: store.consumerId,
     });
   } catch (error) {
-    // 🔥 cleanup image if failed
     if (uploadedImageId) {
       await cloudinary.uploader.destroy(uploadedImageId);
     }
@@ -81,57 +88,6 @@ export const initiateStoreRegistration = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message,
-    });
-  }
-};
-
-export const verifyStoreOtp = async (req, res) => {
-  try {
-    const { storeId, otp } = req.body;
-
-    if (!storeId || !otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Store ID and OTP are required",
-      });
-    }
-
-    const store = await Store.findById(storeId);
-
-    if (
-      !store ||
-      store.isVerified ||
-      store.otp !== otp ||
-      store.otpExpiresAt < Date.now()
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP",
-      });
-    }
-
-    // 🔑 Generate consumerId
-    const year = new Date().getFullYear();
-    const count = await Store.countDocuments({
-      consumerId: { $regex: `^CS${year}` },
-    });
-
-    store.consumerId = `CS${year}-${String(count + 1).padStart(4, "0")}`;
-    store.isVerified = true;
-    store.otp = undefined;
-    store.otpExpiresAt = undefined;
-
-    await store.save();
-
-    return res.json({
-      success: true,
-      message: "Store registered successfully",
-      consumerId: store.consumerId,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "OTP verification failed",
     });
   }
 };
