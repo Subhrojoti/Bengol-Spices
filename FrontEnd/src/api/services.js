@@ -268,3 +268,19 @@ export const confirmOrder = async (orderId) => {
   const response = await axiosInstance.put(`/agent/orders/${orderId}/confirm`);
   return response.data;
 };
+
+// All Delivery Partners
+
+export const getAllDeliveryPartners = async () => {
+  const response = await axiosInstance.get("/delivery-partner/all");
+  return response.data;
+};
+
+// Assign order to delivery partner
+
+export const assignOrderToPartner = async (orderId, partnerId) => {
+  const response = await axiosInstance.put(`/agent/orders/${orderId}/assign`, {
+    partnerId,
+  });
+  return response.data;
+};
