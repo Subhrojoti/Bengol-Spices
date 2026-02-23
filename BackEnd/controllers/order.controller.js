@@ -1,3 +1,4 @@
+import Counter from "../models/Counter.js";
 import DeliveryPartner from "../models/DeliveryPartner.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
@@ -15,7 +16,7 @@ export const placeOrder = async (req, res) => {
       longitude,
     } = req.body;
 
-    const agentId = req.user.agentId;
+    const agentId = req.user?.agentId;
 
     /* =============================
        BASIC VALIDATION
@@ -25,7 +26,7 @@ export const placeOrder = async (req, res) => {
       !consumerId ||
       !Array.isArray(products) ||
       products.length === 0 ||
-      !paidAmount ||
+      paidAmount === undefined ||
       !paymentMode ||
       latitude === undefined ||
       longitude === undefined
@@ -49,7 +50,7 @@ export const placeOrder = async (req, res) => {
 
     const store = await Store.findOne({
       consumerId,
-      registeredBy: agentId, // 🔥 ownership check
+      registeredBy: agentId,
     });
 
     if (!store) {
@@ -61,12 +62,12 @@ export const placeOrder = async (req, res) => {
     }
 
     /* =============================
-       PRODUCT & AMOUNT CALCULATION
+       PRODUCT VALIDATION & AMOUNT
        ============================= */
 
     let totalAmount = 0;
 
-    products.forEach((item) => {
+    for (const item of products) {
       if (
         !item.name ||
         !item.uom ||
@@ -75,12 +76,15 @@ export const placeOrder = async (req, res) => {
         item.quantity <= 0 ||
         item.unitPrice < 0
       ) {
-        throw new Error("Invalid product details");
+        return res.status(400).json({
+          success: false,
+          message: "Invalid product details",
+        });
       }
 
       item.totalPrice = item.quantity * item.unitPrice;
       totalAmount += item.totalPrice;
-    });
+    }
 
     if (paidAmount <= 0 || paidAmount > totalAmount) {
       return res.status(400).json({
@@ -92,17 +96,23 @@ export const placeOrder = async (req, res) => {
     const dueAmount = totalAmount - paidAmount;
 
     /* =============================
-       ORDER ID & DUE DATE
+       SAFE ORDER ID GENERATION
        ============================= */
 
     const currentYear = new Date().getFullYear();
 
-    const orderCount = await Order.countDocuments({
-      orderId: { $regex: `^ORD${currentYear}` },
-    });
+    const counter = await Counter.findByIdAndUpdate(
+      `order_${currentYear}`, // unique key per year
+      { $inc: { seq: 1 } }, // atomic increment
+      { new: true, upsert: true }, // create if not exists
+    );
 
-    const serial = String(orderCount + 1).padStart(4, "0");
+    const serial = String(counter.seq).padStart(4, "0");
     const orderId = `ORD${currentYear}-${serial}`;
+
+    /* =============================
+       DUE DATE (7 DAYS)
+       ============================= */
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 7);
@@ -125,8 +135,6 @@ export const placeOrder = async (req, res) => {
         latitude,
         longitude,
       },
-
-      // 🔥 DELIVERY ADDRESS SNAPSHOT FROM STORE
       deliveryAddress: {
         storeName: store.storeName,
         ownerName: store.ownerName,
@@ -136,8 +144,8 @@ export const placeOrder = async (req, res) => {
         street: store.address.street,
         pincode: store.address.pincode,
       },
-
       status: "PLACED",
+      paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
 
     return res.status(201).json({
