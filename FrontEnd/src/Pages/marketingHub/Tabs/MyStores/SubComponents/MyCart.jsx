@@ -38,36 +38,7 @@ const MyCart = ({ onBack }) => {
   const latitude = selectedStore?.location?.latitude;
   const longitude = selectedStore?.location?.longitude;
 
-  if (!consumerId) {
-    if (latitude === undefined || longitude === undefined) {
-      return (
-        <Box
-          height="100%"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-          gap={2}
-          p={4}>
-          <Typography variant="h6" fontWeight={600}>
-            Store location missing
-          </Typography>
-
-          <Typography color="text.secondary" textAlign="center">
-            This store does not have a valid location configured.
-          </Typography>
-
-          <Button
-            startIcon={<ArrowBackIcon />}
-            variant="contained"
-            sx={{ mt: 2, textTransform: "none" }}
-            onClick={() => dispatch(setLeftView("LIST"))}>
-            Back to Stores
-          </Button>
-        </Box>
-      );
-    }
-
+  if (!selectedStore) {
     return (
       <Box
         height="100%"
@@ -96,6 +67,34 @@ const MyCart = ({ onBack }) => {
     );
   }
 
+  if (latitude === undefined || longitude === undefined) {
+    return (
+      <Box
+        height="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        flexDirection="column"
+        gap={2}
+        p={4}>
+        <Typography variant="h6" fontWeight={600}>
+          Store location missing
+        </Typography>
+
+        <Typography color="text.secondary" textAlign="center">
+          This store does not have a valid location configured.
+        </Typography>
+
+        <Button
+          startIcon={<ArrowBackIcon />}
+          variant="contained"
+          sx={{ mt: 2, textTransform: "none" }}
+          onClick={() => dispatch(setLeftView("LIST"))}>
+          Back to Stores
+        </Button>
+      </Box>
+    );
+  }
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0,
@@ -120,6 +119,10 @@ const MyCart = ({ onBack }) => {
       return;
     }
 
+    // Ensure address exists
+    const storeAddress = selectedStore?.address || {};
+    console.log("Selected Store:", selectedStore);
+    console.log("Store Address:", selectedStore?.address);
     const payload = {
       consumerId,
       products: cartItems.map((item) => ({
@@ -133,6 +136,12 @@ const MyCart = ({ onBack }) => {
       paymentMode,
       latitude,
       longitude,
+      deliveryAddress: {
+        street: storeAddress.street || "",
+        city: storeAddress.city || "",
+        state: storeAddress.state || "",
+        pincode: storeAddress.pincode || "",
+      },
     };
 
     console.log("ORDER PAYLOAD", payload);

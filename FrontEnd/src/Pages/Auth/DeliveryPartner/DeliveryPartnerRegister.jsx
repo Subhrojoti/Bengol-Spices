@@ -14,6 +14,8 @@ import {
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { deliveryPartnerRegister } from "../../../api/services";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function DeliveryPartnerRegister() {
   const [form, setForm] = useState({
@@ -22,6 +24,10 @@ export default function DeliveryPartnerRegister() {
     password: "",
     idType: "AADHAAR",
     idNumber: "",
+    state: "",
+    city: "",
+    street: "",
+    pincode: "",
     document: null,
   });
 
@@ -52,6 +58,15 @@ export default function DeliveryPartnerRegister() {
 
     if (!form.idNumber.trim()) newErrors.idNumber = "ID Number required";
 
+    if (!form.state.trim()) newErrors.state = "State is required";
+
+    if (!form.city.trim()) newErrors.city = "City is required";
+
+    if (!form.street.trim()) newErrors.street = "Street is required";
+
+    if (!/^\d{6}$/.test(form.pincode))
+      newErrors.pincode = "Enter valid 6-digit pincode";
+
     if (!form.document) newErrors.document = "Document is required";
 
     setErrors(newErrors);
@@ -70,6 +85,10 @@ export default function DeliveryPartnerRegister() {
       formData.append("password", form.password);
       formData.append("idType", form.idType);
       formData.append("idNumber", form.idNumber);
+      formData.append("state", form.state);
+      formData.append("city", form.city);
+      formData.append("street", form.street);
+      formData.append("pincode", form.pincode);
       formData.append("document", form.document);
 
       await deliveryPartnerRegister(formData);
@@ -77,6 +96,13 @@ export default function DeliveryPartnerRegister() {
       setIsSubmitted(true);
     } catch (error) {
       console.error("Registration failed:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Registration failed. Please try again.";
+
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +113,7 @@ export default function DeliveryPartnerRegister() {
       color: "#0f766e",
     },
     "& .MuiInput-underline:before": {
-      borderBottomColor: "rgba(0,0,0,0.42)", // default gray
+      borderBottomColor: "rgba(0,0,0,0.42)",
     },
     "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
       borderBottomColor: "#0f766e",
@@ -196,6 +222,62 @@ export default function DeliveryPartnerRegister() {
                 </Grid>
 
                 <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    variant="standard"
+                    label="State"
+                    name="state"
+                    value={form.state}
+                    onChange={handleChange}
+                    error={!!errors.state}
+                    helperText={errors.state}
+                    sx={inputStyles}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    variant="standard"
+                    label="City"
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    error={!!errors.city}
+                    helperText={errors.city}
+                    sx={inputStyles}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    variant="standard"
+                    label="Street"
+                    name="street"
+                    value={form.street}
+                    onChange={handleChange}
+                    error={!!errors.street}
+                    helperText={errors.street}
+                    sx={inputStyles}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    variant="standard"
+                    label="Pincode"
+                    name="pincode"
+                    value={form.pincode}
+                    onChange={handleChange}
+                    error={!!errors.pincode}
+                    helperText={errors.pincode}
+                    sx={inputStyles}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
                   <Stack spacing={1}>
                     <Button
                       variant="outlined"
@@ -264,7 +346,7 @@ export default function DeliveryPartnerRegister() {
                 Registration Successful
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                Your application has been submitted successfully.
+                You can now proceed to login page to access your account.
               </Typography>
             </Box>
           )}

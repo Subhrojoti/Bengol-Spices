@@ -9,12 +9,19 @@ const addToCartSlice = createSlice({
     addToCart: (state, action) => {
       const { consumerId, product } = action.payload;
 
-      // Initialize cart for store if not exists
       if (!state.carts[consumerId]) {
         state.carts[consumerId] = { items: [] };
       }
 
-      state.carts[consumerId].items.push(product);
+      const existingItem = state.carts[consumerId].items.find(
+        (item) => item.id === product.id,
+      );
+
+      if (existingItem) {
+        existingItem.quantity += product.quantity;
+      } else {
+        state.carts[consumerId].items.push(product);
+      }
     },
 
     removeFromCart: (state, action) => {

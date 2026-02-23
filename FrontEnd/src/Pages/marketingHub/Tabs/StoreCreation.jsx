@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { createStore, verifyStoreOtp } from "../../../api/services";
+import { createStore } from "../../../api/services";
 
 const StoreCreation = () => {
   const [formData, setFormData] = useState({
     storeName: "",
     ownerName: "",
     phone: "",
-    address: "",
+    state: "",
+    city: "",
+    street: "",
+    pincode: "",
     storeType: "",
     image: null,
   });
 
   const [loading, setLoading] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [storeId, setStoreId] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -57,39 +57,6 @@ const StoreCreation = () => {
     });
   };
 
-  const handleVerifyOtp = async () => {
-    if (!/^\d{6}$/.test(otp)) {
-      toast.error("Please enter a valid 6-digit OTP");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      console.log("VERIFY PAYLOAD:", { storeId, otp });
-
-      await verifyStoreOtp({ storeId, otp });
-
-      toast.success("Store created successfully");
-
-      setShowOtpModal(false);
-      setOtp("");
-      setStoreId(null);
-
-      setFormData({
-        storeName: "",
-        ownerName: "",
-        phone: "",
-        address: "",
-        storeType: "",
-        image: null,
-      });
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Invalid OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -103,20 +70,31 @@ const StoreCreation = () => {
         storeName: formData.storeName,
         ownerName: formData.ownerName,
         phone: formData.phone,
-        address: formData.address,
+        state: formData.state,
+        city: formData.city,
+        street: formData.street,
+        pincode: formData.pincode,
         latitude,
         longitude,
         storeType: formData.storeType,
         image: formData.image,
       };
 
-      const res = await createStore(payload);
+      await createStore(payload);
 
-      // assuming backend returns this
-      console.log("OTP:", res?.data?.otp);
+      toast.success("Store created successfully");
 
-      setStoreId(res?.storeId);
-      setShowOtpModal(true);
+      setFormData({
+        storeName: "",
+        ownerName: "",
+        phone: "",
+        state: "",
+        city: "",
+        street: "",
+        pincode: "",
+        storeType: "",
+        image: null,
+      });
     } catch (err) {
       toast.error(
         typeof err === "string"
@@ -142,7 +120,6 @@ const StoreCreation = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Store Name */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Store Name *
@@ -157,7 +134,6 @@ const StoreCreation = () => {
               />
             </div>
 
-            {/* Owner Name */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Owner Name *
@@ -172,7 +148,6 @@ const StoreCreation = () => {
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Phone Number *
@@ -187,7 +162,6 @@ const StoreCreation = () => {
               />
             </div>
 
-            {/* Store Image */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Store Image
@@ -197,29 +171,66 @@ const StoreCreation = () => {
                 name="image"
                 accept="image/*"
                 onChange={handleChange}
-                className="w-full text-sm file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0
-                  file:bg-orange-50 file:text-orange-600
-                  hover:file:bg-orange-100"
+                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
               />
             </div>
 
-            {/* Address */}
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Address *
+                State *
               </label>
-              <textarea
-                name="address"
-                value={formData.address}
+              <input
+                type="text"
+                name="state"
+                value={formData.state}
                 onChange={handleChange}
-                rows={4}
                 required
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full h-12 rounded-lg border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
-            {/* Store Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                City *
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                required
+                className="w-full h-12 rounded-lg border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Street *
+              </label>
+              <input
+                type="text"
+                name="street"
+                value={formData.street}
+                onChange={handleChange}
+                required
+                className="w-full h-12 rounded-lg border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Pincode *
+              </label>
+              <input
+                type="text"
+                name="pincode"
+                value={formData.pincode}
+                onChange={handleChange}
+                required
+                className="w-full h-12 rounded-lg border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 Store Type *
@@ -251,7 +262,6 @@ const StoreCreation = () => {
             </div>
           </div>
 
-          {/* Submit */}
           <div className="flex justify-end mt-10">
             <button
               type="submit"
@@ -262,42 +272,6 @@ const StoreCreation = () => {
           </div>
         </form>
       </div>
-      {showOtpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl w-full max-w-sm p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Verify OTP
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Enter the OTP sent to the registered phone number
-            </p>
-
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              maxLength={6}
-              className="w-full h-12 rounded-lg border border-gray-300 px-4 text-center tracking-widest text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Enter OTP"
-            />
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowOtpModal(false)}
-                className="px-4 py-2 text-sm rounded-md border border-gray-300">
-                Cancel
-              </button>
-
-              <button
-                onClick={handleVerifyOtp}
-                disabled={loading}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md text-sm disabled:opacity-60">
-                Verify
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

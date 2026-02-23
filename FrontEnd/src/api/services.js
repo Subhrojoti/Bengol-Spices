@@ -81,7 +81,10 @@ export const createStore = async ({
   storeName,
   ownerName,
   phone,
-  address,
+  state,
+  city,
+  street,
+  pincode,
   latitude,
   longitude,
   storeType,
@@ -92,7 +95,10 @@ export const createStore = async ({
   formData.append("storeName", storeName);
   formData.append("ownerName", ownerName);
   formData.append("phone", phone);
-  formData.append("address", address);
+  formData.append("state", state);
+  formData.append("city", city);
+  formData.append("street", street);
+  formData.append("pincode", pincode);
   formData.append("latitude", latitude);
   formData.append("longitude", longitude);
   formData.append("storeType", storeType);
@@ -101,10 +107,11 @@ export const createStore = async ({
     formData.append("image", image);
   }
 
-  const response = await axiosInstance.post(
-    "/agent/store/register/initiate",
-    formData,
-  );
+  const response = await axiosInstance.post("/agent/store/register", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
   return response.data;
 };
