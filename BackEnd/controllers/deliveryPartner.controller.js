@@ -129,3 +129,23 @@ export const logoutDeliveryPartner = async (req, res) => {
 
   res.json({ success: true });
 };
+
+/* GET ALL ACTIVE DELIVERY PARTNERS (ADMIN) */
+export const getAllDeliveryPartners = async (req, res) => {
+  try {
+    const partners = await DeliveryPartner.find()
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: partners.length,
+      data: partners,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch delivery partners",
+    });
+  }
+};
