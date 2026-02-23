@@ -23,15 +23,45 @@ import { setLeftView } from "../../../../../redux/slices/myStoresUi/myStoresUi";
 const ProductList = ({ onBack }) => {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
-  const [cartItems, setCartItems] = useState({});
   const [imageIndex, setImageIndex] = useState({});
+
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
+
   const dispatch = useDispatch();
-  const consumerId = selectedStore?.consumerId;
-  const cartCount = useSelector((state) =>
-    consumerId ? state.addToCart.carts[consumerId]?.items.length || 0 : 0,
-  );
-  const storeName = selectedStore?.storeName;
+
+  if (!selectedStore) {
+    return (
+      <Box
+        height="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        flexDirection="column"
+        gap={2}>
+        <Typography variant="h6" fontWeight={600}>
+          No store selected
+        </Typography>
+
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => dispatch(setLeftView("LIST"))}>
+          Back to Stores
+        </Button>
+      </Box>
+    );
+  }
+
+  const consumerId = selectedStore.consumerId;
+  const storeName = selectedStore.storeName;
+
+  const cartCount = useSelector((state) => {
+    if (!consumerId) return 0;
+
+    const items = state.addToCart.carts[consumerId]?.items || [];
+
+    return items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  });
 
   const FallBackImage =
     "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2";
@@ -53,6 +83,7 @@ const ProductList = ({ onBack }) => {
       const res = await fetchProducts();
       setProducts(res?.products || []);
     };
+
     loadProducts();
   }, []);
 
@@ -60,12 +91,14 @@ const ProductList = ({ onBack }) => {
   const handleQuantityChange = (id, value) => {
     setQuantities((prev) => ({
       ...prev,
-      [id]: value,
+      [id]: value === "" ? "" : Number(value),
     }));
   };
 
   const handleAddToCart = (product) => {
-    if (!consumerId) return;
+    const qty = Number(quantities[product._id]);
+
+    if (!qty || qty <= 0) return;
 
     dispatch(
       addToCart({
@@ -75,15 +108,16 @@ const ProductList = ({ onBack }) => {
           name: product.name,
           uom: product.uom,
           unitPrice: product.discountPrice ?? product.price,
-          quantity: Number(quantities[product._id]),
+          quantity: qty,
           image: product.images?.front?.url,
         },
       }),
     );
 
-    setCartItems((prev) => ({
+    // Optional: reset quantity after adding
+    setQuantities((prev) => ({
       ...prev,
-      [product._id]: true,
+      [product._id]: "",
     }));
   };
 
@@ -96,7 +130,6 @@ const ProductList = ({ onBack }) => {
         alignItems="center"
         justifyContent="space-between"
         mb={2}>
-        {/* LEFT: BACK + STORE NAME */}
         <Box display="flex" alignItems="center" gap={1.5}>
           <IconButton onClick={onBack}>
             <ArrowBackIcon />
@@ -104,7 +137,7 @@ const ProductList = ({ onBack }) => {
 
           <Box>
             <Typography fontWeight={700} fontSize={16} lineHeight={1.2}>
-              {storeName || "Selected Store"}
+              {storeName}
             </Typography>
 
             <Typography variant="caption" color="text.secondary">
@@ -113,7 +146,7 @@ const ProductList = ({ onBack }) => {
           </Box>
         </Box>
 
-        {/* RIGHT: CART */}
+        {/* CART ICON */}
         <IconButton size="small" onClick={() => dispatch(setLeftView("CART"))}>
           <Badge
             badgeContent={cartCount}
@@ -127,10 +160,11 @@ const ProductList = ({ onBack }) => {
       {/* PRODUCTS GRID */}
       <Grid container spacing={3} sx={{ paddingLeft: 3.5 }}>
         {products.map((product) => {
-          const qty = Number(quantities[product._id] || 0);
+          const qty = Number(quantities[product._id]) || 0;
+
           const unitPrice = product.discountPrice ?? product.price;
+
           const totalPrice = qty * unitPrice;
-          const isAdded = !!cartItems[product._id];
 
           const images = [
             product.images?.front?.url,
@@ -144,14 +178,14 @@ const ProductList = ({ onBack }) => {
               <Card
                 sx={{
                   width: 280,
-                  height: 420,
+                  height: 400,
                   display: "flex",
                   flexDirection: "column",
                   borderRadius: 3,
                   overflow: "hidden",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
                 }}>
-                {/* IMAGE SLIDER (CARD WIDTH FIXED) */}
+                {/* IMAGE */}
                 <Box
                   position="relative"
                   sx={{
@@ -159,7 +193,6 @@ const ProductList = ({ onBack }) => {
                     width: "100%",
                     backgroundColor: "#000",
                     overflow: "hidden",
-                    flexShrink: 0,
                   }}>
                   <Box
                     component="img"
@@ -169,7 +202,6 @@ const ProductList = ({ onBack }) => {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      display: "block",
                     }}
                   />
 
@@ -211,117 +243,44 @@ const ProductList = ({ onBack }) => {
                 </Box>
 
                 <CardContent sx={{ p: 2.25 }}>
-                  {/* NAME + PRICE */}
-                  <Box mb={1.5}>
-                    <Typography fontWeight={600}>{product.name}</Typography>
+                  <Typography fontWeight={600}>{product.name}</Typography>
 
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      mt={0.25}>
-                      {/* LEFT: SELLING PRICE */}
-                      <Typography variant="body2" color="text.secondary">
-                        ₹{unitPrice} / {product.uom}
-                      </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={1}>
+                    ₹{unitPrice} / {product.uom}
+                  </Typography>
 
-                      <Box display="flex" gap={0.5}>
-                        {/* RIGHT: ORIGINAL PRICE */}
-                        {product.discountPrice && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ textDecoration: "line-through" }}>
-                            ₹{product.price}
-                          </Typography>
-                        )}
-                        <Typography variant="caption" color="text.secondary">
-                          GST: {product.gstPercentage}%
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* TOTAL + QTY */}
                   <Box
                     display="flex"
                     justifyContent="space-between"
-                    alignItems="flex-end"
-                    mb={1}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Total
-                      </Typography>
-                      <Typography fontWeight={700}>₹{totalPrice}</Typography>
-                    </Box>
+                    alignItems="center">
+                    <Typography fontWeight={700}>₹{totalPrice}</Typography>
 
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <TextField
-                        type="number"
-                        size="small"
-                        value={quantities[product._id] || ""}
-                        onChange={(e) =>
-                          handleQuantityChange(product._id, e.target.value)
-                        }
-                        placeholder="Qty"
-                        inputProps={{ min: 0 }}
-                        sx={{
-                          width: 76,
-                          "& input": {
-                            textAlign: "center",
-                            fontSize: 13,
-                          },
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {product.uom}
-                      </Typography>
-                    </Box>
+                    <TextField
+                      type="number"
+                      size="small"
+                      value={quantities[product._id] ?? ""}
+                      onChange={(e) =>
+                        handleQuantityChange(product._id, e.target.value)
+                      }
+                      inputProps={{ min: 0 }}
+                      sx={{ width: 80 }}
+                    />
                   </Box>
                 </CardContent>
-                {/* ADD TO CART */}
-                <Box sx={{ mt: "auto" }}>
-                  <Button
-                    fullWidth
-                    onClick={() => {
-                      if (qty <= 0 || isAdded) return;
-                      handleAddToCart(product);
-                    }}
-                    sx={{
-                      height: 56,
-                      borderRadius: "0 0 12px 12px",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      textTransform: "none",
-                      color: "#ffffff",
 
-                      /* ---------------- STATE COLORS ---------------- */
-                      backgroundColor: isAdded
-                        ? "#16a34a" // ✅ green (added)
-                        : qty > 0
-                          ? "#f59e0b" // ✅ orange (ready)
-                          : "#e5e7eb", // ✅ light grey (initial)
-
-                      cursor: qty <= 0 || isAdded ? "not-allowed" : "pointer",
-
-                      /* ---------------- HOVER ---------------- */
-                      "&:hover": {
-                        backgroundColor: isAdded
-                          ? "#16a34a"
-                          : qty > 0
-                            ? "#d97706"
-                            : "#e5e7eb",
-                      },
-
-                      /* ---------------- TEXT COLOR FOR GREY STATE ---------------- */
-                      ...(qty <= 0 &&
-                        !isAdded && {
-                          color: "#6b7280", // softer text on grey
-                        }),
-                    }}>
-                    {isAdded ? "Added to Cart" : "Add to cart"}
-                  </Button>
-                </Box>
+                <Button
+                  fullWidth
+                  onClick={() => handleAddToCart(product)}
+                  sx={{
+                    height: 56,
+                    borderRadius: "0 0 12px 12px",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    backgroundColor: qty > 0 ? "#f59e0b" : "#e5e7eb",
+                    color: qty > 0 ? "#fff" : "#6b7280",
+                  }}>
+                  Add to cart
+                </Button>
               </Card>
             </Grid>
           );

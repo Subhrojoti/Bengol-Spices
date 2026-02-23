@@ -6,6 +6,7 @@ import {
   Grid,
   Chip,
   Button,
+  Tooltip,
 } from "@mui/material";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -29,51 +30,91 @@ const StoresList = ({
             <Card
               onClick={() => onSelectStore(store)}
               sx={{
-                height: 250,
-                width: 250,
+                height: 360,
+                width: 260,
                 cursor: "pointer",
                 borderRadius: 3,
+                overflow: "hidden",
                 border:
                   selectedStore?._id === store._id
                     ? "2px solid #f59e0b"
-                    : "1px solid transparent",
+                    : "1px solid #eee",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                transition: "0.3s",
                 "&:hover": {
                   transform: "translateY(-4px)",
                 },
               }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={1.5}>
-                  <StorefrontIcon sx={{ color: "#d97706" }} />
-                  <Typography fontWeight={600} noWrap>
-                    {store.storeName}
-                  </Typography>
-                </Box>
+              {/* IMAGE SECTION */}
+              <Box
+                sx={{
+                  height: 150,
+                  backgroundColor: "#dcdcdc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                {store.image?.url ? (
+                  <Box
+                    component="img"
+                    src={store.image.url}
+                    alt={store.storeName}
+                    sx={{
+                      maxHeight: "100%",
+                      maxWidth: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <StorefrontIcon sx={{ fontSize: 50, color: "#858585" }} />
+                )}
+              </Box>
 
-                <Typography variant="body2" color="text.secondary">
+              <CardContent sx={{ p: 2 }}>
+                <Typography fontWeight={600} noWrap>
+                  {store.storeName}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary" mb={1}>
                   Owner: <strong>{store.ownerName}</strong>
                 </Typography>
 
-                <Box display="flex" alignItems="center" gap={1} mt={1}>
+                {/* Phone */}
+                <Box display="flex" alignItems="center" gap={1}>
                   <PhoneIcon fontSize="small" />
                   <Typography variant="body2">{store.phone}</Typography>
                 </Box>
 
-                <Box display="flex" gap={1} mt={1}>
-                  <LocationOnIcon fontSize="small" />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}>
-                    {store.address}
-                  </Typography>
-                </Box>
+                {/* Address */}
+                <Tooltip
+                  title={
+                    store.address
+                      ? `${store.address.street}, ${store.address.city}, ${store.address.state} - ${store.address.pincode}`
+                      : ""
+                  }>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    sx={{ mt: 0.5 }}>
+                    <LocationOnIcon fontSize="small" />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 180,
+                      }}>
+                      {store.address
+                        ? `${store.address.street}, ${store.address.city}`
+                        : ""}
+                    </Typography>
+                  </Box>
+                </Tooltip>
 
-                <Box display="flex" justifyContent="space-between" mt={2}>
+                {/* Chips */}
+                <Box display="flex" justifyContent="space-between" mt={1}>
                   <Chip
                     label={store.storeType}
                     size="small"
@@ -95,8 +136,9 @@ const StoresList = ({
                     }}
                   />
                 </Box>
+
                 {/* ACTION BUTTONS */}
-                <Box display="flex" gap={1.5} mt={2}>
+                <Box display="flex" gap={1} mt={1}>
                   <Button
                     fullWidth
                     size="small"
@@ -104,15 +146,18 @@ const StoresList = ({
                     startIcon={<ReceiptLongIcon sx={{ fontSize: 14 }} />}
                     onClick={(e) => {
                       e.stopPropagation();
+
+                      // 🔥 FIX: Select store first
+                      onSelectStore(store);
+
+                      // Then trigger action
                       onViewOrders(store);
                     }}
                     sx={{
                       textTransform: "uppercase",
                       fontWeight: 600,
                       fontSize: 11.5,
-
                       lineHeight: 1,
-
                       paddingY: 1,
                       minHeight: 26,
                       "& .MuiButton-startIcon": {
@@ -127,14 +172,20 @@ const StoresList = ({
                     size="small"
                     variant="contained"
                     startIcon={<AddCircleOutlineIcon sx={{ fontSize: 14 }} />}
-                    onClick={onCreateOrder}
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      // 🔥 FIX: Select store first
+                      onSelectStore(store);
+
+                      // Then trigger action
+                      onCreateOrder(store);
+                    }}
                     sx={{
                       textTransform: "uppercase",
                       fontWeight: 600,
                       fontSize: 11.5,
-
                       lineHeight: 1,
-
                       paddingY: 1,
                       minHeight: 26,
                       backgroundColor: "#f59e0b",
