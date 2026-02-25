@@ -284,3 +284,37 @@ export const assignOrderToPartner = async (orderId, partnerId) => {
   });
   return response.data;
 };
+
+// Get assigned Delivery Orders
+
+export const getDeliveryPartnerOrders = async () => {
+  const response = await axiosInstance.get("/delivery-partner/orders");
+  return response.data;
+};
+
+// Update Delivery order status
+
+export const updateDeliveryStatus = async (orderId, status) => {
+  const response = await axiosInstance.put(
+    `/agent/orders/${orderId}/delivery-status`,
+    { status },
+  );
+  return response.data;
+};
+
+// Generate OTP for delivery
+export const generateDeliveryOtp = async (orderId) => {
+  const response = await axiosInstance.put(
+    `/agent/orders/${orderId}/generate-otp`,
+  );
+  return response.data;
+};
+
+// Verify OTP for delivery
+export const verifyDeliveryOtp = async (orderId, otp) => {
+  const response = await axiosInstance.put(
+    `/agent/orders/${orderId}/verify-otp`,
+    { otp },
+  );
+  return response.data;
+};

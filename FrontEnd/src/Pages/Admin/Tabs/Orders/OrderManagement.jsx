@@ -11,6 +11,7 @@ const OrderManagement = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [expandedHistory, setExpandedHistory] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -180,6 +181,104 @@ const OrderManagement = () => {
                           Due Date:{" "}
                           {new Date(order.dueDate).toLocaleDateString()}
                         </p>
+                        {order.statusHistory?.length > 0 &&
+                          (() => {
+                            const latest =
+                              order.statusHistory[
+                                order.statusHistory.length - 1
+                              ];
+
+                            const isHistoryOpen = expandedHistory === order._id;
+
+                            return (
+                              <div className="mt-4">
+                                {/* ROW CONTAINER */}
+                                <div className="flex items-center justify-between gap-6">
+                                  {/* LEFT LABEL */}
+                                  <span className="text-sm  text-gray-600 font-bold whitespace-nowrap">
+                                    Track Status Updates:
+                                  </span>
+
+                                  {/* RIGHT ACCORDION HEADER */}
+                                  <div
+                                    onClick={() =>
+                                      setExpandedHistory((prev) =>
+                                        prev === order._id ? null : order._id,
+                                      )
+                                    }
+                                    className="flex-1 cursor-pointer bg-gray-100 hover:bg-gray-200 transition rounded-3xl px-4 py-3 flex justify-between items-center">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-sm font-semibold text-gray-700">
+                                        {latest.status.replaceAll("_", " ")}
+                                      </span>
+
+                                      <span className="text-xs text-gray-400">
+                                        •{" "}
+                                        {new Date(
+                                          latest.changedAt,
+                                        ).toLocaleString()}
+                                      </span>
+                                    </div>
+
+                                    <span className="text-gray-400">
+                                      {isHistoryOpen ? (
+                                        <ExpandLessIcon fontSize="small" />
+                                      ) : (
+                                        <ExpandMoreIcon fontSize="small" />
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* FULL HISTORY */}
+                                {isHistoryOpen && (
+                                  <div className="mt-4 ml-[160px] space-y-3 px-2">
+                                    {order.statusHistory.map(
+                                      (history, index) => (
+                                        <div
+                                          key={history._id}
+                                          className="flex items-start gap-3 text-sm text-gray-600">
+                                          {/* Timeline */}
+                                          <div className="flex flex-col items-center mt-1">
+                                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                            {index !==
+                                              order.statusHistory.length -
+                                                1 && (
+                                              <div className="w-px h-6 bg-gray-300 mt-1"></div>
+                                            )}
+                                          </div>
+
+                                          {/* Details */}
+                                          <div className="flex-1">
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-sm font-semibold text-gray-700">
+                                                {history.status.replaceAll(
+                                                  "_",
+                                                  " ",
+                                                )}
+                                              </span>
+
+                                              <span className="text-xs text-gray-400">
+                                                {new Date(
+                                                  history.changedAt,
+                                                ).toLocaleString()}
+                                              </span>
+                                            </div>
+
+                                            <p className="text-xs text-gray-400 mt-1">
+                                              By:{" "}
+                                              {history.changedBy?.role ||
+                                                "System"}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                       </div>
 
                       {/* Products */}
