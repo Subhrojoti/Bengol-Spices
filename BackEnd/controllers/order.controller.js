@@ -145,6 +145,15 @@ export const placeOrder = async (req, res) => {
         pincode: store.address.pincode,
       },
       status: "PLACED",
+      statusHistory: [
+        {
+          status: "PLACED",
+          changedBy: {
+            id: agentId,
+            role: "AGENT",
+          },
+        },
+      ],
       paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
 
@@ -288,6 +297,14 @@ export const confirmOrder = async (req, res) => {
     }
 
     order.status = "CONFIRMED";
+
+    order.statusHistory.push({
+      status: "CONFIRMED",
+      changedBy: {
+        id: req.user.employeeId || req.user.id,
+        role: req.user.role, // VERY IMPORTANT
+      },
+    });
     await order.save();
 
     res.json({
@@ -341,6 +358,14 @@ export const assignDeliveryPartner = async (req, res) => {
     };
 
     order.status = "ASSIGNED";
+
+    order.statusHistory.push({
+      status: "ASSIGNED",
+      changedBy: {
+        id: req.user.employeeId || req.user.id,
+        role: req.user.role,
+      },
+    });
 
     await order.save();
 
@@ -405,6 +430,15 @@ export const updateDeliveryStatus = async (req, res) => {
     }
 
     order.status = status;
+
+    order.statusHistory.push({
+      status,
+      changedBy: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+    });
+
     await order.save();
 
     res.json({
@@ -487,6 +521,15 @@ export const verifyDeliveryOtp = async (req, res) => {
     }
 
     order.status = "DELIVERED";
+
+    order.statusHistory.push({
+      status: "DELIVERED",
+      changedBy: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+    });
+
     order.deliveryOtp.verified = true;
 
     await order.save();

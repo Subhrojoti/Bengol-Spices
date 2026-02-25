@@ -116,6 +116,43 @@ const orderSchema = new mongoose.Schema(
       default: "PLACED",
     },
 
+    /* =============================
+       Order History 
+       =========================== */
+
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: [
+            "PLACED",
+            "CONFIRMED",
+            "ASSIGNED",
+            "SHIPPED",
+            "OUT_FOR_DELIVERY",
+            "DELIVERED",
+            "CANCELLED",
+          ],
+        },
+        changedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        changedBy: {
+          id: {
+            type: String,
+            //future-proofing for multiple user types (agentId, employeeId, deliveryPartnerId)
+            // role: String,
+            // name: String,
+          },
+          role: {
+            type: String,
+            enum: ["AGENT", "ADMIN", "EMPLOYEE", "DELIVERY_PARTNER"],
+          },
+        },
+      },
+    ],
+
     paymentStatus: {
       type: String,
       enum: ["PENDING", "COMPLETED"],
