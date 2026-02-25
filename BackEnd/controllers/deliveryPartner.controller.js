@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import DeliveryPartner from "../models/DeliveryPartner.js";
 import cloudinary from "../config/cloudinary.js";
+import Order from "../models/Order.js";
 
 /* REGISTER */
 export const registerDeliveryPartner = async (req, res) => {
@@ -146,6 +147,33 @@ export const getAllDeliveryPartners = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch delivery partners",
+    });
+  }
+};
+
+/* Get My assigned orders (DELIVERY PARTNER) */
+export const getMyAssignedOrders = async (req, res) => {
+  try {
+    const partnerId = req.user.id; // MongoDB _id from JWT
+
+    const orders = await Order.find({
+      "delivery.partnerId": partnerId,
+      status: {
+        $in: ["ASSIGNED", "SHIPPED", "OUT_FOR_DELIVERY"],
+      },
+    })
+      .sort({ createdAt: -1 })
+      .select("-deliveryOtp.code"); // Hide OTP code for safety
+
+    return res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch assigned orders",
     });
   }
 };
