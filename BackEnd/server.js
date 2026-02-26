@@ -10,6 +10,7 @@ import orderRoutes from "./routes/order.routes.js";
 import employeeRoutes from "./routes/employee.routes.js";
 import deliveryRoutes from "./routes/deliveryPartner.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import returnRoutes from "./routes/return.routes.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/agent/store", storeRoutes);
 app.use("/agent/orders", orderRoutes);
 app.use("/delivery-partner", deliveryRoutes);
 app.use("/products", productRoutes);
+app.use("/returns", returnRoutes);
 
 const PORT = process.env.PORT || 5000;
 
