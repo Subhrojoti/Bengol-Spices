@@ -77,6 +77,7 @@ export const agentLogin = async (req, res) => {
       {
         id: agent._id, // MongoDB _id (internal use)
         agentId: agent.agentId, // BS2026-001 (business use)
+        name: agent.name, // For personalization in frontend
         role: agent.role, // AGENT / ADMIN
       },
       process.env.JWT_SECRET,
