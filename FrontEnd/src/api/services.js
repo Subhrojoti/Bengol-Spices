@@ -269,6 +269,14 @@ export const confirmOrder = async (orderId) => {
   return response.data;
 };
 
+// CANCEL ORDER
+export const cancelOrder = async (orderId, reason) => {
+  const response = await axiosInstance.put(`/agent/orders/${orderId}/cancel`, {
+    reason,
+  });
+  return response.data;
+};
+
 // All Delivery Partners
 
 export const getAllDeliveryPartners = async () => {
