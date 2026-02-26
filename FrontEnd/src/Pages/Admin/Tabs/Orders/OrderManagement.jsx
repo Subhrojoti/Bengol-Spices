@@ -45,9 +45,12 @@ const OrderManagement = () => {
       if (!grouped[order.consumerId]) {
         grouped[order.consumerId] = {
           agentId: order.agentId,
+          deliveryAddress: order.deliveryAddress,
+          storeName: order.storeName,
           orders: [],
         };
       }
+
       grouped[order.consumerId].orders.push(order);
     });
 
@@ -138,7 +141,7 @@ const OrderManagement = () => {
         {/* LEFT PANEL */}
         <div className="w-1/3 bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
           <div className="p-6 border-b border-blue-100">
-            <h2 className="text-xl font-semibold text-blue-800">Consumers</h2>
+            <h2 className="text-xl font-semibold text-blue-800">Stores</h2>
           </div>
 
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
@@ -152,16 +155,24 @@ const OrderManagement = () => {
                 className={`p-4 rounded-xl cursor-pointer border transition
                   ${
                     selectedConsumer === consumerId
-                      ? "bg-blue-600 text-white border-blue-600"
+                      ? "bg-blue-100 border-blue-500 border-2"
                       : "bg-blue-50 hover:bg-blue-100 border-blue-200"
                   }
                 `}>
-                <p className="font-semibold">Consumer ID: {consumerId}</p>
-                <p className="text-sm opacity-80">
-                  Agent ID: {consumers[consumerId].agentId}
+                <p className="font-semibold">Store ID: {consumerId}</p>
+
+                <p className="text-sm font-medium  opacity-80">
+                  Store Name:{" "}
+                  {consumers[consumerId].deliveryAddress.storeName}{" "}
                 </p>
-                <p className="text-sm opacity-70 mt-1">
-                  Orders: {consumers[consumerId].orders.length}
+                <p className="text-sm font-medium opacity-80">
+                  Location: {consumers[consumerId].deliveryAddress.state}{" "}
+                </p>
+                <p className="text-sm opacity-80">
+                  Registered By: {consumers[consumerId].agentId}
+                </p>
+                <p className="text-sm opacity-80 font-semibold">
+                  Total Orders: {consumers[consumerId].orders.length}
                 </p>
               </div>
             ))}
@@ -176,7 +187,7 @@ const OrderManagement = () => {
 
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
             {!selectedConsumer && (
-              <p className="text-gray-400">Select a consumer to view orders.</p>
+              <p className="text-gray-400">Select a store to view orders.</p>
             )}
 
             {selectedOrders?.map((order) => {
@@ -218,7 +229,7 @@ const OrderManagement = () => {
                     <div className="p-5 bg-white space-y-4 border-t border-blue-100">
                       {/* Full Details */}
                       <div className="text-sm text-gray-600 space-y-1">
-                        <p>Consumer ID: {order.consumerId}</p>
+                        <p>Store ID: {order.consumerId}</p>
                         <p>Agent ID: {order.agentId}</p>
                         <p>Paid: ₹{order.paidAmount}</p>
                         <p>Payment Mode: {order.paymentMode}</p>
