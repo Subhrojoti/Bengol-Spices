@@ -11,6 +11,7 @@ import {
   generateDeliveryOtp,
   verifyDeliveryOtp,
   completePayment,
+  cancelOrder,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
 import {
@@ -31,6 +32,7 @@ router.get("/my-orders", protect, isAgent, getMyOrders);
 router.get("/all", protect, isAdminOrEmployee, getAllOrders);
 //Confirm Order (Admin / Employee)
 router.put("/:orderId/confirm", protect, isAdminOrEmployee, confirmOrder);
+router.put("/:orderId/cancel", protect, isAdminOrEmployee, cancelOrder);
 //Assign Delivery Partner (Admin / Employee)
 router.put(
   "/:orderId/assign",

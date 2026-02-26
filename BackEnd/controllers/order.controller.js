@@ -1,5 +1,7 @@
 import Counter from "../models/Counter.js";
 import DeliveryPartner from "../models/DeliveryPartner.js";
+import Employee from "../models/Employee.js";
+import Admin from "../models/Admin.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
@@ -319,7 +321,96 @@ export const confirmOrder = async (req, res) => {
     });
   }
 };
+// Cancel Order (ADMIN / EMPLOYEE)
+export const cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { reason } = req.body;
 
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Cancellation reason is required",
+      });
+    }
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status === "DELIVERED") {
+      return res.status(400).json({
+        success: false,
+        message: "Delivered order cannot be cancelled",
+      });
+    }
+
+    if (order.status === "CANCELLED") {
+      return res.status(400).json({
+        success: false,
+        message: "Order is already cancelled",
+      });
+    }
+
+    // 🔥 Determine who cancelled
+    let cancelledById;
+    let cancelledByName;
+    let cancelledByRole = req.user.role;
+
+    if (req.user.role === "EMPLOYEE") {
+      const employee = await Employee.findOne({
+        employeeId: req.user.employeeId,
+      });
+
+      cancelledById = req.user.employeeId;
+      cancelledByName = employee?.name || "Unknown Employee";
+    } else if (req.user.role === "ADMIN") {
+      const admin = await Admin.findById(req.user.id);
+
+      cancelledById = req.user.id;
+      cancelledByName = admin?.name || "Admin";
+    }
+
+    // 🔥 Update status
+    order.status = "CANCELLED";
+
+    order.cancellation = {
+      reason: reason.trim(),
+      cancelledAt: new Date(),
+      cancelledBy: {
+        id: cancelledById,
+        name: cancelledByName,
+        role: cancelledByRole,
+      },
+    };
+
+    order.statusHistory.push({
+      status: "CANCELLED",
+      changedBy: {
+        id: cancelledById,
+        role: cancelledByRole,
+      },
+    });
+
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Order cancelled successfully",
+    });
+  } catch (error) {
+    console.error("CANCEL ORDER ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel order",
+    });
+  }
+};
 //Assign delivery partner (ADMIN / EMPLOYEE)
 export const assignDeliveryPartner = async (req, res) => {
   try {

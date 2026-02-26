@@ -153,6 +153,22 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
+    cancellation: {
+      reason: {
+        type: String,
+      },
+      cancelledAt: {
+        type: Date,
+      },
+      cancelledBy: {
+        id: String,
+        name: String, // ✅ NEW FIELD
+        role: {
+          type: String,
+          enum: ["ADMIN", "EMPLOYEE"],
+        },
+      },
+    },
     paymentStatus: {
       type: String,
       enum: ["PENDING", "COMPLETED"],
