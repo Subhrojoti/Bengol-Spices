@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getAllAgentOrders, confirmOrder } from "../../../../api/services";
+import {
+  getAllAgentOrders,
+  confirmOrder,
+  cancelOrder,
+} from "../../../../api/services";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { toast } from "react-toastify";
@@ -11,7 +15,11 @@ const OrderManagement = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
   const [expandedHistory, setExpandedHistory] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [selectedCancelOrderId, setSelectedCancelOrderId] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -84,6 +92,43 @@ const OrderManagement = () => {
       toast.error("Failed to confirm order");
     } finally {
       setConfirmingId(null);
+    }
+  };
+
+  // Open modal
+  const openCancelModal = (orderId) => {
+    setSelectedCancelOrderId(orderId);
+    setCancelReason("");
+    setShowCancelModal(true);
+  };
+
+  // Confirm cancel with reason
+  const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) {
+      toast.error("Cancellation reason is required");
+      return;
+    }
+
+    try {
+      setCancellingId(selectedCancelOrderId);
+
+      await cancelOrder(selectedCancelOrderId, cancelReason);
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.orderId === selectedCancelOrderId
+            ? { ...order, status: "CANCELLED" }
+            : order,
+        ),
+      );
+
+      toast.success("Order cancelled successfully");
+      setShowCancelModal(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to cancel order");
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -304,20 +349,37 @@ const OrderManagement = () => {
                         </div>
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
                         {order.status === "PLACED" && (
-                          <button
-                            onClick={() => handleConfirmOrder(order.orderId)}
-                            disabled={confirmingId === order.orderId}
-                            className={`px-4 py-2 rounded-lg text-white transition ${
-                              confirmingId === order.orderId
-                                ? "bg-blue-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
-                            }`}>
-                            {confirmingId === order.orderId
-                              ? "Confirming..."
-                              : "Confirm Order"}
-                          </button>
+                          <>
+                            {/* Cancel Button - LEFT */}
+                            <button
+                              onClick={() => openCancelModal(order.orderId)}
+                              disabled={cancellingId === order.orderId}
+                              className={`px-4 py-2 rounded-lg text-white transition ${
+                                cancellingId === order.orderId
+                                  ? "bg-red-400 cursor-not-allowed"
+                                  : "bg-red-600 hover:bg-red-700"
+                              }`}>
+                              {cancellingId === order.orderId
+                                ? "Cancelling..."
+                                : "Cancel Order"}
+                            </button>
+
+                            {/* Confirm Button - RIGHT */}
+                            <button
+                              onClick={() => handleConfirmOrder(order.orderId)}
+                              disabled={confirmingId === order.orderId}
+                              className={`px-4 py-2 rounded-lg text-white transition ${
+                                confirmingId === order.orderId
+                                  ? "bg-blue-400 cursor-not-allowed"
+                                  : "bg-blue-600 hover:bg-blue-700"
+                              }`}>
+                              {confirmingId === order.orderId
+                                ? "Confirming..."
+                                : "Confirm Order"}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -328,6 +390,45 @@ const OrderManagement = () => {
           </div>
         </div>
       </div>
+      {/* CANCEL ORDER MODAL */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white w-[420px] rounded-xl p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4">
+              Enter Cancellation Reason
+            </h3>
+
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              rows={4}
+              className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              placeholder="Enter reason for cancellation..."
+            />
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                Close
+              </button>
+
+              <button
+                onClick={handleCancelOrder}
+                disabled={cancellingId === selectedCancelOrderId}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  cancellingId === selectedCancelOrderId
+                    ? "bg-blue-400"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}>
+                {cancellingId === selectedCancelOrderId
+                  ? "Processing..."
+                  : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
