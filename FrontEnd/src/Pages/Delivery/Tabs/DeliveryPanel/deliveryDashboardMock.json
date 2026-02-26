@@ -1,0 +1,133 @@
+{
+  "success": true,
+  "summary": {
+    "year": 2026,
+
+    "deliveryStats": {
+      "totalDelivered": 248,
+      "totalReturns": 32,
+      "totalPendingOrders": 41
+    },
+
+    "revenue": {
+      "currency": "INR",
+      "totalRevenue": 1854000,
+      "totalMonthlyRevenue": 245000,
+
+      "monthlyBreakdown": [
+        {
+          "month": "Jan",
+          "delivered": 18,
+          "returns": 2,
+          "pending": 5,
+          "revenue": 120000
+        },
+        {
+          "month": "Feb",
+          "delivered": 22,
+          "returns": 3,
+          "pending": 4,
+          "revenue": 165000
+        },
+        {
+          "month": "Mar",
+          "delivered": 20,
+          "returns": 1,
+          "pending": 6,
+          "revenue": 140000
+        },
+        {
+          "month": "Apr",
+          "delivered": 24,
+          "returns": 4,
+          "pending": 3,
+          "revenue": 175000
+        },
+        {
+          "month": "May",
+          "delivered": 19,
+          "returns": 2,
+          "pending": 5,
+          "revenue": 150000
+        },
+        {
+          "month": "Jun",
+          "delivered": 21,
+          "returns": 3,
+          "pending": 4,
+          "revenue": 160000
+        },
+        {
+          "month": "Jul",
+          "delivered": 23,
+          "returns": 2,
+          "pending": 3,
+          "revenue": 170000
+        },
+        {
+          "month": "Aug",
+          "delivered": 26,
+          "returns": 4,
+          "pending": 2,
+          "revenue": 210000
+        },
+        {
+          "month": "Sep",
+          "delivered": 17,
+          "returns": 3,
+          "pending": 6,
+          "revenue": 135000
+        },
+        {
+          "month": "Oct",
+          "delivered": 25,
+          "returns": 2,
+          "pending": 3,
+          "revenue": 195000
+        },
+        {
+          "month": "Nov",
+          "delivered": 16,
+          "returns": 4,
+          "pending": 5,
+          "revenue": 110000
+        },
+        {
+          "month": "Dec",
+          "delivered": 17,
+          "returns": 2,
+          "pending": 5,
+          "revenue": 124000
+        }
+      ]
+    },
+
+    "yearlyComparison": [
+      {
+        "year": 2024,
+        "delivered": 198,
+        "returns": 28,
+        "pending": 35,
+        "revenue": 1420000
+      },
+      {
+        "year": 2025,
+        "delivered": 226,
+        "returns": 30,
+        "pending": 38,
+        "revenue": 1685000
+      },
+      {
+        "year": 2026,
+        "delivered": 248,
+        "returns": 32,
+        "pending": 41,
+        "revenue": 1854000
+      }
+    ]
+  },
+
+  "meta": {
+    "lastUpdated": "2026-02-27T18:45:12.000Z"
+  }
+}

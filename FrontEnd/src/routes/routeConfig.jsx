@@ -12,7 +12,7 @@ import AdminBase from "../pages/Admin/AdminBase";
 import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 import DeliveryLogin from "../pages/Auth/Login/DeliveryLogin";
 import DeliveryHub from "../pages/Delivery/DeliveryHub";
-import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel";
+import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
 import AllOrders from "../pages/Delivery/Tabs/AllOrders";
 import OrderReturn from "../pages/Delivery/Tabs/OrderReturn";
 

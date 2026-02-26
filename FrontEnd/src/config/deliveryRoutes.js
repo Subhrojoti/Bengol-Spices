@@ -1,4 +1,4 @@
-import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel";
+import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
 import AllOrders from "../pages/Delivery/Tabs/AllOrders";
 import OrderReturn from "../pages/Delivery/Tabs/OrderReturn";
 
