@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import DeliveryPartner from "../models/DeliveryPartner.js";
 import cloudinary from "../config/cloudinary.js";
 import Order from "../models/Order.js";
+import Return from "../models/Return.js";
 
 /* REGISTER */
 export const registerDeliveryPartner = async (req, res) => {
@@ -112,7 +113,7 @@ export const loginDeliveryPartner = async (req, res) => {
   await partner.save();
 
   const token = jwt.sign(
-    { id: partner._id, role: partner.role },
+    { id: partner._id, role: partner.role, name: partner.name },
     process.env.JWT_SECRET,
     { expiresIn: "30d" },
   );
@@ -174,6 +175,150 @@ export const getMyAssignedOrders = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch assigned orders",
+    });
+  }
+};
+
+/* Get Delivery partner Dashboard Stats */
+export const getDeliveryPartnerDashboard = async (req, res) => {
+  try {
+    const partnerId = req.user.id;
+    const currentYear = new Date().getFullYear();
+
+    /* ============================
+       SUMMARY COUNTS
+    ============================ */
+
+    const totalDelivered = await Order.countDocuments({
+      "delivery.partnerId": partnerId,
+      status: "DELIVERED",
+    });
+
+    const totalReturnsHandled = await Return.countDocuments({
+      "pickup.partnerId": partnerId,
+      status: "COMPLETED",
+    });
+
+    const totalPendingPickups = await Return.countDocuments({
+      "pickup.partnerId": partnerId,
+      status: {
+        $in: ["PICKUP_ASSIGNED", "PICKED_UP", "RECEIVED_AT_WAREHOUSE"],
+      },
+    });
+
+    /* ============================
+       MONTHLY DELIVERY DISTRIBUTION
+       (Current Year)
+    ============================ */
+
+    const monthlyDelivered = await Order.aggregate([
+      {
+        $match: {
+          "delivery.partnerId": partnerId,
+          status: "DELIVERED",
+          updatedAt: {
+            $gte: new Date(`${currentYear}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$updatedAt" },
+          delivered: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const monthlyReturns = await Return.aggregate([
+      {
+        $match: {
+          "pickup.partnerId": partnerId,
+          status: "COMPLETED",
+          updatedAt: {
+            $gte: new Date(`${currentYear}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$updatedAt" },
+          returns: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Format months 1–12
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const monthlyDistribution = months.map((month, index) => {
+      const deliveredData = monthlyDelivered.find((d) => d._id === index + 1);
+
+      const returnData = monthlyReturns.find((r) => r._id === index + 1);
+
+      return {
+        month,
+        delivered: deliveredData ? deliveredData.delivered : 0,
+        returns: returnData ? returnData.returns : 0,
+      };
+    });
+
+    /* ============================
+       YEARLY COMPARISON (LAST 3 YEARS)
+    ============================ */
+
+    const yearlyComparison = [];
+
+    for (let i = 0; i < 3; i++) {
+      const year = currentYear - i;
+
+      const start = new Date(`${year}-01-01`);
+      const end = new Date(`${year}-12-31`);
+
+      const deliveredCount = await Order.countDocuments({
+        "delivery.partnerId": partnerId,
+        status: "DELIVERED",
+        updatedAt: { $gte: start, $lte: end },
+      });
+
+      yearlyComparison.push({
+        year,
+        delivered: deliveredCount,
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        summary: {
+          totalDelivered,
+          totalReturnsHandled,
+          totalPendingPickups,
+        },
+        monthlyDeliveryDistribution: monthlyDistribution,
+        yearlyComparison,
+        meta: {
+          generatedAt: new Date(),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("DELIVERY DASHBOARD ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load dashboard",
     });
   }
 };

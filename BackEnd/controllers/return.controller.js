@@ -1,12 +1,15 @@
 import Return from "../models/Return.js";
 import Order from "../models/Order.js";
 import Counter from "../models/Counter.js";
+import Agent from "../models/Agent.js";
+import DeliveryPartner from "../models/DeliveryPartner.js";
 
 export const initiateReturn = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { reason } = req.body;
 
+    // ✅ Validate reason
     if (!reason || reason.trim() === "") {
       return res.status(400).json({
         success: false,
@@ -14,6 +17,7 @@ export const initiateReturn = async (req, res) => {
       });
     }
 
+    // ✅ Find order
     const order = await Order.findOne({ orderId });
 
     if (!order) {
@@ -48,38 +52,55 @@ export const initiateReturn = async (req, res) => {
       });
     }
 
+    // 🔍 Fetch latest agent data from DB
+    const agent = await Agent.findById(req.user.id).select("name agentId role");
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
     // 🔥 Generate Return ID using counter
     const year = new Date().getFullYear();
 
     const counter = await Counter.findOneAndUpdate(
-      { _id: `return-${year}` }, // ✅ use _id instead of name
+      { _id: `return-${year}` },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      },
     );
 
     const serial = String(counter.seq).padStart(4, "0");
     const returnId = `RET${year}-${serial}`;
 
-    console.log(req.user);
+    // ✅ Create Return
     const newReturn = await Return.create({
       returnId,
       orderId,
       consumerId: order.consumerId,
       agentId: order.agentId,
       reason: reason.trim(),
+
       initiatedBy: {
-        id: req.user.agentId,
-        name: req.user.name || "Agent",
-        role: "AGENT",
+        id: agent.agentId,
+        name: agent.name,
+        role: agent.role,
       },
+
       status: "INITIATED",
+
       statusHistory: [
         {
           status: "INITIATED",
           changedBy: {
-            id: req.user.agentId,
-            name: req.user.name || "Agent",
-            role: "AGENT",
+            id: agent.agentId,
+            name: agent.name,
+            role: agent.role,
           },
           note: "Return initiated by agent",
         },
@@ -96,6 +117,184 @@ export const initiateReturn = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to initiate return",
+    });
+  }
+};
+
+// Assign Return to Delivery Partner
+
+export const assignReturnPickup = async (req, res) => {
+  try {
+    const { returnId } = req.params;
+    const { partnerId } = req.body;
+
+    if (!partnerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Delivery partner ID is required",
+      });
+    }
+
+    const returnRequest = await Return.findOne({ returnId });
+
+    if (!returnRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Return not found",
+      });
+    }
+
+    // Only INITIATED returns can be assigned
+    if (returnRequest.status !== "INITIATED") {
+      return res.status(400).json({
+        success: false,
+        message: "Return cannot be assigned at this stage",
+      });
+    }
+
+    const partner = await DeliveryPartner.findById(partnerId);
+
+    if (!partner || partner.status !== "ACTIVE") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or inactive delivery partner",
+      });
+    }
+
+    // 🔥 Assign Pickup
+    returnRequest.pickup = {
+      partnerId: partner._id,
+      assignedAt: new Date(),
+    };
+
+    returnRequest.status = "PICKUP_ASSIGNED";
+
+    returnRequest.statusHistory.push({
+      status: "PICKUP_ASSIGNED",
+      changedBy: {
+        id: req.user.employeeId || req.user.id,
+        name: req.user.name || "Admin/Employee",
+        role: req.user.role,
+      },
+      note: `Pickup assigned to ${partner.name}`,
+    });
+
+    await returnRequest.save();
+
+    return res.json({
+      success: true,
+      message: "Return pickup assigned successfully",
+    });
+  } catch (error) {
+    console.error("ASSIGN RETURN PICKUP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to assign return pickup",
+    });
+  }
+};
+
+// Get Assigned Pickups for Delivery Partner
+export const getAssignedReturns = async (req, res) => {
+  try {
+    const partnerId = req.user.id;
+
+    const returns = await Return.find({
+      "pickup.partnerId": partnerId,
+      status: {
+        $in: ["PICKUP_ASSIGNED", "PICKED_UP", "RECEIVED_AT_WAREHOUSE"],
+      },
+    }).sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      count: returns.length,
+      data: returns,
+    });
+  } catch (error) {
+    console.error("GET ASSIGNED RETURNS ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assigned returns",
+    });
+  }
+};
+
+//Update Return Status by Delivery Partner
+export const updateReturnStatus = async (req, res) => {
+  try {
+    const { returnId } = req.params;
+    const { status } = req.body;
+
+    const returnRequest = await Return.findOne({ returnId });
+
+    if (!returnRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Return not found",
+      });
+    }
+
+    // Must be assigned to this partner
+    if (
+      !returnRequest.pickup.partnerId ||
+      returnRequest.pickup.partnerId.toString() !== req.user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this return",
+      });
+    }
+
+    if (["COMPLETED", "CANCELLED"].includes(returnRequest.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Return already finalized",
+      });
+    }
+
+    // Strict transition rules
+    const allowedTransitions = {
+      PICKUP_ASSIGNED: "PICKED_UP",
+      PICKED_UP: "RECEIVED_AT_WAREHOUSE",
+      RECEIVED_AT_WAREHOUSE: "COMPLETED",
+    };
+
+    if (allowedTransitions[returnRequest.status] !== status) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid return status transition",
+      });
+    }
+
+    // 🔥 Update timestamps
+    if (status === "PICKED_UP") {
+      returnRequest.pickup.pickedUpAt = new Date();
+    }
+
+    returnRequest.status = status;
+
+    returnRequest.statusHistory.push({
+      status,
+      changedBy: {
+        id: req.user.id,
+        name: req.user.name || "Delivery Partner",
+        role: req.user.role,
+      },
+      note: `Status updated to ${status}`,
+    });
+
+    await returnRequest.save();
+
+    return res.json({
+      success: true,
+      message: "Return status updated successfully",
+    });
+  } catch (error) {
+    console.error("UPDATE RETURN STATUS ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update return status",
     });
   }
 };
