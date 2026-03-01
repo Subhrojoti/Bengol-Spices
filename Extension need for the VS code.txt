@@ -25,3 +25,10 @@ BackEnd
 Future Enhancement 
 
 Currently we can place order even product doesnot exist - need to fix 
+
+Need to Fix
+- My cart Icon update Issue
+- Quatity Update in Mycart Screen
+- Login Page Image update for All Login 
+- Proper Routing
+- All registration page instant photo click and upload changes

@@ -39,6 +39,10 @@ const employeeSchema = new mongoose.Schema(
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
     },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

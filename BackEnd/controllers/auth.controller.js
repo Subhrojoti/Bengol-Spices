@@ -77,7 +77,6 @@ export const agentLogin = async (req, res) => {
       {
         id: agent._id, // MongoDB _id (internal use)
         agentId: agent.agentId, // BS2026-001 (business use)
-        name: agent.name, // For personalization in frontend
         role: agent.role, // AGENT / ADMIN
       },
       process.env.JWT_SECRET,
@@ -200,7 +199,9 @@ export const employeeLogin = async (req, res) => {
       });
     }
 
-    const employee = await Employee.findOne({ employeeId });
+    const employee = await Employee.findOne({
+      employeeId: employeeId.trim().toUpperCase(),
+    });
 
     if (!employee || employee.status !== "ACTIVE") {
       return res.status(401).json({
@@ -210,6 +211,7 @@ export const employeeLogin = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, employee.password);
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -222,20 +224,55 @@ export const employeeLogin = async (req, res) => {
         id: employee._id,
         role: employee.role,
         employeeId: employee.employeeId,
+        name: employee.name,
         canManageProducts: employee.canManageProducts,
       },
       process.env.JWT_SECRET,
       { expiresIn: "30d" },
     );
 
+    // 🔥 Mark online
+    employee.isOnline = true;
+    await employee.save();
+
     return res.json({
       success: true,
+      message: "Login successful",
       token,
     });
   } catch (error) {
+    console.error("EMPLOYEE LOGIN ERROR:", error);
     return res.status(500).json({
       success: false,
       message: "Login failed",
+    });
+  }
+};
+
+// EMPLOYEE LOGOUT
+export const employeeLogout = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.user.id);
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    employee.isOnline = false;
+    await employee.save();
+
+    return res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("EMPLOYEE LOGOUT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed",
     });
   }
 };
