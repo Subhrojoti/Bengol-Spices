@@ -1,6 +1,5 @@
 import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
-import AllOrders from "../pages/Delivery/Tabs/AllOrders";
-import OrderReturn from "../pages/Delivery/Tabs/OrderReturn";
+import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders";
 
 export const deliveryRoutes = [
   {
@@ -14,11 +13,5 @@ export const deliveryRoutes = [
     path: "all-orders",
     fullPath: "/delivery/all-orders",
     component: AllOrders,
-  },
-  {
-    label: "Returns",
-    path: "order-returns",
-    fullPath: "/delivery/order-returns",
-    component: OrderReturn,
   },
 ];

@@ -13,8 +13,7 @@ import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 import DeliveryLogin from "../pages/Auth/Login/DeliveryLogin";
 import DeliveryHub from "../pages/Delivery/DeliveryHub";
 import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
-import AllOrders from "../pages/Delivery/Tabs/AllOrders";
-import OrderReturn from "../pages/Delivery/Tabs/OrderReturn";
+import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -130,10 +129,6 @@ export const routes = [
           {
             path: "all-orders",
             element: <AllOrders />,
-          },
-          {
-            path: "order-returns",
-            element: <OrderReturn />,
           },
 
           /* Default route → Overview */
