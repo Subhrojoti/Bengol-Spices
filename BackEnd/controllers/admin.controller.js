@@ -122,34 +122,34 @@ export const rejectAgent = async (req, res) => {
 };
 
 // To Give Permission to a specific Employee
-export const updateProductPermission = async (req, res) => {
-  try {
-    const { employeeId } = req.params;
-    const { canManageProducts } = req.body;
+// export const updateProductPermission = async (req, res) => {
+//   try {
+//     const { employeeId } = req.params;
+//     const { canManageProducts } = req.body;
 
-    const employee = await Employee.findOne({ employeeId });
-    if (!employee) {
-      return res.status(404).json({
-        success: false,
-        message: "Employee not found",
-      });
-    }
+//     const employee = await Employee.findOne({ employeeId });
+//     if (!employee) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Employee not found",
+//       });
+//     }
 
-    employee.canManageProducts = canManageProducts;
-    await employee.save();
+//     employee.canManageProducts = canManageProducts;
+//     await employee.save();
 
-    return res.json({
-      success: true,
-      message: "Product permission updated successfully",
-      canManageProducts: employee.canManageProducts,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error,
-    });
-  }
-};
+//     return res.json({
+//       success: true,
+//       message: "Product permission updated successfully",
+//       canManageProducts: employee.canManageProducts,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error,
+//     });
+//   }
+// };
 
 //Dashboard Summary API
 export const getDashboardSummary = async (req, res) => {

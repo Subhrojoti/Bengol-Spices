@@ -9,14 +9,20 @@ import {
 } from "../controllers/deliveryPartner.controller.js";
 import { upload } from "../middleware/upload.js";
 import { protect } from "../middleware/auth.js";
-import { isAdminOrEmployee, isDeliveryPartner } from "../middleware/role.js";
+import { isDeliveryPartner } from "../middleware/role.js";
+import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
 
 router.post("/register", upload.single("document"), registerDeliveryPartner);
 router.post("/login", loginDeliveryPartner);
 router.post("/logout", protect, isDeliveryPartner, logoutDeliveryPartner);
-router.get("/all", protect, isAdminOrEmployee, getAllDeliveryPartners);
+router.get(
+  "/all",
+  protect,
+  checkPermission("canGetAllDeliveryPartners"),
+  getAllDeliveryPartners,
+);
 router.get("/orders", protect, isDeliveryPartner, getMyAssignedOrders);
 router.get(
   "/dashboard",
