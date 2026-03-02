@@ -9,33 +9,39 @@ import {
   updateProduct,
 } from "../controllers/product.controller.js";
 import { protect } from "../middleware/auth.js";
-import { isAdminOrAllowedEmployee } from "../middleware/role.js";
+// import { isAdminOrAllowedEmployee } from "../middleware/role.js";
 import { upload } from "../middleware/upload.js";
+import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
 
 router.post(
   "/create",
   protect,
-  isAdminOrAllowedEmployee,
+  checkPermission("canManageProducts"),
   upload.fields([
     { name: "frontImage", maxCount: 1 },
     { name: "backImage", maxCount: 1 },
   ]),
   createProduct,
 );
-router.get("/all", protect, isAdminOrAllowedEmployee, getAllProductsInternal);
+router.get(
+  "/all",
+  protect,
+  checkPermission("canManageProducts"),
+  getAllProductsInternal,
+);
 
 router.get(
   "/single/:productId",
   protect,
-  isAdminOrAllowedEmployee,
+  checkPermission("canManageProducts"),
   getProductById,
 );
 router.put(
   "/update/:productId",
   protect,
-  isAdminOrAllowedEmployee,
+  checkPermission("canManageProducts"),
   upload.fields([
     { name: "frontImage", maxCount: 1 },
     { name: "backImage", maxCount: 1 },
@@ -46,7 +52,7 @@ router.put(
 router.delete(
   "/delete/:productId",
   protect,
-  isAdminOrAllowedEmployee,
+  checkPermission("canManageProducts"),
   deleteProduct,
 );
 

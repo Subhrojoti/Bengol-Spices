@@ -225,7 +225,7 @@ export const employeeLogin = async (req, res) => {
         role: employee.role,
         employeeId: employee.employeeId,
         name: employee.name,
-        canManageProducts: employee.canManageProducts,
+        permissions: employee.permissions, // 🔥 important
       },
       process.env.JWT_SECRET,
       { expiresIn: "30d" },

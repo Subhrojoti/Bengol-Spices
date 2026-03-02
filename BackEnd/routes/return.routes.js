@@ -6,11 +6,8 @@ import {
   updateReturnStatus,
 } from "../controllers/return.controller.js";
 import { protect } from "../middleware/auth.js";
-import {
-  isAdminOrEmployee,
-  isAgent,
-  isDeliveryPartner,
-} from "../middleware/role.js";
+import { isAgent, isDeliveryPartner } from "../middleware/role.js";
+import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
 
@@ -18,7 +15,7 @@ router.post("/:orderId/initiate", protect, isAgent, initiateReturn);
 router.put(
   "/:returnId/assign-pickup",
   protect,
-  isAdminOrEmployee,
+  checkPermission("canAssignReturn"),
   assignReturnPickup,
 );
 

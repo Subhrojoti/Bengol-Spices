@@ -29,9 +29,14 @@ const employeeSchema = new mongoose.Schema(
       default: "EMPLOYEE",
     },
 
-    canManageProducts: {
-      type: Boolean,
-      default: false,
+    permissions: {
+      canManageProducts: { type: Boolean, default: false },
+      canAssignDelivery: { type: Boolean, default: false },
+      canConfirmOrders: { type: Boolean, default: false },
+      canGetAllOrders: { type: Boolean, default: false },
+      canGetAllDeliveryPartners: { type: Boolean, default: false },
+      canAssignReturn: { type: Boolean, default: false },
+      canViewDashboardSummary: { type: Boolean, default: false },
     },
 
     status: {

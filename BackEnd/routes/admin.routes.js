@@ -4,10 +4,12 @@ import {
   getAllAgents,
   getDashboardSummary,
   rejectAgent,
-  updateProductPermission,
+  // updateProductPermission,
 } from "../controllers/admin.controller.js";
 import { protect } from "../middleware/auth.js";
 import { isAdmin } from "../middleware/role.js";
+import { updateEmployeePermissions } from "../controllers/employee.controller.js";
+import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
 
@@ -33,14 +35,28 @@ router.post(
   rejectAgent,
 );
 // Admin Give Role to Employee
-router.patch(
-  "/employees/:employeeId/product-permission",
+// router.patch(
+//   "/employees/:employeeId/product-permission",
+//   protect,
+//   isAdmin,
+//   updateProductPermission,
+// );
+
+// Admin employee permissions
+router.put(
+  "/:employeeId/permissions",
   protect,
   isAdmin,
-  updateProductPermission,
+  updateEmployeePermissions,
 );
+
 //Admin Dashboard Data
-router.get("/dashboard-summary", protect, isAdmin, getDashboardSummary);
+router.get(
+  "/dashboard-summary",
+  protect,
+  checkPermission("canViewDashboardSummary"),
+  getDashboardSummary,
+);
 router.post("/agents/:agentId/approve", approveAgent);
 
 export default router;
