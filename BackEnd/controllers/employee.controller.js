@@ -83,3 +83,39 @@ export const getAllEmployees = async (req, res) => {
     });
   }
 };
+
+// ADMIN - UPDATE EMPLOYEE PERMISSIONS
+export const updateEmployeePermissions = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { permissions } = req.body;
+
+    const employee = await Employee.findOne({ employeeId });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    employee.permissions = {
+      ...employee.permissions,
+      ...permissions,
+    };
+
+    await employee.save();
+
+    return res.json({
+      success: true,
+      message: "Permissions updated successfully",
+      permissions: employee.permissions,
+    });
+  } catch (error) {
+    console.error("UPDATE PERMISSION ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update permissions",
+    });
+  }
+};

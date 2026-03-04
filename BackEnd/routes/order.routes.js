@@ -19,6 +19,7 @@ import {
   isAgent,
   isDeliveryPartner,
 } from "../middleware/role.js";
+import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
 
@@ -29,15 +30,20 @@ router.get("/store/:consumerId", protect, getOrdersByStoreConsumerId);
 // GET MY ORDERS
 router.get("/my-orders", protect, isAgent, getMyOrders);
 // ADMIN / EMPLOYEE
-router.get("/all", protect, isAdminOrEmployee, getAllOrders);
+router.get("/all", protect, checkPermission("canGetAllOrders"), getAllOrders);
 //Confirm Order (Admin / Employee)
-router.put("/:orderId/confirm", protect, isAdminOrEmployee, confirmOrder);
+router.put(
+  "/confirm",
+  protect,
+  checkPermission("canConfirmOrders"),
+  confirmOrder,
+);
 router.put("/:orderId/cancel", protect, isAdminOrEmployee, cancelOrder);
 //Assign Delivery Partner (Admin / Employee)
 router.put(
   "/:orderId/assign",
   protect,
-  isAdminOrEmployee,
+  checkPermission("canAssignDelivery"),
   assignDeliveryPartner,
 );
 //Deliver Status Update (Delivery Partner)

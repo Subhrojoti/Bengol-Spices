@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const counterSchema = new mongoose.Schema({
-  _id: {
+  name: {
     type: String,
     required: true,
+    unique: true,
   },
   seq: {
     type: Number,
