@@ -320,3 +320,93 @@ export const getMyReturns = async (req, res) => {
     });
   }
 };
+
+// Cancel Return (Agent)
+export const cancelReturn = async (req, res) => {
+  try {
+    const { returnId } = req.params;
+    const { reason } = req.body;
+
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Cancellation reason is required",
+      });
+    }
+
+    const returnRequest = await Return.findOne({ returnId });
+
+    if (!returnRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Return not found",
+      });
+    }
+
+    // Ensure the agent owns this return
+    if (returnRequest.agentId !== req.user.agentId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to cancel this return",
+      });
+    }
+
+    // Cannot cancel after pickup started
+    if (
+      ["PICKED_UP", "RECEIVED_AT_WAREHOUSE", "COMPLETED"].includes(
+        returnRequest.status,
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Return cannot be cancelled after pickup",
+      });
+    }
+
+    if (returnRequest.status === "CANCELLED") {
+      return res.status(400).json({
+        success: false,
+        message: "Return already cancelled",
+      });
+    }
+
+    // Update status
+    returnRequest.status = "CANCELLED";
+
+    // Save cancellation details
+    returnRequest.cancellation = {
+      reason: reason.trim(),
+      cancelledAt: new Date(),
+      cancelledBy: {
+        id: req.user.agentId,
+        name: req.user.name || "Agent",
+        role: req.user.role,
+      },
+    };
+
+    // Push status history
+    returnRequest.statusHistory.push({
+      status: "CANCELLED",
+      changedBy: {
+        id: req.user.agentId,
+        name: req.user.name || "Agent",
+        role: req.user.role,
+      },
+      note: reason,
+    });
+
+    await returnRequest.save();
+
+    return res.json({
+      success: true,
+      message: "Return cancelled successfully",
+    });
+  } catch (error) {
+    console.error("CANCEL RETURN ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel return",
+    });
+  }
+};

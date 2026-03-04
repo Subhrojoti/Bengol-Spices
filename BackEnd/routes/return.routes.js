@@ -1,6 +1,7 @@
 import express from "express";
 import {
   assignReturnPickup,
+  cancelReturn,
   getAssignedReturns,
   getMyReturns,
   initiateReturn,
@@ -37,4 +38,7 @@ router.put(
   isDeliveryPartner,
   updateReturnStatus,
 );
+
+// Cancel Return (Agent)
+router.put("/:returnId/cancel", protect, isAgent, cancelReturn);
 export default router;
