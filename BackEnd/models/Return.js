@@ -56,6 +56,22 @@ const returnSchema = new mongoose.Schema(
     },
 
     /* =============================
+        Cancellation Block    
+        =============================*/
+    cancellation: {
+      reason: {
+        type: String,
+      },
+      cancelledAt: {
+        type: Date,
+      },
+      cancelledBy: {
+        id: String,
+        name: String,
+        role: String,
+      },
+    },
+    /* =============================
        RETURN STATUS FLOW
        ============================= */
 
@@ -66,8 +82,8 @@ const returnSchema = new mongoose.Schema(
         "PICKUP_ASSIGNED",
         "PICKED_UP",
         "RECEIVED_AT_WAREHOUSE",
-        "REFUND_PROCESSED",
         "COMPLETED",
+        "REFUND_PROCESSED",
         "CANCELLED",
       ],
       default: "INITIATED",
