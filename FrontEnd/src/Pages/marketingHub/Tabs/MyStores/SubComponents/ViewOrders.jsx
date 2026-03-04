@@ -12,6 +12,12 @@ import {
   Chip,
   Paper,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -23,7 +29,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { getStoreOrders } from "../../../../../api/services";
+import { getStoreOrders, initiateReturn } from "../../../../../api/services";
 
 /* ================= STEP ICON ================= */
 
@@ -63,11 +69,38 @@ const orderSteps = [
   { key: "DELIVERED", label: "Delivered", icon: <CheckCircleIcon /> },
 ];
 
+// Return Steps
+const returnSteps = [
+  { key: "INITIATED", label: "Return Initiated", icon: <ScheduleIcon /> },
+  {
+    key: "PICKUP_ASSIGNED",
+    label: "Pickup Assigned",
+    icon: <LocalShippingIcon />,
+  },
+  { key: "PICKED_UP", label: "Picked Up", icon: <LocalShippingIcon /> },
+  {
+    key: "RECEIVED_AT_WAREHOUSE",
+    label: "Received at Warehouse",
+    icon: <InventoryIcon />,
+  },
+  {
+    key: "REFUND_PROCESSED",
+    label: "Refund Processed",
+    icon: <CheckCircleIcon />,
+  },
+  { key: "COMPLETED", label: "Return Completed", icon: <CheckCircleIcon /> },
+  { key: "CANCELLED", label: "Return Cancelled", icon: <CheckCircleIcon /> },
+];
+
 /* ================= COMPONENT ================= */
 
 const ViewOrders = ({ onBack, onCreate }) => {
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isReturnFlow, setIsReturnFlow] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [returnStatus, setReturnStatus] = useState(null);
 
   const {
     storeName,
@@ -100,9 +133,22 @@ const ViewOrders = ({ onBack, onCreate }) => {
   const isCancelled = normalizedStatus === "CANCELLED";
 
   const activeStep = useMemo(() => {
-    if (!hasSelectedOrder || isCancelled) return -1;
+    if (!hasSelectedOrder) return -1;
+
+    if (isReturnFlow) {
+      return returnSteps.findIndex((step) => step.key === returnStatus);
+    }
+
+    if (isCancelled) return -1;
+
     return orderSteps.findIndex((step) => step.key === normalizedStatus);
-  }, [hasSelectedOrder, normalizedStatus, isCancelled]);
+  }, [
+    hasSelectedOrder,
+    normalizedStatus,
+    isCancelled,
+    isReturnFlow,
+    returnStatus,
+  ]);
 
   /* ================= API CALL ================= */
 
@@ -124,6 +170,12 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
     fetchOrders();
   }, [consumerId]);
+
+  // Return flow and status
+  useEffect(() => {
+    setIsReturnFlow(false);
+    setReturnStatus(null);
+  }, [selectedOrder]);
 
   /* ================= UI ================= */
 
@@ -240,7 +292,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                   transform: "translateY(-50%)",
                 },
               }}>
-              {orderSteps.map((step, index) => {
+              {(isReturnFlow ? returnSteps : orderSteps).map((step, index) => {
                 const isActive = index === activeStep;
                 const isCompleted =
                   hasSelectedOrder && !isCancelled && index < activeStep;
@@ -338,6 +390,10 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
+                            {order.orderId}
+                          </Typography>
+
+                          <Typography variant="body2" color="text.secondary">
                             Qty: {order.products?.[0]?.quantity}{" "}
                             {order.products?.[0]?.uom}
                           </Typography>
@@ -347,17 +403,43 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           </Typography>
                         </Box>
 
-                        <Box textAlign="right">
-                          <Chip
-                            label={order.status}
-                            color={chipColor}
-                            size="small"
-                            sx={{ mb: 1 }}
-                          />
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          gap={1}>
+                          {/* LEFT SIDE */}
+                          {normalized === "DELIVERED" && (
+                            <Chip
+                              label="Return"
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                borderColor: "primary.main",
+                                color: "primary.main",
+                                backgroundColor: "#fff",
+                                fontWeight: 600,
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedOrder(order);
+                                setReturnModalOpen(true);
+                              }}
+                            />
+                          )}
 
-                          <Typography fontWeight={700}>
-                            ₹{order.totalAmount}
-                          </Typography>
+                          {/* RIGHT SIDE */}
+                          <Box textAlign="right">
+                            <Chip
+                              label={order.status}
+                              color={chipColor}
+                              size="small"
+                            />
+
+                            <Typography fontWeight={700} mt={0.5}>
+                              ₹{order.totalAmount}
+                            </Typography>
+                          </Box>
                         </Box>
                       </Stack>
                     </CardContent>
@@ -405,6 +487,50 @@ const ViewOrders = ({ onBack, onCreate }) => {
           </Box>
         </Box>
       )}
+      <Dialog
+        open={returnModalOpen}
+        onClose={() => setReturnModalOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 420,
+            maxWidth: "90vw",
+            borderRadius: 3,
+          },
+        }}>
+        <DialogTitle>Reason for Return</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            value={returnReason}
+            onChange={(e) => setReturnReason(e.target.value)}
+            placeholder="Enter reason..."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReturnModalOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              try {
+                const res = await initiateReturn(
+                  selectedOrder.orderId,
+                  returnReason,
+                );
+
+                setReturnStatus("INITIATED");
+                setIsReturnFlow(true);
+                setReturnModalOpen(false);
+                setReturnReason("");
+              } catch (err) {
+                console.error(err);
+              }
+            }}>
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
