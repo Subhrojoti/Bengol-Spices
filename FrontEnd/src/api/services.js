@@ -351,3 +351,12 @@ export const cancelReturn = async (returnId, reason) => {
   });
   return response.data;
 };
+
+// Employee permissions
+
+export const updateEmployeePermissions = async (employeeId, permissions) => {
+  const response = await axiosInstance.put(`/admin/${employeeId}/permissions`, {
+    permissions,
+  });
+  return response.data;
+};
