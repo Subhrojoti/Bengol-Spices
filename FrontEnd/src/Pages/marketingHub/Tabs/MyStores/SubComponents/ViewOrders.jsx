@@ -54,7 +54,7 @@ const CustomStepIcon = ({ active, completed, icon }) => {
   );
 };
 
-/* ================= ORDER STEPS (Single Source of Truth) ================= */
+/* ================= ORDER STEPS ================= */
 
 const orderSteps = [
   { key: "PLACED", label: "Order Placed", icon: <ScheduleIcon /> },
@@ -69,7 +69,8 @@ const orderSteps = [
   { key: "DELIVERED", label: "Delivered", icon: <CheckCircleIcon /> },
 ];
 
-// Return Steps
+/* ================= RETURN STEPS ================= */
+
 const returnSteps = [
   { key: "INITIATED", label: "Return Initiated", icon: <ScheduleIcon /> },
   {
@@ -96,11 +97,14 @@ const returnSteps = [
 
 const ViewOrders = ({ onBack, onCreate }) => {
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
+
   const [selectedOrder, setSelectedOrder] = useState(null);
+
   const [isReturnFlow, setIsReturnFlow] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
-  const [returnStatus, setReturnStatus] = useState(null);
+
+  const [returnData, setReturnData] = useState(null);
 
   const {
     storeName,
@@ -129,6 +133,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
     status?.trim()?.toUpperCase()?.replace(/-/g, "_");
 
   const normalizedStatus = normalizeStatus(selectedOrder?.status);
+
+  const returnStatus = normalizeStatus(returnData?.status);
 
   const isCancelled = normalizedStatus === "CANCELLED";
 
@@ -171,10 +177,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
     fetchOrders();
   }, [consumerId]);
 
-  // Return flow and status
   useEffect(() => {
     setIsReturnFlow(false);
-    setReturnStatus(null);
+    setReturnData(null);
   }, [selectedOrder]);
 
   /* ================= UI ================= */
@@ -190,6 +195,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
       {/* ================= LEFT PANEL ================= */}
 
       <Box width={320} display="flex" flexDirection="column" gap={2}>
+        {/* STORE CARD */}
+
         <Card sx={{ borderRadius: 3 }}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -242,6 +249,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
           </CardContent>
         </Card>
 
+        {/* MAP */}
+
         <Card sx={{ flex: 1, borderRadius: 3, overflow: "hidden" }}>
           {latitude && longitude ? (
             <Box
@@ -273,7 +282,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
       {hasOrders ? (
         <Box flex={1} display="flex" flexDirection="column" gap={3}>
-          {/* ===== STEP FLOW ===== */}
+          {/* ===== STEPPER ===== */}
 
           <Box position="relative" px={2} py={1}>
             <Box display="flex" alignItems="center" mb={2}>
@@ -282,20 +291,10 @@ const ViewOrders = ({ onBack, onCreate }) => {
               </IconButton>
             </Box>
 
-            <Stepper
-              activeStep={activeStep}
-              alternativeLabel
-              sx={{
-                "& .MuiStepConnector-line": { borderTopWidth: 2 },
-                "& .MuiStepConnector-root": {
-                  top: "30%",
-                  transform: "translateY(-50%)",
-                },
-              }}>
+            <Stepper activeStep={activeStep} alternativeLabel>
               {(isReturnFlow ? returnSteps : orderSteps).map((step, index) => {
                 const isActive = index === activeStep;
-                const isCompleted =
-                  hasSelectedOrder && !isCancelled && index < activeStep;
+                const isCompleted = index < activeStep;
 
                 return (
                   <Step key={step.key} completed={isCompleted}>
@@ -308,18 +307,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           icon={step.icon}
                         />
                       )}>
-                      <Typography
-                        variant="caption"
-                        fontWeight={600}
-                        color={
-                          !hasSelectedOrder
-                            ? "text.disabled"
-                            : isCancelled
-                              ? "error.main"
-                              : index <= activeStep
-                                ? "primary"
-                                : "text.secondary"
-                        }>
+                      <Typography variant="caption" fontWeight={600}>
                         {step.label}
                       </Typography>
                     </StepLabel>
@@ -332,16 +320,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
           {/* ===== ORDERS LIST ===== */}
 
           <Paper sx={{ flex: 1, p: 2, borderRadius: 3, overflowY: "auto" }}>
-            {loading && (
-              <Typography color="text.secondary">Loading orders...</Typography>
-            )}
-
-            {!loading && !orders.length && (
-              <Typography color="text.secondary">
-                No orders found for this store.
-              </Typography>
-            )}
-
             <Stack spacing={2}>
               {orders.map((order) => {
                 const normalized = normalizeStatus(order.status);
@@ -353,6 +331,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
                       ? "error"
                       : "warning";
 
+                const isReturnCard =
+                  isReturnFlow && returnData?.orderId === order.orderId;
+
                 return (
                   <Card
                     key={order._id}
@@ -360,7 +341,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
                     sx={{
                       cursor: "pointer",
                       borderRadius: 2,
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                       border:
                         selectedOrder?._id === order._id
                           ? "2px solid"
@@ -369,19 +349,14 @@ const ViewOrders = ({ onBack, onCreate }) => {
                         selectedOrder?._id === order._id
                           ? "primary.main"
                           : "transparent",
-                      transition: "all 0.2s ease",
                     }}>
                     <CardContent>
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Avatar
                           variant="rounded"
                           src={order.products?.[0]?.image || ""}
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            bgcolor: "#f3f4f6",
-                          }}>
-                          <InventoryIcon sx={{ color: "#9ca3af" }} />
+                          sx={{ width: 64, height: 64, bgcolor: "#f3f4f6" }}>
+                          <InventoryIcon />
                         </Avatar>
 
                         <Box flex={1}>
@@ -390,7 +365,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
-                            {order.orderId}
+                            {isReturnCard ? returnData.returnId : order.orderId}
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
@@ -403,43 +378,36 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           </Typography>
                         </Box>
 
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          gap={1}>
-                          {/* LEFT SIDE */}
-                          {normalized === "DELIVERED" && (
-                            <Chip
-                              label="Return"
-                              size="small"
-                              variant="outlined"
+                        <Box textAlign="right">
+                          <Chip
+                            label={
+                              isReturnCard ? returnData.status : order.status
+                            }
+                            color={isReturnCard ? "secondary" : chipColor}
+                            size="small"
+                          />
+
+                          <Typography fontWeight={700} mt={0.5}>
+                            ₹{order.totalAmount}
+                          </Typography>
+
+                          {normalized === "DELIVERED" && !isReturnCard && (
+                            <Typography
                               sx={{
-                                borderColor: "primary.main",
                                 color: "primary.main",
-                                backgroundColor: "#fff",
-                                fontWeight: 600,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                mt: 2,
+                                "&:hover": { color: "brown" },
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedOrder(order);
                                 setReturnModalOpen(true);
-                              }}
-                            />
-                          )}
-
-                          {/* RIGHT SIDE */}
-                          <Box textAlign="right">
-                            <Chip
-                              label={order.status}
-                              color={chipColor}
-                              size="small"
-                            />
-
-                            <Typography fontWeight={700} mt={0.5}>
-                              ₹{order.totalAmount}
+                              }}>
+                              Return your Order
                             </Typography>
-                          </Box>
+                          )}
                         </Box>
                       </Stack>
                     </CardContent>
@@ -449,55 +417,13 @@ const ViewOrders = ({ onBack, onCreate }) => {
             </Stack>
           </Paper>
         </Box>
-      ) : (
-        <Box flex={1} position="relative">
-          <IconButton
-            onClick={onBack}
-            sx={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}>
-            <ArrowBackIcon />
-          </IconButton>
+      ) : null}
 
-          <Box
-            height="100%"
-            display="flex"
-            alignItems="center"
-            justifyContent="center">
-            <Box textAlign="center">
-              <Typography fontWeight={700} fontSize={18} mb={1}>
-                No orders in this store
-              </Typography>
+      {/* ================= RETURN MODAL ================= */}
 
-              <Typography color="text.secondary" mb={3} maxWidth={360}>
-                There is no order in this store yet. Please create an order
-                first to track its status.
-              </Typography>
-
-              <IconButton
-                color="primary"
-                onClick={onCreate}
-                sx={{
-                  px: 3,
-                  py: 1,
-                  borderRadius: 2,
-                  border: "1px solid",
-                }}>
-                Create Order
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
-      )}
-      <Dialog
-        open={returnModalOpen}
-        onClose={() => setReturnModalOpen(false)}
-        PaperProps={{
-          sx: {
-            width: 420,
-            maxWidth: "90vw",
-            borderRadius: 3,
-          },
-        }}>
+      <Dialog open={returnModalOpen} onClose={() => setReturnModalOpen(false)}>
         <DialogTitle>Reason for Return</DialogTitle>
+
         <DialogContent>
           <TextField
             fullWidth
@@ -508,8 +434,10 @@ const ViewOrders = ({ onBack, onCreate }) => {
             placeholder="Enter reason..."
           />
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setReturnModalOpen(false)}>Cancel</Button>
+
           <Button
             variant="contained"
             onClick={async () => {
@@ -519,8 +447,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
                   returnReason,
                 );
 
-                setReturnStatus("INITIATED");
+                setReturnData(res);
                 setIsReturnFlow(true);
+
                 setReturnModalOpen(false);
                 setReturnReason("");
               } catch (err) {
