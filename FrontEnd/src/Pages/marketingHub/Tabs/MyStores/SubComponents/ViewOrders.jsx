@@ -29,7 +29,14 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { getStoreOrders, initiateReturn } from "../../../../../api/services";
+import {
+  getStoreOrders,
+  initiateReturn,
+  getMyReturns,
+  cancelReturn,
+} from "../../../../../api/services";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /* ================= STEP ICON ================= */
 
@@ -84,12 +91,13 @@ const returnSteps = [
     label: "Received at Warehouse",
     icon: <InventoryIcon />,
   },
+
+  { key: "COMPLETED", label: "Return Completed", icon: <CheckCircleIcon /> },
   {
     key: "REFUND_PROCESSED",
     label: "Refund Processed",
     icon: <CheckCircleIcon />,
   },
-  { key: "COMPLETED", label: "Return Completed", icon: <CheckCircleIcon /> },
   { key: "CANCELLED", label: "Return Cancelled", icon: <CheckCircleIcon /> },
 ];
 
@@ -99,12 +107,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  const [isReturnFlow, setIsReturnFlow] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
-
-  const [returnData, setReturnData] = useState(null);
 
   const {
     storeName,
@@ -123,6 +127,12 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [returns, setReturns] = useState([]);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const selectedReturn = returns.find(
+    (ret) => ret.orderId === selectedOrder?.orderId,
+  );
 
   const hasOrders = !loading && orders.length > 0;
   const hasSelectedOrder = Boolean(selectedOrder);
@@ -134,14 +144,14 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
   const normalizedStatus = normalizeStatus(selectedOrder?.status);
 
-  const returnStatus = normalizeStatus(returnData?.status);
+  const returnStatus = normalizeStatus(selectedReturn?.status);
 
   const isCancelled = normalizedStatus === "CANCELLED";
 
   const activeStep = useMemo(() => {
     if (!hasSelectedOrder) return -1;
 
-    if (isReturnFlow) {
+    if (selectedReturn) {
       return returnSteps.findIndex((step) => step.key === returnStatus);
     }
 
@@ -151,9 +161,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
   }, [
     hasSelectedOrder,
     normalizedStatus,
-    isCancelled,
-    isReturnFlow,
     returnStatus,
+    selectedReturn,
+    isCancelled,
   ]);
 
   /* ================= API CALL ================= */
@@ -177,10 +187,20 @@ const ViewOrders = ({ onBack, onCreate }) => {
     fetchOrders();
   }, [consumerId]);
 
+  // Fetch Returns
+
   useEffect(() => {
-    setIsReturnFlow(false);
-    setReturnData(null);
-  }, [selectedOrder]);
+    const fetchReturns = async () => {
+      try {
+        const res = await getMyReturns();
+        setReturns(res?.data || []);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || "Failed to fetch returns");
+      }
+    };
+
+    fetchReturns();
+  }, []);
 
   /* ================= UI ================= */
 
@@ -292,28 +312,30 @@ const ViewOrders = ({ onBack, onCreate }) => {
             </Box>
 
             <Stepper activeStep={activeStep} alternativeLabel>
-              {(isReturnFlow ? returnSteps : orderSteps).map((step, index) => {
-                const isActive = index === activeStep;
-                const isCompleted = index < activeStep;
+              {(selectedReturn ? returnSteps : orderSteps).map(
+                (step, index) => {
+                  const isActive = index === activeStep;
+                  const isCompleted = index < activeStep;
 
-                return (
-                  <Step key={step.key} completed={isCompleted}>
-                    <StepLabel
-                      StepIconComponent={(props) => (
-                        <CustomStepIcon
-                          {...props}
-                          active={isActive}
-                          completed={isCompleted}
-                          icon={step.icon}
-                        />
-                      )}>
-                      <Typography variant="caption" fontWeight={600}>
-                        {step.label}
-                      </Typography>
-                    </StepLabel>
-                  </Step>
-                );
-              })}
+                  return (
+                    <Step key={step.key} completed={isCompleted}>
+                      <StepLabel
+                        StepIconComponent={(props) => (
+                          <CustomStepIcon
+                            {...props}
+                            active={isActive}
+                            completed={isCompleted}
+                            icon={step.icon}
+                          />
+                        )}>
+                        <Typography variant="caption" fontWeight={600}>
+                          {step.label}
+                        </Typography>
+                      </StepLabel>
+                    </Step>
+                  );
+                },
+              )}
             </Stepper>
           </Box>
 
@@ -331,8 +353,11 @@ const ViewOrders = ({ onBack, onCreate }) => {
                       ? "error"
                       : "warning";
 
-                const isReturnCard =
-                  isReturnFlow && returnData?.orderId === order.orderId;
+                const orderReturn = returns.find(
+                  (ret) => ret.orderId === order.orderId,
+                );
+
+                const isReturnCard = Boolean(orderReturn);
 
                 return (
                   <Card
@@ -365,7 +390,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
-                            {isReturnCard ? returnData.returnId : order.orderId}
+                            {isReturnCard
+                              ? orderReturn.returnId
+                              : order.orderId}
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
@@ -381,7 +408,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                         <Box textAlign="right">
                           <Chip
                             label={
-                              isReturnCard ? returnData.status : order.status
+                              isReturnCard ? orderReturn.status : order.status
                             }
                             color={isReturnCard ? "secondary" : chipColor}
                             size="small"
@@ -391,6 +418,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                             ₹{order.totalAmount}
                           </Typography>
 
+                          {/* Return Order Button */}
                           {normalized === "DELIVERED" && !isReturnCard && (
                             <Typography
                               sx={{
@@ -408,6 +436,26 @@ const ViewOrders = ({ onBack, onCreate }) => {
                               Return your Order
                             </Typography>
                           )}
+
+                          {/* Cancel Return Button */}
+                          {isReturnCard &&
+                            orderReturn.status === "INITIATED" && (
+                              <Typography
+                                sx={{
+                                  color: "error.main",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  mt: 2,
+                                  "&:hover": { color: "darkred" },
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedOrder(order);
+                                  setCancelModalOpen(true);
+                                }}>
+                                Cancel your Return
+                              </Typography>
+                            )}
                         </Box>
                       </Stack>
                     </CardContent>
@@ -442,18 +490,66 @@ const ViewOrders = ({ onBack, onCreate }) => {
             variant="contained"
             onClick={async () => {
               try {
-                const res = await initiateReturn(
-                  selectedOrder.orderId,
-                  returnReason,
-                );
+                await initiateReturn(selectedOrder.orderId, returnReason);
 
-                setReturnData(res);
-                setIsReturnFlow(true);
+                // fetch return details
+                const returnsRes = await getMyReturns();
+                setReturns(returnsRes?.data || []);
 
                 setReturnModalOpen(false);
                 setReturnReason("");
               } catch (err) {
-                console.error(err);
+                toast.error(
+                  err?.response?.data?.message || "Failed to initiate return",
+                );
+              }
+            }}>
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ================= CANCEL RETURN MODAL ================= */}
+
+      <Dialog open={cancelModalOpen} onClose={() => setCancelModalOpen(false)}>
+        <DialogTitle>Reason for Cancelling Return</DialogTitle>
+
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            placeholder="Enter reason..."
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setCancelModalOpen(false)}>Cancel</Button>
+
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              try {
+                const selectedReturn = returns.find(
+                  (ret) => ret.orderId === selectedOrder?.orderId,
+                );
+
+                await cancelReturn(selectedReturn.returnId, cancelReason);
+
+                toast.success("Return cancelled successfully");
+
+                const res = await getMyReturns();
+                setReturns(res?.data || []);
+
+                setCancelModalOpen(false);
+                setCancelReason("");
+              } catch (err) {
+                toast.error(
+                  err?.response?.data?.message || "Failed to cancel return",
+                );
               }
             }}>
             Submit
