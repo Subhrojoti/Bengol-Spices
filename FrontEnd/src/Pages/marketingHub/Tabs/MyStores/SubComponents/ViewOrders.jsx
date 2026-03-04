@@ -74,7 +74,14 @@ const orderSteps = [
     icon: <LocalShippingIcon />,
   },
   { key: "DELIVERED", label: "Delivered", icon: <CheckCircleIcon /> },
+  { key: "CANCELLED", label: "Order Cancelled", icon: <CheckCircleIcon /> },
 ];
+
+const getOrderLabel = (status) => {
+  const normalized = status?.trim()?.toUpperCase()?.replace(/-/g, "_");
+  const step = orderSteps.find((s) => s.key === normalized);
+  return step ? step.label : status;
+};
 
 /* ================= RETURN STEPS ================= */
 
@@ -100,6 +107,12 @@ const returnSteps = [
   },
   { key: "CANCELLED", label: "Return Cancelled", icon: <CheckCircleIcon /> },
 ];
+
+const getReturnLabel = (status) => {
+  const normalized = status?.trim()?.toUpperCase()?.replace(/-/g, "_");
+  const step = returnSteps.find((s) => s.key === normalized);
+  return step ? step.label : status;
+};
 
 /* ================= COMPONENT ================= */
 
@@ -155,16 +168,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
       return returnSteps.findIndex((step) => step.key === returnStatus);
     }
 
-    if (isCancelled) return -1;
-
     return orderSteps.findIndex((step) => step.key === normalizedStatus);
-  }, [
-    hasSelectedOrder,
-    normalizedStatus,
-    returnStatus,
-    selectedReturn,
-    isCancelled,
-  ]);
+  }, [hasSelectedOrder, normalizedStatus, returnStatus, selectedReturn]);
 
   /* ================= API CALL ================= */
 
@@ -408,7 +413,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
                         <Box textAlign="right">
                           <Chip
                             label={
-                              isReturnCard ? orderReturn.status : order.status
+                              isReturnCard
+                                ? getReturnLabel(orderReturn.status)
+                                : getOrderLabel(order.status)
                             }
                             color={isReturnCard ? "secondary" : chipColor}
                             size="small"

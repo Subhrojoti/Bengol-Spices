@@ -3,11 +3,21 @@ import { toast } from "react-toastify";
 import {
   createEmployee,
   getAllEmployees,
-  updateProductPermission,
+  updateEmployeePermissions,
 } from "../../../../api/services";
 import { Tabs, Tab } from "@mui/material";
 
 const HEADER_HEIGHT = 64;
+
+const PERMISSIONS = [
+  { key: "canManageProducts", label: "Manage Products" },
+  { key: "canAssignDelivery", label: "Assign Delivery" },
+  { key: "canConfirmOrders", label: "Confirm Orders" },
+  { key: "canGetAllOrders", label: "View All Orders" },
+  { key: "canGetAllDeliveryPartners", label: "View Delivery Partners" },
+  { key: "canAssignReturn", label: "Assign Returns" },
+  { key: "canViewDashboardSummary", label: "View Dashboard Summary" },
+];
 
 const EmpCreation = () => {
   const [activeTab, setActiveTab] = useState("create");
@@ -16,6 +26,7 @@ const EmpCreation = () => {
   const [empLoading, setEmpLoading] = useState(false);
   const [permissionLoadingId, setPermissionLoadingId] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null);
+  const [selectedPermissions, setSelectedPermissions] = useState({});
 
   const [form, setForm] = useState({
     name: "",
@@ -49,44 +60,41 @@ const EmpCreation = () => {
 
   console.log("Updating permission for:", confirmModal);
 
-  const handleConfirmPermission = async (employee) => {
-    if (!employee?.employeeId) {
+  const handleConfirmPermission = async () => {
+    if (!confirmModal?.employeeId) {
       toast.error("Invalid employee ID");
       return;
     }
 
-    console.log("Updating permission for:", employee);
-
-    const newPermission = !employee.canManageProducts;
+    console.log("Updating permission for:", confirmModal.employeeId);
 
     try {
-      setPermissionLoadingId(employee.employeeId);
+      setPermissionLoadingId(confirmModal.employeeId);
 
-      const response = await updateProductPermission(employee.employeeId, {
-        canManageProducts: newPermission,
-      });
+      const response = await updateEmployeePermissions(
+        confirmModal.employeeId,
+        selectedPermissions,
+      );
 
       if (response.success) {
-        setEmployees((prev) =>
-          prev.map((emp) =>
-            emp.employeeId === employee.employeeId
-              ? { ...emp, canManageProducts: newPermission }
-              : emp,
-          ),
-        );
-
-        toast.success(
-          newPermission ? "Product access granted" : "Product access removed",
-        );
+        toast.success("Permissions updated successfully");
+        fetchEmployees();
       } else {
-        toast.error("Failed to update permission");
+        toast.error("Failed to update permissions");
       }
     } catch (error) {
-      toast.error("Error updating permission");
+      toast.error("Error updating permissions");
     } finally {
       setPermissionLoadingId(null);
       setConfirmModal(null);
     }
+  };
+
+  const handlePermissionChange = (key) => {
+    setSelectedPermissions((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const handleChange = (e) => {
@@ -312,34 +320,39 @@ const EmpCreation = () => {
 
       {confirmModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-5">
-            <div>
-              <h3 className="text-base font-medium text-slate-800 tracking-tight">
-                {confirmModal?.canManageProducts
-                  ? "Remove Product Access"
-                  : "Grant Product Access"}
-              </h3>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
+            <h3 className="text-base font-medium text-slate-800">
+              Manage Permissions
+            </h3>
 
-              <p className="text-sm text-slate-500 mt-2">
-                {confirmModal?.canManageProducts
-                  ? `Remove product management access from ${confirmModal.name}?`
-                  : `Allow ${confirmModal.name} to manage products?`}
-              </p>
+            <div className="space-y-3 max-h-72 overflow-y-auto">
+              {PERMISSIONS.map((perm) => (
+                <label
+                  key={perm.key}
+                  className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg cursor-pointer transition">
+                  <span className="text-sm text-slate-700">{perm.label}</span>
+
+                  <input
+                    type="checkbox"
+                    checked={selectedPermissions[perm.key] || false}
+                    onChange={() => handlePermissionChange(perm.key)}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
+                </label>
+              ))}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition">
+                className="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
                 Cancel
               </button>
 
               <button
-                onClick={() => handleConfirmPermission(confirmModal)}
+                onClick={handleConfirmPermission}
                 className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-                {confirmModal?.canManageProducts
-                  ? "Remove Permission"
-                  : "Grant Access"}
+                Update Permissions
               </button>
             </div>
           </div>
