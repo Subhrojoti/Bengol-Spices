@@ -2,6 +2,7 @@ import express from "express";
 import {
   assignReturnPickup,
   getAssignedReturns,
+  getMyReturns,
   initiateReturn,
   updateReturnStatus,
 } from "../controllers/return.controller.js";
@@ -18,6 +19,8 @@ router.put(
   checkPermission("canAssignReturn"),
   assignReturnPickup,
 );
+
+router.get("/my-returns", protect, isAgent, getMyReturns);
 
 // Delivery Partner - Get Assigned Returns
 router.get(

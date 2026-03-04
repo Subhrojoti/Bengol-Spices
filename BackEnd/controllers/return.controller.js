@@ -298,3 +298,25 @@ export const updateReturnStatus = async (req, res) => {
     });
   }
 };
+
+// Get My Returns (Agent)
+export const getMyReturns = async (req, res) => {
+  try {
+    const agentId = req.user.agentId;
+
+    const returns = await Return.find({ agentId }).sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      count: returns.length,
+      data: returns,
+    });
+  } catch (error) {
+    console.error("GET MY RETURNS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch returns",
+    });
+  }
+};
