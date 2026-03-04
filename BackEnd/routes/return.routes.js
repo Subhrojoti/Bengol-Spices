@@ -2,6 +2,7 @@ import express from "express";
 import {
   assignReturnPickup,
   cancelReturn,
+  getAllReturns,
   getAssignedReturns,
   getMyReturns,
   initiateReturn,
@@ -38,6 +39,9 @@ router.put(
   isDeliveryPartner,
   updateReturnStatus,
 );
+
+//GET ALL RETURNS (Admin & Employee with permission)
+router.get("/all", protect, checkPermission("canAssignReturn"), getAllReturns);
 
 // Cancel Return (Agent)
 router.put("/:returnId/cancel", protect, isAgent, cancelReturn);

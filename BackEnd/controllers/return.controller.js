@@ -410,3 +410,25 @@ export const cancelReturn = async (req, res) => {
     });
   }
 };
+
+// Get All Returns (Admin / Employee with permission)
+export const getAllReturns = async (req, res) => {
+  try {
+    const returns = await Return.find()
+      .populate("pickup.partnerId", "name phone")
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      count: returns.length,
+      data: returns,
+    });
+  } catch (error) {
+    console.error("GET ALL RETURNS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch returns",
+    });
+  }
+};
