@@ -335,3 +335,19 @@ export const initiateReturn = async (orderId, reason) => {
 
   return response.data;
 };
+
+// Get My Returns
+
+export const getMyReturns = async () => {
+  const response = await axiosInstance.get("/returns/my-returns");
+  return response.data;
+};
+
+// Cancel Return
+
+export const cancelReturn = async (returnId, reason) => {
+  const response = await axiosInstance.put(`/returns/${returnId}/cancel`, {
+    reason,
+  });
+  return response.data;
+};
