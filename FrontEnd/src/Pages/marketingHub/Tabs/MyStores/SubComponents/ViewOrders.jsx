@@ -12,6 +12,12 @@ import {
   Chip,
   Paper,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -23,7 +29,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { getStoreOrders } from "../../../../../api/services";
+import { getStoreOrders, initiateReturn } from "../../../../../api/services";
 
 /* ================= STEP ICON ================= */
 
@@ -48,7 +54,7 @@ const CustomStepIcon = ({ active, completed, icon }) => {
   );
 };
 
-/* ================= ORDER STEPS (Single Source of Truth) ================= */
+/* ================= ORDER STEPS ================= */
 
 const orderSteps = [
   { key: "PLACED", label: "Order Placed", icon: <ScheduleIcon /> },
@@ -63,11 +69,42 @@ const orderSteps = [
   { key: "DELIVERED", label: "Delivered", icon: <CheckCircleIcon /> },
 ];
 
+/* ================= RETURN STEPS ================= */
+
+const returnSteps = [
+  { key: "INITIATED", label: "Return Initiated", icon: <ScheduleIcon /> },
+  {
+    key: "PICKUP_ASSIGNED",
+    label: "Pickup Assigned",
+    icon: <LocalShippingIcon />,
+  },
+  { key: "PICKED_UP", label: "Picked Up", icon: <LocalShippingIcon /> },
+  {
+    key: "RECEIVED_AT_WAREHOUSE",
+    label: "Received at Warehouse",
+    icon: <InventoryIcon />,
+  },
+  {
+    key: "REFUND_PROCESSED",
+    label: "Refund Processed",
+    icon: <CheckCircleIcon />,
+  },
+  { key: "COMPLETED", label: "Return Completed", icon: <CheckCircleIcon /> },
+  { key: "CANCELLED", label: "Return Cancelled", icon: <CheckCircleIcon /> },
+];
+
 /* ================= COMPONENT ================= */
 
 const ViewOrders = ({ onBack, onCreate }) => {
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
+
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [isReturnFlow, setIsReturnFlow] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+
+  const [returnData, setReturnData] = useState(null);
 
   const {
     storeName,
@@ -97,12 +134,27 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
   const normalizedStatus = normalizeStatus(selectedOrder?.status);
 
+  const returnStatus = normalizeStatus(returnData?.status);
+
   const isCancelled = normalizedStatus === "CANCELLED";
 
   const activeStep = useMemo(() => {
-    if (!hasSelectedOrder || isCancelled) return -1;
+    if (!hasSelectedOrder) return -1;
+
+    if (isReturnFlow) {
+      return returnSteps.findIndex((step) => step.key === returnStatus);
+    }
+
+    if (isCancelled) return -1;
+
     return orderSteps.findIndex((step) => step.key === normalizedStatus);
-  }, [hasSelectedOrder, normalizedStatus, isCancelled]);
+  }, [
+    hasSelectedOrder,
+    normalizedStatus,
+    isCancelled,
+    isReturnFlow,
+    returnStatus,
+  ]);
 
   /* ================= API CALL ================= */
 
@@ -125,6 +177,11 @@ const ViewOrders = ({ onBack, onCreate }) => {
     fetchOrders();
   }, [consumerId]);
 
+  useEffect(() => {
+    setIsReturnFlow(false);
+    setReturnData(null);
+  }, [selectedOrder]);
+
   /* ================= UI ================= */
 
   return (
@@ -138,6 +195,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
       {/* ================= LEFT PANEL ================= */}
 
       <Box width={320} display="flex" flexDirection="column" gap={2}>
+        {/* STORE CARD */}
+
         <Card sx={{ borderRadius: 3 }}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -190,6 +249,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
           </CardContent>
         </Card>
 
+        {/* MAP */}
+
         <Card sx={{ flex: 1, borderRadius: 3, overflow: "hidden" }}>
           {latitude && longitude ? (
             <Box
@@ -221,7 +282,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
       {hasOrders ? (
         <Box flex={1} display="flex" flexDirection="column" gap={3}>
-          {/* ===== STEP FLOW ===== */}
+          {/* ===== STEPPER ===== */}
 
           <Box position="relative" px={2} py={1}>
             <Box display="flex" alignItems="center" mb={2}>
@@ -230,20 +291,10 @@ const ViewOrders = ({ onBack, onCreate }) => {
               </IconButton>
             </Box>
 
-            <Stepper
-              activeStep={activeStep}
-              alternativeLabel
-              sx={{
-                "& .MuiStepConnector-line": { borderTopWidth: 2 },
-                "& .MuiStepConnector-root": {
-                  top: "30%",
-                  transform: "translateY(-50%)",
-                },
-              }}>
-              {orderSteps.map((step, index) => {
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {(isReturnFlow ? returnSteps : orderSteps).map((step, index) => {
                 const isActive = index === activeStep;
-                const isCompleted =
-                  hasSelectedOrder && !isCancelled && index < activeStep;
+                const isCompleted = index < activeStep;
 
                 return (
                   <Step key={step.key} completed={isCompleted}>
@@ -256,18 +307,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           icon={step.icon}
                         />
                       )}>
-                      <Typography
-                        variant="caption"
-                        fontWeight={600}
-                        color={
-                          !hasSelectedOrder
-                            ? "text.disabled"
-                            : isCancelled
-                              ? "error.main"
-                              : index <= activeStep
-                                ? "primary"
-                                : "text.secondary"
-                        }>
+                      <Typography variant="caption" fontWeight={600}>
                         {step.label}
                       </Typography>
                     </StepLabel>
@@ -280,16 +320,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
           {/* ===== ORDERS LIST ===== */}
 
           <Paper sx={{ flex: 1, p: 2, borderRadius: 3, overflowY: "auto" }}>
-            {loading && (
-              <Typography color="text.secondary">Loading orders...</Typography>
-            )}
-
-            {!loading && !orders.length && (
-              <Typography color="text.secondary">
-                No orders found for this store.
-              </Typography>
-            )}
-
             <Stack spacing={2}>
               {orders.map((order) => {
                 const normalized = normalizeStatus(order.status);
@@ -301,6 +331,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
                       ? "error"
                       : "warning";
 
+                const isReturnCard =
+                  isReturnFlow && returnData?.orderId === order.orderId;
+
                 return (
                   <Card
                     key={order._id}
@@ -308,7 +341,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
                     sx={{
                       cursor: "pointer",
                       borderRadius: 2,
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                       border:
                         selectedOrder?._id === order._id
                           ? "2px solid"
@@ -317,24 +349,23 @@ const ViewOrders = ({ onBack, onCreate }) => {
                         selectedOrder?._id === order._id
                           ? "primary.main"
                           : "transparent",
-                      transition: "all 0.2s ease",
                     }}>
                     <CardContent>
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Avatar
                           variant="rounded"
                           src={order.products?.[0]?.image || ""}
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            bgcolor: "#f3f4f6",
-                          }}>
-                          <InventoryIcon sx={{ color: "#9ca3af" }} />
+                          sx={{ width: 64, height: 64, bgcolor: "#f3f4f6" }}>
+                          <InventoryIcon />
                         </Avatar>
 
                         <Box flex={1}>
                           <Typography fontWeight={600}>
                             {order.products?.[0]?.name}
+                          </Typography>
+
+                          <Typography variant="body2" color="text.secondary">
+                            {isReturnCard ? returnData.returnId : order.orderId}
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
@@ -349,15 +380,34 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
                         <Box textAlign="right">
                           <Chip
-                            label={order.status}
-                            color={chipColor}
+                            label={
+                              isReturnCard ? returnData.status : order.status
+                            }
+                            color={isReturnCard ? "secondary" : chipColor}
                             size="small"
-                            sx={{ mb: 1 }}
                           />
 
-                          <Typography fontWeight={700}>
+                          <Typography fontWeight={700} mt={0.5}>
                             ₹{order.totalAmount}
                           </Typography>
+
+                          {normalized === "DELIVERED" && !isReturnCard && (
+                            <Typography
+                              sx={{
+                                color: "primary.main",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                mt: 2,
+                                "&:hover": { color: "brown" },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedOrder(order);
+                                setReturnModalOpen(true);
+                              }}>
+                              Return your Order
+                            </Typography>
+                          )}
                         </Box>
                       </Stack>
                     </CardContent>
@@ -367,44 +417,49 @@ const ViewOrders = ({ onBack, onCreate }) => {
             </Stack>
           </Paper>
         </Box>
-      ) : (
-        <Box flex={1} position="relative">
-          <IconButton
-            onClick={onBack}
-            sx={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}>
-            <ArrowBackIcon />
-          </IconButton>
+      ) : null}
 
-          <Box
-            height="100%"
-            display="flex"
-            alignItems="center"
-            justifyContent="center">
-            <Box textAlign="center">
-              <Typography fontWeight={700} fontSize={18} mb={1}>
-                No orders in this store
-              </Typography>
+      {/* ================= RETURN MODAL ================= */}
 
-              <Typography color="text.secondary" mb={3} maxWidth={360}>
-                There is no order in this store yet. Please create an order
-                first to track its status.
-              </Typography>
+      <Dialog open={returnModalOpen} onClose={() => setReturnModalOpen(false)}>
+        <DialogTitle>Reason for Return</DialogTitle>
 
-              <IconButton
-                color="primary"
-                onClick={onCreate}
-                sx={{
-                  px: 3,
-                  py: 1,
-                  borderRadius: 2,
-                  border: "1px solid",
-                }}>
-                Create Order
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
-      )}
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            value={returnReason}
+            onChange={(e) => setReturnReason(e.target.value)}
+            placeholder="Enter reason..."
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setReturnModalOpen(false)}>Cancel</Button>
+
+          <Button
+            variant="contained"
+            onClick={async () => {
+              try {
+                const res = await initiateReturn(
+                  selectedOrder.orderId,
+                  returnReason,
+                );
+
+                setReturnData(res);
+                setIsReturnFlow(true);
+
+                setReturnModalOpen(false);
+                setReturnReason("");
+              } catch (err) {
+                console.error(err);
+              }
+            }}>
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

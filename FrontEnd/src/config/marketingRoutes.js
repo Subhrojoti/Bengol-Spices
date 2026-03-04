@@ -32,10 +32,4 @@ export const marketingRoutes = [
     fullPath: "/marketing/payments",
     component: lazy(() => import("../pages/MarketingHub/Tabs/Payments")),
   },
-  {
-    label: "Returns",
-    path: "returns",
-    fullPath: "/marketing/returns",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/Returns")),
-  },
 ];

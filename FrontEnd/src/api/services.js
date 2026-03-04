@@ -326,3 +326,12 @@ export const verifyDeliveryOtp = async (orderId, otp) => {
   );
   return response.data;
 };
+
+// Initiate return in Agent screen
+export const initiateReturn = async (orderId, reason) => {
+  const response = await axiosInstance.post(`/returns/${orderId}/initiate`, {
+    reason,
+  });
+
+  return response.data;
+};
