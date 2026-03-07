@@ -31,6 +31,15 @@ export const agentLogin = async (agentId, password) => {
   return response.data;
 };
 
+export const employeeLogin = async (employeeId, password) => {
+  const response = await axiosInstance.post("/auth/employee/login", {
+    employeeId,
+    password,
+  });
+
+  return response.data;
+};
+
 export const logout = () => {
   localStorage.removeItem("authToken");
   localStorage.removeItem("role");
@@ -293,6 +302,16 @@ export const assignOrderToPartner = async (orderId, partnerId) => {
   return response.data;
 };
 
+// Assign return to delivery partner
+
+export const assignReturnToPartner = async (returnId, partnerId) => {
+  const response = await axiosInstance.put(
+    `/returns/${returnId}/assign-pickup`,
+    { partnerId },
+  );
+  return response.data;
+};
+
 // Get assigned Delivery Orders
 
 export const getDeliveryPartnerOrders = async () => {
@@ -340,6 +359,10 @@ export const initiateReturn = async (orderId, reason) => {
 
 export const getMyReturns = async () => {
   const response = await axiosInstance.get("/returns/my-returns");
+  return response.data;
+};
+export const getAllReturns = async () => {
+  const response = await axiosInstance.get("/returns/all");
   return response.data;
 };
 
