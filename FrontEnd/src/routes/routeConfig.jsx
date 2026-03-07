@@ -14,6 +14,7 @@ import DeliveryLogin from "../pages/Auth/Login/DeliveryLogin";
 import DeliveryHub from "../pages/Delivery/DeliveryHub";
 import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
 import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders";
+import EmployeeLogin from "../pages/Auth/Login/EmployeeLogin";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -24,6 +25,10 @@ export const routes = [
   {
     path: "/delivery/login",
     element: <DeliveryLogin />,
+  },
+  {
+    path: "/employee/login",
+    element: <EmployeeLogin />,
   },
   {
     path: "/admin/login",
