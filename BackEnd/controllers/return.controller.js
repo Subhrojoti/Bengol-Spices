@@ -199,6 +199,7 @@ export const getAssignedReturns = async (req, res) => {
   try {
     const partnerId = req.user.id;
 
+    // 1️⃣ Fetch assigned returns
     const returns = await Return.find({
       "pickup.partnerId": partnerId,
       status: {
@@ -206,10 +207,66 @@ export const getAssignedReturns = async (req, res) => {
       },
     }).sort({ createdAt: -1 });
 
+    // 2️⃣ Collect orderIds
+    const orderIds = returns.map((r) => r.orderId);
+
+    // 3️⃣ Fetch all related orders in ONE query
+    const orders = await Order.find({
+      orderId: { $in: orderIds },
+    }).lean();
+
+    // 4️⃣ Convert orders to map for fast lookup
+    const orderMap = {};
+    orders.forEach((order) => {
+      orderMap[order.orderId] = order;
+    });
+
+    // 5️⃣ Attach order details to return response
+    const enrichedReturns = returns.map((ret) => {
+      const order = orderMap[ret.orderId];
+
+      return {
+        ...ret.toObject(),
+
+        storeDetails: order
+          ? {
+              storeName: order.deliveryAddress?.storeName,
+              ownerName: order.deliveryAddress?.ownerName,
+              phone: order.deliveryAddress?.phone,
+            }
+          : null,
+
+        pickupLocation: order
+          ? {
+              latitude: order.orderLocation?.latitude,
+              longitude: order.orderLocation?.longitude,
+              address: `${order.deliveryAddress?.street}, ${order.deliveryAddress?.city}, ${order.deliveryAddress?.state} - ${order.deliveryAddress?.pincode}`,
+            }
+          : null,
+
+        items: order ? order.products : [],
+
+        payment: order
+          ? {
+              totalAmount: order.totalAmount,
+              paidAmount: order.paidAmount,
+              dueAmount: order.dueAmount,
+              paymentMode: order.paymentMode,
+            }
+          : null,
+
+        refundStatus: {
+          amount: ret.refund?.amount || 0,
+          status: ret.status === "REFUND_PROCESSED" ? "PROCESSED" : "PENDING",
+          method: ret.refund?.method || null,
+        },
+      };
+    });
+
     return res.json({
       success: true,
-      count: returns.length,
-      data: returns,
+      count: enrichedReturns.length,
+      data: enrichedReturns,
     });
   } catch (error) {
     console.error("GET ASSIGNED RETURNS ERROR:", error);
