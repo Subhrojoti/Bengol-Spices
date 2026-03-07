@@ -33,7 +33,7 @@ router.get("/my-orders", protect, isAgent, getMyOrders);
 router.get("/all", protect, checkPermission("canGetAllOrders"), getAllOrders);
 //Confirm Order (Admin / Employee)
 router.put(
-  "/confirm",
+  "/:orderId/confirm",
   protect,
   checkPermission("canConfirmOrders"),
   confirmOrder,
