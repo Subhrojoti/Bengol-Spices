@@ -16,13 +16,7 @@ const ReturnOrders = ({
   const [openStatus, setOpenStatus] = useState(false);
   const dropdownRef = useRef(null);
 
-  const statusOptions = [
-    "PICKED_UP",
-    "RECEIVED_AT_WAREHOUSE",
-    "COMPLETED",
-    "REFUND_PROCESSED",
-    "CANCELLED",
-  ];
+  const statusOptions = ["PICKED_UP", "RECEIVED_AT_WAREHOUSE", "COMPLETED"];
 
   const handleStatusUpdate = async (newStatus) => {
     if (!selectedOrder) return;
@@ -113,17 +107,17 @@ const ReturnOrders = ({
             </div>
 
             <p className="text-sm text-gray-600 mt-2">
-              {order.storeDetails?.storeName}
+              Store Name: {order.storeDetails?.storeName}
             </p>
 
-            <p className="font-bold mt-3">₹{order.payment?.totalAmount}</p>
+            <p className="text-sm text-gray-600 ">Reason: {order?.reason}</p>
+
+            <p className="font-bold mt-3">₹{order.payment?.paidAmount}</p>
           </div>
         ))}
       </div>
     );
   }
-
-  /* ================= RIGHT PANEL ================= */
 
   /* ================= RIGHT PANEL ================= */
 
@@ -218,23 +212,9 @@ const ReturnOrders = ({
       {/* PAYMENT SECTION */}
       <div className="grid grid-cols-2 gap-2 text-sm mb-6">
         <div className="border rounded-xl p-4 bg-gray-50">
-          <div className="text-gray-500 mb-2">Paid</div>
+          <div className="text-gray-500 mb-2">Paid Amount</div>
           <div className="font-semibold">
             ₹{selectedOrder.payment?.paidAmount}
-          </div>
-        </div>
-
-        <div className="border rounded-xl p-4 bg-gray-50">
-          <div className="text-gray-500 mb-2">Due</div>
-          <div className="font-semibold">
-            ₹{selectedOrder.payment?.dueAmount}
-          </div>
-        </div>
-
-        <div className="border rounded-xl p-4 bg-gray-50">
-          <div className="text-gray-500 mb-2">Payment Mode</div>
-          <div className="font-medium">
-            {selectedOrder.payment?.paymentMode}
           </div>
         </div>
 
