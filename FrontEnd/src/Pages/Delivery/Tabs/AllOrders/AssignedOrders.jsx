@@ -204,7 +204,7 @@ const AssignedOrders = ({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpenStatus(!openStatus)}
-            className="px-4 py-2 text-sm font-semibold rounded-full bg-teal-100 text-teal-700">
+            className="px-4 py-2 text-sm font-semibold rounded-full bg-[#0f766e] text-white">
             {formatStatus(selectedOrder.status)}
           </button>
 

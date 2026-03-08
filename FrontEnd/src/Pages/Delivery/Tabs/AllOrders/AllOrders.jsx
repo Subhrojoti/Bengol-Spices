@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
 import AssignedOrders from "./AssignedOrders";
 import ReturnOrders from "./ReturnOrders";
-import { getDeliveryPartnerOrders } from "../../../../api/services";
+import {
+  getDeliveryPartnerOrders,
+  getDeliveryPartnerReturns,
+} from "../../../../api/services";
 
 const AllOrders = () => {
   const [activeTab, setActiveTab] = useState("ASSIGNED");
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [returnOrders, setReturnOrders] = useState([]);
+  const [selectedReturnOrder, setSelectedReturnOrder] = useState(null);
+  const [returnLoading, setReturnLoading] = useState(true);
 
   useEffect(() => {
     fetchOrders();
+    fetchReturns();
   }, []);
 
   const fetchOrders = async () => {
@@ -26,6 +33,24 @@ const AllOrders = () => {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReturns = async () => {
+    try {
+      const response = await getDeliveryPartnerReturns();
+
+      if (response?.success) {
+        setReturnOrders(response.data);
+
+        if (response.data.length > 0) {
+          setSelectedReturnOrder(response.data[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching return orders:", error);
+    } finally {
+      setReturnLoading(false);
     }
   };
 
@@ -77,7 +102,13 @@ const AllOrders = () => {
                 loading={loading}
               />
             ) : (
-              <ReturnOrders type="LEFT" />
+              <ReturnOrders
+                type="LEFT"
+                orders={returnOrders}
+                selectedOrder={selectedReturnOrder}
+                setSelectedOrder={setSelectedReturnOrder}
+                loading={returnLoading}
+              />
             )}
           </div>
         </div>
@@ -94,7 +125,14 @@ const AllOrders = () => {
               loading={loading}
             />
           ) : (
-            <ReturnOrders type="RIGHT" />
+            <ReturnOrders
+              type="RIGHT"
+              orders={returnOrders}
+              setOrders={setReturnOrders}
+              selectedOrder={selectedReturnOrder}
+              setSelectedOrder={setSelectedReturnOrder}
+              loading={returnLoading}
+            />
           )}
         </div>
       </div>
