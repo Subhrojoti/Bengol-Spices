@@ -15,6 +15,9 @@ import DeliveryHub from "../pages/Delivery/DeliveryHub";
 import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
 import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders";
 import EmployeeLogin from "../pages/Auth/Login/EmployeeLogin";
+import { employeeRoutes } from "../config/employeeRoutes.js";
+import EmployeeBase from "../pages/Employee/EmployeeBase";
+import PermissionGuard from "../components/common/PermissionGuard.jsx";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -69,6 +72,41 @@ export const routes = [
           {
             index: true,
             element: adminRoutes[0].element,
+          },
+        ],
+      },
+    ],
+  },
+  /* ===================== EMPLOYEE PROTECTED ===================== */
+  {
+    element: <ProtectedRoute redirectTo="/employee/login" />,
+    children: [
+      {
+        path: "/employee",
+        element: <EmployeeBase />,
+        children: [
+          ...employeeRoutes.map((route) => {
+            const Component = route.component;
+
+            return {
+              path: route.path,
+              element: route.permission ? (
+                <PermissionGuard permission={route.permission}>
+                  <Component />
+                </PermissionGuard>
+              ) : (
+                <Component />
+              ),
+            };
+          }),
+
+          /* Default */
+          {
+            index: true,
+            element: (() => {
+              const DefaultComponent = employeeRoutes[0].component;
+              return <DefaultComponent />;
+            })(),
           },
         ],
       },

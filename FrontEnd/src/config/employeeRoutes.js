@@ -1,0 +1,49 @@
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import LocalShipping from "@mui/icons-material/LocalShipping";
+import AllInbox from "@mui/icons-material/AllInbox";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+
+import AdminDashboard from "../pages/Admin/Tabs/AdminDashboard/AdminDashboard";
+import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
+import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
+import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
+import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
+
+export const employeeRoutes = [
+  {
+    label: "Dashboard",
+    path: "dashboard",
+    icon: DashboardIcon,
+    permission: "canViewDashboardSummary",
+    component: AdminDashboard,
+  },
+  {
+    label: "Delivery Partner",
+    path: "delivery-management",
+    icon: LocalShipping,
+    permission: "canGetAllDeliveryPartners",
+    component: DeliveryManagement,
+  },
+  {
+    label: "Orders",
+    path: "order-management",
+    icon: AllInbox,
+    permission: "canGetAllOrders",
+    component: OrderManagement,
+  },
+  {
+    label: "Product Creation",
+    path: "products",
+    icon: Inventory2Icon,
+    permission: "canManageProducts",
+    component: ProductCreation,
+  },
+  {
+    label: "All Products",
+    path: "allproducts",
+    icon: ListAltIcon,
+    permission: "canManageProducts",
+    component: AllProducts,
+  },
+];
