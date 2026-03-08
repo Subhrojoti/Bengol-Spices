@@ -319,11 +319,28 @@ export const getDeliveryPartnerOrders = async () => {
   return response.data;
 };
 
+// Get assigned Delivery Returns
+
+export const getDeliveryPartnerReturns = async () => {
+  const response = await axiosInstance.get("/returns/delivery/assigned");
+  return response.data;
+};
+
 // Update Delivery order status
 
 export const updateDeliveryStatus = async (orderId, status) => {
   const response = await axiosInstance.put(
     `/agent/orders/${orderId}/delivery-status`,
+    { status },
+  );
+  return response.data;
+};
+
+// Update Return order status
+
+export const updateReturnStatus = async (returnId, status) => {
+  const response = await axiosInstance.put(
+    `/returns/delivery/${returnId}/status`,
     { status },
   );
   return response.data;
@@ -381,5 +398,12 @@ export const updateEmployeePermissions = async (employeeId, permissions) => {
   const response = await axiosInstance.put(`/admin/${employeeId}/permissions`, {
     permissions,
   });
+  return response.data;
+};
+
+// Delivery Dashboard
+
+export const getDeliveryPartnerDashboard = async () => {
+  const response = await axiosInstance.get("/delivery-partner/dashboard");
   return response.data;
 };

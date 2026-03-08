@@ -1,11 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
   LineChart,
   Line,
-  PieChart,
-  Pie,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,49 +12,58 @@ import {
   Legend,
   RadialBarChart,
   RadialBar,
-  Cell,
   PolarAngleAxis,
 } from "recharts";
 
-import deliveryData from "./deliveryDashboardMock.json";
+import { getDeliveryPartnerDashboard } from "../../../../api/services";
 
 const DeliveryPanel = () => {
-  const { summary } = deliveryData;
+  const [dashboardData, setDashboardData] = useState(null);
 
-  const monthlyData = summary.revenue.monthlyBreakdown;
-  const yearlyData = summary.yearlyComparison;
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const deliveredTrend = monthlyData.map((m) => ({
+  const fetchDashboard = async () => {
+    try {
+      const response = await getDeliveryPartnerDashboard();
+      if (response?.success) {
+        setDashboardData(response.data);
+      }
+    } catch (error) {
+      console.error("Dashboard fetch error:", error);
+    }
+  };
+
+  if (!dashboardData) return <div className="p-8">Loading dashboard...</div>;
+
+  const { summary, monthlyDeliveryDistribution, yearlyComparison } =
+    dashboardData;
+
+  const deliveredTrend = monthlyDeliveryDistribution.map((m) => ({
     month: m.month,
     value: m.delivered,
   }));
 
-  const returnTrend = monthlyData.map((m) => ({
+  const returnTrend = monthlyDeliveryDistribution.map((m) => ({
     month: m.month,
     value: m.returns,
   }));
 
-  const pendingTrend = monthlyData.map((m) => ({
+  const pendingTrend = monthlyDeliveryDistribution.map((m) => ({
     month: m.month,
-    value: m.pending,
+    value: summary.totalPendingPickups,
   }));
-
-  const revenuePieData = [
-    { name: "Revenue", value: summary.revenue.totalRevenue },
-    { name: "Remaining Target", value: 2500000 - summary.revenue.totalRevenue },
-  ];
-
-  const COLORS = ["#3b82f6", "#e5e7eb"];
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen space-y-10">
       {/* KPI CARDS */}
-      <div className="grid grid-cols-4 gap-6 max-w-8xl mx-auto">
+      <div className="grid grid-cols-3 gap-6 max-w-8xl mx-auto">
         {/* Delivered */}
         <div className="bg-white p-6 rounded-xl shadow">
           <p className="text-gray-500 text-sm">Total Delivered</p>
           <h2 className="text-2xl font-bold text-green-600 mb-3">
-            {summary.deliveryStats.totalDelivered}
+            {summary.totalDelivered}
           </h2>
 
           <ResponsiveContainer width="100%" height={60}>
@@ -74,9 +81,9 @@ const DeliveryPanel = () => {
 
         {/* Returns */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Total Returns</p>
+          <p className="text-gray-500 text-sm">Total Returns Handled</p>
           <h2 className="text-2xl font-bold text-red-600 mb-3">
-            {summary.deliveryStats.totalReturns}
+            {summary.totalReturnsHandled}
           </h2>
 
           <ResponsiveContainer width="100%" height={60}>
@@ -92,11 +99,11 @@ const DeliveryPanel = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Pending */}
+        {/* Pending Pickups */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Total Pending Orders</p>
+          <p className="text-gray-500 text-sm">Pending Pickups</p>
           <h2 className="text-2xl font-bold text-yellow-600 mb-3">
-            {summary.deliveryStats.totalPendingOrders}
+            {summary.totalPendingPickups}
           </h2>
 
           <ResponsiveContainer width="100%" height={60}>
@@ -111,38 +118,16 @@ const DeliveryPanel = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Revenue */}
-        <div className="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-          <p className="text-gray-500 text-sm">Revenue Generated</p>
-          <h2 className="text-2xl font-bold text-blue-600 mb-3">
-            ₹{summary.revenue.totalRevenue.toLocaleString()}
-          </h2>
-
-          <ResponsiveContainer width="100%" height={80}>
-            <PieChart>
-              <Pie
-                data={revenuePieData}
-                innerRadius={28}
-                outerRadius={40}
-                dataKey="value">
-                {revenuePieData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
       </div>
 
-      {/* MAIN STACKED AREA CHART */}
+      {/* MONTHLY DISTRIBUTION */}
       <div className="bg-white p-8 rounded-xl shadow max-w-8xl mx-auto">
         <h2 className="text-lg font-semibold mb-6">
           Monthly Delivery Distribution
         </h2>
 
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={monthlyData}>
+          <AreaChart data={monthlyDeliveryDistribution}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
@@ -157,6 +142,7 @@ const DeliveryPanel = () => {
               fill="#22c55e"
               fillOpacity={0.7}
             />
+
             <Area
               type="monotone"
               dataKey="returns"
@@ -165,29 +151,21 @@ const DeliveryPanel = () => {
               fill="#ef4444"
               fillOpacity={0.7}
             />
-            <Area
-              type="monotone"
-              dataKey="pending"
-              stackId="1"
-              stroke="#eab308"
-              fill="#facc15"
-              fillOpacity={0.7}
-            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* YEARLY RADIAL COMPARISON */}
+      {/* YEARLY COMPARISON */}
       <div className="bg-white p-8 rounded-xl shadow max-w-8xl mx-auto">
         <h2 className="text-lg font-semibold mb-6 text-center">
-          Yearly Revenue Comparison
+          Yearly Delivery Comparison
         </h2>
 
         <ResponsiveContainer width="100%" height={300}>
           <RadialBarChart
             innerRadius="20%"
             outerRadius="90%"
-            data={yearlyData}
+            data={yearlyComparison}
             startAngle={180}
             endAngle={0}>
             <PolarAngleAxis
@@ -197,15 +175,12 @@ const DeliveryPanel = () => {
             />
 
             <Tooltip
-              formatter={(value, name, props) => [
-                `₹${value.toLocaleString()}`,
-                "Revenue",
-              ]}
+              formatter={(value) => [value, "Delivered"]}
               labelFormatter={(label, payload) => payload?.[0]?.payload?.year}
             />
 
             <RadialBar
-              dataKey="revenue"
+              dataKey="delivered"
               cornerRadius={10}
               fill="#6366f1"
               background
@@ -213,14 +188,12 @@ const DeliveryPanel = () => {
           </RadialBarChart>
         </ResponsiveContainer>
 
-        {/* Year Labels */}
+        {/* Year labels */}
         <div className="flex justify-center gap-20 mt-[-5rem]">
-          {yearlyData.map((year) => (
+          {yearlyComparison.map((year) => (
             <div key={year.year} className="text-center">
               <p className="text-sm text-gray-500">{year.year}</p>
-              <p className="font-semibold text-indigo-600">
-                ₹{year.revenue.toLocaleString()}
-              </p>
+              <p className="font-semibold text-indigo-600">{year.delivered}</p>
             </div>
           ))}
         </div>
