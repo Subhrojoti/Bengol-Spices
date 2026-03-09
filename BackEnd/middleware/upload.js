@@ -20,6 +20,10 @@ const storage = new CloudinaryStorage({
     if (req.originalUrl.includes("/products")) {
       folder = "bengol_spices/products";
     }
+    // Employee documents
+    if (req.originalUrl.includes("/employee")) {
+      folder = "bengol_spices/employees";
+    }
 
     return {
       folder,
