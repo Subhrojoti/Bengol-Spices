@@ -22,6 +22,19 @@ export const createEmployee = async (req, res) => {
       });
     }
 
+    // 📷 PROFILE IMAGE (OPTIONAL)
+    let profilePic = {
+      url: "",
+      publicId: "",
+    };
+
+    if (req.file) {
+      profilePic = {
+        url: req.file.path || req.file.secure_url || "",
+        publicId: req.file.filename || req.file.public_id || "",
+      };
+    }
+
     // 🔹 AUTO EMPLOYEE ID
     const currentYear = new Date().getFullYear();
 
@@ -40,6 +53,7 @@ export const createEmployee = async (req, res) => {
       email,
       password: hashedPassword,
       role: "EMPLOYEE",
+      profilePic,
     });
 
     // 📧 SEND EMAIL
@@ -53,6 +67,7 @@ export const createEmployee = async (req, res) => {
       success: true,
       message: "Employee created successfully",
       employeeId: employee.employeeId,
+      profilePic: employee.profilePic,
     });
   } catch (error) {
     console.error("CREATE EMPLOYEE ERROR:", error);

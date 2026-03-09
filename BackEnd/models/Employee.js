@@ -23,6 +23,10 @@ const employeeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    profilePic: {
+      url: String,
+      publicId: String,
+    },
 
     role: {
       type: String,
