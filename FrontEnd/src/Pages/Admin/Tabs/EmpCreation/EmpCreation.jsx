@@ -6,6 +6,7 @@ import {
   updateEmployeePermissions,
 } from "../../../../api/services";
 import { Tabs, Tab } from "@mui/material";
+import ImageIcon from "@mui/icons-material/Image";
 
 const HEADER_HEIGHT = 64;
 
@@ -17,6 +18,7 @@ const PERMISSIONS = [
   { key: "canGetAllDeliveryPartners", label: "View Delivery Partners" },
   { key: "canAssignReturn", label: "Assign Returns" },
   { key: "canViewDashboardSummary", label: "View Dashboard Summary" },
+  { key: "canCancelOrders", label: "Cancel Orders" },
 ];
 
 const EmpCreation = () => {
@@ -32,6 +34,7 @@ const EmpCreation = () => {
     name: "",
     email: "",
     password: "",
+    profilePic: null,
   });
 
   // Fetch Employee details
@@ -59,6 +62,22 @@ const EmpCreation = () => {
   };
 
   console.log("Updating permission for:", confirmModal);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      profilePic: file,
+    }));
+  };
 
   const handleConfirmPermission = async () => {
     if (!confirmModal?.employeeId) {
@@ -105,15 +124,28 @@ const EmpCreation = () => {
     e.preventDefault();
 
     if (!form.name || !form.email || !form.password) {
-      toast.error("All fields are required");
+      toast.error("All fields except profile picture are required");
       return;
     }
 
     try {
       setLoading(true);
-      await createEmployee(form);
+
+      await createEmployee({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        profilePic: form.profilePic,
+      });
+
       toast.success("Employee created successfully");
-      setForm({ name: "", email: "", password: "" });
+
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        profilePic: null,
+      });
     } catch (error) {
       toast.error(
         error?.response?.data?.message || "Failed to create employee",
@@ -128,7 +160,7 @@ const EmpCreation = () => {
       <div
         className="fixed top-0 left-[3%] right-0 z-10 bg-white border-b border-slate-200 px-8 flex items-center justify-between"
         style={{ height: HEADER_HEIGHT }}>
-        <h1 className="text-base font-medium tracking-tight text-slate-800">
+        <h1 className="text-base font-bold tracking-tight text-lg text-slate-800">
           Employee Management
         </h1>
 
@@ -171,11 +203,11 @@ const EmpCreation = () => {
         {activeTab === "create" ? (
           <div className="w-full max-w-md">
             <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200 overflow-hidden">
-              <div className="px-8 py-7 bg-gradient-to-br from-indigo-600 via-blue-600 to-slate-900">
-                <h2 className="text-white text-base font-medium tracking-tight">
+              <div className="px-8 py-5 bg-gradient-to-br from-blue-200 to-gray-100">
+                <h2 className="text-black text-base font-semibold text-lg tracking-tight">
                   New Employee Account
                 </h2>
-                <p className="text-white/70 text-xs mt-2">
+                <p className="text-black/70 text-xs mt-2">
                   Create a new account for secure access.
                 </p>
               </div>
@@ -209,6 +241,36 @@ const EmpCreation = () => {
                     symbol.
                   </p>
                 </div>
+
+                <label className="flex items-center gap-4 p-4 rounded-lg cursor-pointer border-2 border-dashed border-slate-300 hover:border-blue-500">
+                  <div className="w-20 h-20 flex items-center justify-center rounded-md bg-white border border-slate-200 overflow-hidden">
+                    {form.profilePic ? (
+                      <img
+                        src={URL.createObjectURL(form.profilePic)}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="text-slate-400" fontSize="large" />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium text-slate-700">
+                      Profile Photo (Optional)
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      Click to upload image (max 5 MB)
+                    </span>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleFileChange}
+                  />
+                </label>
 
                 <button
                   type="submit"
@@ -281,22 +343,62 @@ const EmpCreation = () => {
                         </td>
 
                         <td className="px-8 py-4">
-                          <button
-                            disabled={permissionLoadingId === emp.employeeId}
-                            onClick={() => setConfirmModal(emp)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition
-      ${
-        emp.canManageProducts
-          ? "bg-green-50 text-green-600 hover:bg-red-50 hover:text-red-600"
-          : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600"
-      }
-    `}>
-                            {permissionLoadingId === emp.employeeId
-                              ? "Updating..."
-                              : emp.canManageProducts
-                                ? "Can Manage Products"
-                                : "Limited Access"}
-                          </button>
+                          {(() => {
+                            const permissions = emp.permissions || {};
+                            const permissionValues = Object.values(permissions);
+                            const enabledCount =
+                              permissionValues.filter(Boolean).length;
+                            const totalPermissions = PERMISSIONS.length;
+
+                            let accessLabel = "No Access";
+
+                            if (enabledCount === totalPermissions) {
+                              accessLabel = "Full Access";
+                            } else if (enabledCount > 0) {
+                              accessLabel = "Limited Access";
+                            }
+
+                            return (
+                              <button
+                                disabled={
+                                  permissionLoadingId === emp.employeeId
+                                }
+                                onClick={() => {
+                                  setConfirmModal(emp);
+
+                                  const perms = emp.permissions || {};
+
+                                  setSelectedPermissions({
+                                    canManageProducts:
+                                      perms.canManageProducts || false,
+                                    canAssignDelivery:
+                                      perms.canAssignDelivery || false,
+                                    canConfirmOrders:
+                                      perms.canConfirmOrders || false,
+                                    canGetAllOrders:
+                                      perms.canGetAllOrders || false,
+                                    canGetAllDeliveryPartners:
+                                      perms.canGetAllDeliveryPartners || false,
+                                    canAssignReturn:
+                                      perms.canAssignReturn || false,
+                                    canViewDashboardSummary:
+                                      perms.canViewDashboardSummary || false,
+                                  });
+                                }}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition
+        ${
+          enabledCount === totalPermissions
+            ? "bg-green-50 text-green-600"
+            : enabledCount > 0
+              ? "bg-yellow-50 text-yellow-600"
+              : "bg-red-50 text-red-600"
+        }`}>
+                                {permissionLoadingId === emp.employeeId
+                                  ? "Updating..."
+                                  : accessLabel}
+                              </button>
+                            );
+                          })()}
                         </td>
 
                         <td className="px-8 py-4">

@@ -11,6 +11,7 @@ import {
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { employeeRoutes } from "../../config/employeeRoutes";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
 
 const COLLAPSED_WIDTH = 64;
 const EXPANDED_WIDTH = 260;

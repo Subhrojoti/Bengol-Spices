@@ -1,23 +1,53 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Paper, Link } from "@mui/material";
+import EmailIcon from "@mui/icons-material/Email";
 
 const NoAccess = () => {
   return (
     <Box
       sx={{
-        height: "80vh",
+        height: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        flexDirection: "column",
-        textAlign: "center",
       }}>
-      <Typography variant="h5" fontWeight={600}>
-        You currently have no access for this page
-      </Typography>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 5,
+          maxWidth: 550,
+          textAlign: "center",
+          borderRadius: 3,
+        }}>
+        <Typography variant="h5" fontWeight={600} mb={2}>
+          Access Restricted
+        </Typography>
 
-      <Typography variant="body1" mt={1}>
-        Please connect with Admin for requesting access.
-      </Typography>
+        <Typography variant="body1" color="text.secondary">
+          You currently do not have permission to view this page.
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary">
+          Please contact the administrator to request access.
+        </Typography>
+
+        <Box
+          mt={3}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}>
+          <EmailIcon fontSize="small" color="primary" />
+
+          <Link
+            href="mailto:admin@bengolspices.com"
+            underline="hover"
+            sx={{ fontWeight: 500 }}>
+            admin@bengolspices.com
+          </Link>
+        </Box>
+      </Paper>
     </Box>
   );
 };
