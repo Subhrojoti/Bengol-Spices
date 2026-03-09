@@ -38,7 +38,12 @@ router.put(
   checkPermission("canConfirmOrders"),
   confirmOrder,
 );
-router.put("/:orderId/cancel", protect, isAdminOrEmployee, cancelOrder);
+router.put(
+  "/:orderId/cancel",
+  protect,
+  checkPermission("canCancelOrders"),
+  cancelOrder,
+);
 //Assign Delivery Partner (Admin / Employee)
 router.put(
   "/:orderId/assign",
