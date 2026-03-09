@@ -281,22 +281,62 @@ const EmpCreation = () => {
                         </td>
 
                         <td className="px-8 py-4">
-                          <button
-                            disabled={permissionLoadingId === emp.employeeId}
-                            onClick={() => setConfirmModal(emp)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition
-      ${
-        emp.canManageProducts
-          ? "bg-green-50 text-green-600 hover:bg-red-50 hover:text-red-600"
-          : "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600"
-      }
-    `}>
-                            {permissionLoadingId === emp.employeeId
-                              ? "Updating..."
-                              : emp.canManageProducts
-                                ? "Can Manage Products"
-                                : "Limited Access"}
-                          </button>
+                          {(() => {
+                            const permissions = emp.permissions || {};
+                            const permissionValues = Object.values(permissions);
+                            const enabledCount =
+                              permissionValues.filter(Boolean).length;
+                            const totalPermissions = PERMISSIONS.length;
+
+                            let accessLabel = "No Access";
+
+                            if (enabledCount === totalPermissions) {
+                              accessLabel = "Full Access";
+                            } else if (enabledCount > 0) {
+                              accessLabel = "Limited Access";
+                            }
+
+                            return (
+                              <button
+                                disabled={
+                                  permissionLoadingId === emp.employeeId
+                                }
+                                onClick={() => {
+                                  setConfirmModal(emp);
+
+                                  const perms = emp.permissions || {};
+
+                                  setSelectedPermissions({
+                                    canManageProducts:
+                                      perms.canManageProducts || false,
+                                    canAssignDelivery:
+                                      perms.canAssignDelivery || false,
+                                    canConfirmOrders:
+                                      perms.canConfirmOrders || false,
+                                    canGetAllOrders:
+                                      perms.canGetAllOrders || false,
+                                    canGetAllDeliveryPartners:
+                                      perms.canGetAllDeliveryPartners || false,
+                                    canAssignReturn:
+                                      perms.canAssignReturn || false,
+                                    canViewDashboardSummary:
+                                      perms.canViewDashboardSummary || false,
+                                  });
+                                }}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition
+        ${
+          enabledCount === totalPermissions
+            ? "bg-green-50 text-green-600"
+            : enabledCount > 0
+              ? "bg-yellow-50 text-yellow-600"
+              : "bg-red-50 text-red-600"
+        }`}>
+                                {permissionLoadingId === emp.employeeId
+                                  ? "Updating..."
+                                  : accessLabel}
+                              </button>
+                            );
+                          })()}
                         </td>
 
                         <td className="px-8 py-4">
