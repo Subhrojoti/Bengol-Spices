@@ -67,7 +67,7 @@ export const createEmployee = async (req, res) => {
 export const getAllEmployees = async (req, res) => {
   try {
     const employees = await Employee.find()
-      .select("employeeId name email role canManageProducts status createdAt")
+      .select("employeeId name email role permissions status createdAt")
       .sort({ createdAt: -1 });
 
     return res.json({
@@ -116,6 +116,34 @@ export const updateEmployeePermissions = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to update permissions",
+    });
+  }
+};
+
+// EMPLOYEE - GET OWN PROFILE
+export const getEmployeeProfile = async (req, res) => {
+  try {
+    const employeeId = req.user.id; // coming from auth middleware
+
+    const employee = await Employee.findById(employeeId).select("-password");
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      employee,
+    });
+  } catch (error) {
+    console.error("GET EMPLOYEE PROFILE ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch employee profile",
     });
   }
 };

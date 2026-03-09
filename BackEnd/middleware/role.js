@@ -54,3 +54,14 @@ export const isAdminOrAllowedEmployee = (req, res, next) => {
     message: "Access denied",
   });
 };
+
+// Employee Access Middleware
+export const isEmployee = (req, res, next) => {
+  if (req.user.role !== "EMPLOYEE") {
+    return res.status(403).json({
+      success: false,
+      message: "EMPLOYEE access only",
+    });
+  }
+  next();
+};

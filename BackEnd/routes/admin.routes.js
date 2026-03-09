@@ -57,6 +57,11 @@ router.get(
   checkPermission("canViewDashboardSummary"),
   getDashboardSummary,
 );
-router.post("/agents/:agentId/approve", approveAgent);
+router.post(
+  "/agents/:agentId/approve",
+  protect,
+  checkPermission("canApproveAgents"),
+  approveAgent,
+);
 
 export default router;
