@@ -190,11 +190,12 @@ export const verifyStoreOtp = async ({ storeId, otp }) => {
 
 // Employee Creation
 
-export const createEmployee = async ({ name, email, password }) => {
+export const createEmployee = async ({ name, email, password, profilePic }) => {
   const response = await axiosInstance.post("/employee/create", {
     name,
     email,
     password,
+    profilePic,
   });
 
   return response.data;
@@ -378,6 +379,7 @@ export const getMyReturns = async () => {
   const response = await axiosInstance.get("/returns/my-returns");
   return response.data;
 };
+
 export const getAllReturns = async () => {
   const response = await axiosInstance.get("/returns/all");
   return response.data;
@@ -405,5 +407,12 @@ export const updateEmployeePermissions = async (employeeId, permissions) => {
 
 export const getDeliveryPartnerDashboard = async () => {
   const response = await axiosInstance.get("/delivery-partner/dashboard");
+  return response.data;
+};
+
+// Employee Profile
+
+export const getEmployeeProfile = async () => {
+  const response = await axiosInstance.get("/employee/profile");
   return response.data;
 };
