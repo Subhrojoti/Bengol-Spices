@@ -22,11 +22,7 @@ router.use(protect);
 // =============================
 
 // Admin updates employee permissions
-router.put(
-  "/employees/:employeeId/permissions",
-  isAdmin,
-  updateEmployeePermissions,
-);
+router.put("/:employeeId/permissions", isAdmin, updateEmployeePermissions);
 
 // =============================
 // PERMISSION BASED
