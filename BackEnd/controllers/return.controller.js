@@ -277,6 +277,35 @@ export const getAssignedReturns = async (req, res) => {
   }
 };
 
+//Get All Active Returns (Admin / Employee)
+export const getActiveReturns = async (req, res) => {
+  try {
+    const returns = await Return.find({
+      status: {
+        $in: [
+          "INITIATED",
+          "PICKUP_ASSIGNED",
+          "PICKED_UP",
+          "RECEIVED_AT_WAREHOUSE",
+        ],
+      },
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: returns.length,
+      returns,
+    });
+  } catch (error) {
+    console.error("GET ACTIVE RETURNS ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch active returns",
+    });
+  }
+};
+
 //Update Return Status by Delivery Partner
 export const updateReturnStatus = async (req, res) => {
   try {
