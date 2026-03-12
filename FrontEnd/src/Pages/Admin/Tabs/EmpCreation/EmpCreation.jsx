@@ -5,7 +5,7 @@ import {
   getAllEmployees,
   updateEmployeePermissions,
 } from "../../../../api/services";
-import { Tabs, Tab } from "@mui/material";
+import { Tabs, Tab, Switch } from "@mui/material";
 import ImageIcon from "@mui/icons-material/Image";
 
 const HEADER_HEIGHT = 64;
@@ -19,6 +19,7 @@ const PERMISSIONS = [
   { key: "canAssignReturn", label: "Assign Returns" },
   { key: "canViewDashboardSummary", label: "View Dashboard Summary" },
   { key: "canCancelOrders", label: "Cancel Orders" },
+  { key: "canManageAgents", label: "Manage Agents" },
 ];
 
 const EmpCreation = () => {
@@ -429,18 +430,26 @@ const EmpCreation = () => {
 
             <div className="space-y-3 max-h-72 overflow-y-auto">
               {PERMISSIONS.map((perm) => (
-                <label
+                <div
                   key={perm.key}
-                  className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg cursor-pointer transition">
+                  className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-lg transition">
                   <span className="text-sm text-slate-700">{perm.label}</span>
 
-                  <input
-                    type="checkbox"
+                  <Switch
                     checked={selectedPermissions[perm.key] || false}
                     onChange={() => handlePermissionChange(perm.key)}
-                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                    size="small"
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: "#2564ebd7", // blue thumb
+                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                        {
+                          backgroundColor: "#2563eb", // blue track
+                        },
+                    }}
                   />
-                </label>
+                </div>
               ))}
             </div>
 
