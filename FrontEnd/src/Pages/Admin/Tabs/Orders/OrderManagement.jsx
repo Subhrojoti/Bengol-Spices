@@ -8,6 +8,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -20,6 +21,19 @@ const OrderManagement = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [selectedCancelOrderId, setSelectedCancelOrderId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+  const statusOptions = [
+    "ALL",
+    "PLACED",
+    "CONFIRMED",
+    "ASSIGNED",
+    "SHIPPED",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "CANCELLED",
+  ];
 
   useEffect(() => {
     fetchOrders();
@@ -58,9 +72,43 @@ const OrderManagement = () => {
   }, [orders]);
 
   const consumerKeys = Object.keys(consumers);
-  const selectedOrders = selectedConsumer
-    ? consumers[selectedConsumer]?.orders
-    : [];
+  const selectedOrders = useMemo(() => {
+    if (!selectedConsumer) return [];
+
+    const ordersList = consumers[selectedConsumer]?.orders || [];
+
+    if (statusFilter === "ALL") return ordersList;
+
+    return ordersList.filter((order) => order.status === statusFilter);
+  }, [selectedConsumer, consumers, statusFilter]);
+
+  const orderCountLabel = useMemo(() => {
+    if (!selectedConsumer) return "";
+
+    const ordersList = consumers[selectedConsumer]?.orders || [];
+
+    if (statusFilter === "ALL") {
+      return `${ordersList.length} Total`;
+    }
+
+    const count = ordersList.filter(
+      (order) => order.status === statusFilter,
+    ).length;
+
+    return `${count} ${statusFilter.replaceAll("_", " ")}`;
+  }, [selectedConsumer, consumers, statusFilter]);
+
+  const availableStatusOptions = useMemo(() => {
+    if (!selectedConsumer) return [];
+
+    const ordersList = consumers[selectedConsumer]?.orders || [];
+
+    const uniqueStatuses = [
+      ...new Set(ordersList.map((order) => order.status)),
+    ];
+
+    return ["ALL", ...uniqueStatuses];
+  }, [selectedConsumer, consumers]);
 
   const toggleAccordion = (orderId) => {
     setExpandedOrder((prev) => (prev === orderId ? null : orderId));
@@ -181,8 +229,57 @@ const OrderManagement = () => {
 
         {/* RIGHT PANEL */}
         <div className="w-2/3 bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-blue-100">
-            <h2 className="text-xl font-semibold text-blue-800">Orders</h2>
+          <div className="p-6 border-b border-blue-100 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-blue-800 flex items-center gap-2">
+              Orders
+              {selectedConsumer && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
+                  {orderCountLabel}
+                </span>
+              )}
+            </h2>
+
+            {selectedConsumer && (
+              <div className="flex items-center gap-3">
+                {/* CLEAR FILTER BUTTON */}
+                {statusFilter !== "ALL" && (
+                  <button
+                    onClick={() => setStatusFilter("ALL")}
+                    className="px-3 text-xs bg-gray-200 hover:bg-gray-300 rounded-md">
+                    Clear Filter
+                  </button>
+                )}
+
+                {/* FILTER ICON */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFilterMenu((prev) => !prev)}
+                    className="p-2 rounded-full hover:bg-blue-100 transition">
+                    <FilterListIcon className="text-blue-700" />
+                  </button>
+
+                  {showFilterMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                      {availableStatusOptions.map((status) => (
+                        <div
+                          key={status}
+                          onClick={() => {
+                            setStatusFilter(status);
+                            setShowFilterMenu(false);
+                          }}
+                          className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 ${
+                            statusFilter === status
+                              ? "bg-blue-100 font-semibold"
+                              : ""
+                          }`}>
+                          {status.replaceAll("_", " ")}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
