@@ -277,6 +277,29 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+//GET ALL ACTIVE ORDERS (For admin/employee)
+export const getActiveOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      status: {
+        $in: ["PLACED", "CONFIRMED", "ASSIGNED", "SHIPPED", "OUT_FOR_DELIVERY"],
+      },
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+  } catch (error) {
+    console.error("GET ACTIVE ORDERS ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch active orders",
+    });
+  }
+};
+
 // Confirm order (ADMIN)
 export const confirmOrder = async (req, res) => {
   try {

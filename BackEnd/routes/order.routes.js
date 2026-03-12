@@ -12,6 +12,7 @@ import {
   verifyDeliveryOtp,
   completePayment,
   cancelOrder,
+  getActiveOrders,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
 import {
@@ -31,6 +32,15 @@ router.get("/store/:consumerId", protect, getOrdersByStoreConsumerId);
 router.get("/my-orders", protect, isAgent, getMyOrders);
 // ADMIN / EMPLOYEE
 router.get("/all", protect, checkPermission("canGetAllOrders"), getAllOrders);
+
+// GET ALL ACTIVE ORDERS (Admin / Employee)
+router.get(
+  "/active",
+  protect,
+  checkPermission("canGetAllOrders"),
+  getActiveOrders,
+);
+
 //Confirm Order (Admin / Employee)
 router.put(
   "/:orderId/confirm",
