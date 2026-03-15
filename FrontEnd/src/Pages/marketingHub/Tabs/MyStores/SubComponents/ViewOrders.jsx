@@ -37,6 +37,10 @@ import {
 } from "../../../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 
 /* ================= STEP ICON ================= */
 
@@ -118,7 +122,7 @@ const getReturnLabel = (status) => {
 
 const ViewOrders = ({ onBack, onCreate }) => {
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
-
+  const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
@@ -137,7 +141,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
   const latitude = location?.latitude;
   const longitude = location?.longitude;
-
+  const [filterAnchor, setFilterAnchor] = useState(null);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [returns, setReturns] = useState([]);
@@ -170,6 +175,41 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
     return orderSteps.findIndex((step) => step.key === normalizedStatus);
   }, [hasSelectedOrder, normalizedStatus, returnStatus, selectedReturn]);
+
+  // Map available status for filtering
+
+  const availableStatuses = useMemo(() => {
+    const statusSet = new Set();
+
+    orders.forEach((order) => {
+      const orderReturn = returns.find((ret) => ret.orderId === order.orderId);
+
+      if (orderReturn) {
+        statusSet.add(`RETURN_${normalizeStatus(orderReturn.status)}`);
+      } else {
+        statusSet.add(`ORDER_${normalizeStatus(order.status)}`);
+      }
+    });
+
+    return Array.from(statusSet);
+  }, [orders, returns]);
+
+  const filteredOrders = useMemo(() => {
+    if (!selectedStatusFilter) return orders;
+
+    return orders.filter((order) => {
+      const orderReturn = returns.find((ret) => ret.orderId === order.orderId);
+
+      if (orderReturn) {
+        return (
+          `RETURN_${normalizeStatus(orderReturn.status)}` ===
+          selectedStatusFilter
+        );
+      }
+
+      return `ORDER_${normalizeStatus(order.status)}` === selectedStatusFilter;
+    });
+  }, [orders, returns, selectedStatusFilter]);
 
   /* ================= API CALL ================= */
 
@@ -310,10 +350,46 @@ const ViewOrders = ({ onBack, onCreate }) => {
           {/* ===== STEPPER ===== */}
 
           <Box position="relative" px={2} py={1}>
-            <Box display="flex" alignItems="center" mb={2}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent={"space-between"}
+              mb={2}>
               <IconButton onClick={onBack}>
                 <ArrowBackIcon />
               </IconButton>
+              <IconButton onClick={(e) => setFilterAnchor(e.currentTarget)}>
+                <FilterListIcon />
+              </IconButton>
+              <Menu
+                anchorEl={filterAnchor}
+                open={Boolean(filterAnchor)}
+                onClose={() => setFilterAnchor(null)}>
+                <MenuItem
+                  onClick={() => {
+                    setSelectedStatusFilter(null);
+                    setFilterAnchor(null);
+                  }}>
+                  All Orders
+                </MenuItem>
+
+                {availableStatuses.map((status) => {
+                  const [type, key] = status.split("_", 2);
+
+                  return (
+                    <MenuItem
+                      key={status}
+                      onClick={() => {
+                        setSelectedStatusFilter(status);
+                        setFilterAnchor(null);
+                      }}>
+                      {type === "RETURN"
+                        ? getReturnLabel(key)
+                        : getOrderLabel(key)}
+                    </MenuItem>
+                  );
+                })}
+              </Menu>
             </Box>
 
             <Stepper activeStep={activeStep} alternativeLabel>
@@ -348,7 +424,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
           <Paper sx={{ flex: 1, p: 2, borderRadius: 3, overflowY: "auto" }}>
             <Stack spacing={2}>
-              {orders.map((order) => {
+              {filteredOrders.map((order) => {
                 const normalized = normalizeStatus(order.status);
 
                 const chipColor =
@@ -380,91 +456,161 @@ const ViewOrders = ({ onBack, onCreate }) => {
                           ? "primary.main"
                           : "transparent",
                     }}>
-                    <CardContent>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar
-                          variant="rounded"
-                          src={order.products?.[0]?.image || ""}
-                          sx={{ width: 64, height: 64, bgcolor: "#f3f4f6" }}>
-                          <InventoryIcon />
-                        </Avatar>
+                    <CardContent className="p-0">
+                      <div className="w-full">
+                        {/* Accordion Header */}
+                        <div
+                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+                          onClick={() =>
+                            setExpandedOrder((prev) =>
+                              prev === order.orderId ? null : order.orderId,
+                            )
+                          }>
+                          <div className="flex items-center gap-3 w-full">
+                            <Avatar
+                              variant="rounded"
+                              sx={(theme) => ({
+                                width: 64,
+                                height: 64,
+                                bgcolor:
+                                  theme.palette[
+                                    isReturnCard ? "secondary" : chipColor
+                                  ].main,
+                                color:
+                                  theme.palette[
+                                    isReturnCard ? "secondary" : chipColor
+                                  ].contrastText,
+                              })}>
+                              <InventoryIcon />
+                            </Avatar>
 
-                        <Box flex={1}>
-                          <Typography fontWeight={600}>
-                            {order.products?.[0]?.name}
-                          </Typography>
-
-                          <Typography variant="body2" color="text.secondary">
-                            {isReturnCard
-                              ? orderReturn.returnId
-                              : order.orderId}
-                          </Typography>
-
-                          <Typography variant="body2" color="text.secondary">
-                            Qty: {order.products?.[0]?.quantity}{" "}
-                            {order.products?.[0]?.uom}
-                          </Typography>
-
-                          <Typography variant="body2" color="text.secondary">
-                            ₹{order.products?.[0]?.unitPrice}
-                          </Typography>
-                        </Box>
-
-                        <Box textAlign="right">
-                          <Chip
-                            label={
-                              isReturnCard
-                                ? getReturnLabel(orderReturn.status)
-                                : getOrderLabel(order.status)
-                            }
-                            color={isReturnCard ? "secondary" : chipColor}
-                            size="small"
-                          />
-
-                          <Typography fontWeight={700} mt={0.5}>
-                            ₹{order.totalAmount}
-                          </Typography>
-
-                          {/* Return Order Button */}
-                          {normalized === "DELIVERED" && !isReturnCard && (
-                            <Typography
-                              sx={{
-                                color: "primary.main",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                mt: 2,
-                                "&:hover": { color: "brown" },
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedOrder(order);
-                                setReturnModalOpen(true);
-                              }}>
-                              Return your Order
-                            </Typography>
-                          )}
-
-                          {/* Cancel Return Button */}
-                          {isReturnCard &&
-                            orderReturn.status === "INITIATED" && (
-                              <Typography
-                                sx={{
-                                  color: "error.main",
-                                  fontWeight: 700,
-                                  cursor: "pointer",
-                                  mt: 2,
-                                  "&:hover": { color: "darkred" },
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedOrder(order);
-                                  setCancelModalOpen(true);
-                                }}>
-                                Cancel your Return
+                            <div className="flex-1">
+                              <Typography fontWeight={600}>
+                                {order.products?.length} Items
                               </Typography>
-                            )}
-                        </Box>
-                      </Stack>
+
+                              <Typography
+                                variant="body2"
+                                color="text.secondary">
+                                {isReturnCard
+                                  ? orderReturn.returnId
+                                  : order.orderId}
+                              </Typography>
+                            </div>
+
+                            <div className="text-right mr-2">
+                              <div className="flex items-center justify-end gap-1">
+                                {normalized === "DELIVERED" &&
+                                  !isReturnCard && (
+                                    <Chip
+                                      label="Return your Order"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedOrder(order);
+                                        setReturnModalOpen(true);
+                                      }}
+                                      sx={{
+                                        bgcolor: "primary.main",
+                                        color: "primary.contrastText",
+                                        cursor: "pointer",
+                                        "&:hover": {
+                                          bgcolor: "primary.dark",
+                                        },
+                                      }}
+                                    />
+                                  )}
+
+                                <Chip
+                                  label={
+                                    isReturnCard
+                                      ? getReturnLabel(orderReturn.status)
+                                      : getOrderLabel(order.status)
+                                  }
+                                  color={isReturnCard ? "secondary" : chipColor}
+                                  size="small"
+                                />
+                              </div>
+
+                              <Typography fontWeight={700} mt={0.5}>
+                                ₹{order.totalAmount}
+                              </Typography>
+
+                              {isReturnCard &&
+                                orderReturn.status === "INITIATED" && (
+                                  <Typography
+                                    sx={{
+                                      color: "error.main",
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                      mt: 1,
+                                      "&:hover": { color: "darkred" },
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedOrder(order);
+                                      setCancelModalOpen(true);
+                                    }}>
+                                    Cancel your Return
+                                  </Typography>
+                                )}
+                            </div>
+
+                            <ExpandMoreIcon
+                              className={`transition-transform duration-300 ${
+                                expandedOrder === order.orderId
+                                  ? "rotate-180"
+                                  : "rotate-0"
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Accordion Body */}
+                        <div
+                          className={`grid transition-all duration-300 ease-in-out ${
+                            expandedOrder === order.orderId
+                              ? "grid-rows-[1fr] opacity-100"
+                              : "grid-rows-[0fr] opacity-0"
+                          }`}>
+                          <div className="overflow-hidden">
+                            <div className="border-t bg-gray-50 px-4 py-3 space-y-3">
+                              {order.products?.map((product, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-3">
+                                  <Avatar
+                                    variant="rounded"
+                                    src={product.image || ""}
+                                    sx={{
+                                      width: 48,
+                                      height: 48,
+                                      bgcolor: "#c3c3c3",
+                                    }}>
+                                    <InventoryIcon fontSize="small" />
+                                  </Avatar>
+
+                                  <div className="flex-1">
+                                    <Typography fontWeight={600}>
+                                      {product.name}
+                                    </Typography>
+
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary">
+                                      Qty: {product.quantity} {product.uom}
+                                    </Typography>
+                                  </div>
+
+                                  <Typography fontWeight={600}>
+                                    ₹{product.unitPrice}
+                                  </Typography>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 );
