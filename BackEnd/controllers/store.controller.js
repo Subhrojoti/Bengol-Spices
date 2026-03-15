@@ -1,5 +1,8 @@
 import Store from "../models/store.js";
 import cloudinary from "../config/cloudinary.js";
+import AgentTargetProgress from "../models/AgentTargetProgress.js";
+
+//Store Creation - POST /api/stores
 export const createStore = async (req, res) => {
   let uploadedImageId = null;
 
@@ -74,6 +77,26 @@ export const createStore = async (req, res) => {
       },
       status: "ACTIVE",
     });
+
+    const today = new Date().toISOString().split("T")[0];
+
+    let progress = await AgentTargetProgress.findOne({
+      agentId: req.user.agentId,
+      date: today,
+      type: "STORE_CREATION",
+    });
+
+    if (!progress) {
+      await AgentTargetProgress.create({
+        agentId: req.user.agentId,
+        date: today,
+        type: "STORE_CREATION",
+        count: 1,
+      });
+    } else {
+      progress.count += 1;
+      await progress.save();
+    }
 
     return res.status(201).json({
       success: true,
