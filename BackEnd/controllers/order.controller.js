@@ -5,6 +5,7 @@ import Admin from "../models/Admin.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
+import Payment from "../models/Payment.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -659,10 +660,12 @@ export const verifyDeliveryOtp = async (req, res) => {
     });
   }
 };
-// Complete Payment (DELIVERY PARTNER)
-export const completePayment = async (req, res) => {
+
+// Collect Payment (Future code mode --- Razorpay / Stripe)
+export const collectPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
+    const { amount, method, note } = req.body;
 
     const order = await Order.findOne({ orderId });
 
@@ -673,20 +676,156 @@ export const completePayment = async (req, res) => {
       });
     }
 
-    order.paymentStatus = "COMPLETED";
+    if (order.agentId !== req.user.agentId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to collect payment for this order",
+      });
+    }
+
+    if (order.dueAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No due amount remaining",
+      });
+    }
+
+    if (amount > order.dueAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount exceeds due amount",
+      });
+    }
+
+    await Payment.create({
+      orderId: order.orderId,
+      consumerId: order.consumerId,
+      agentId: order.agentId,
+      amount,
+      method,
+      note,
+      collectedBy: {
+        id: req.user.agentId,
+        role: "AGENT",
+      },
+    });
+
+    order.paidAmount += amount;
+    order.dueAmount -= amount;
+
+    if (order.dueAmount === 0) {
+      order.paymentStatus = "COMPLETED";
+    }
+
     await order.save();
 
     res.json({
       success: true,
-      message: "Payment marked as completed",
+      message: "Payment recorded successfully",
+      paidAmount: order.paidAmount,
+      dueAmount: order.dueAmount,
+    });
+  } catch (error) {
+    console.error("COLLECT PAYMENT ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to collect payment",
+    });
+  }
+};
+
+// Payment history for an order (ADMIN / EMPLOYEE )
+export const getOrderPayments = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const payments = await Payment.find({ orderId }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: payments.length,
+      data: payments,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to update payment",
+      message: "Failed to fetch payments",
     });
   }
 };
+
+// Agent Due Orders (Agent can see all their orders with due amount > 0)
+export const getAgentDueOrders = async (req, res) => {
+  try {
+    const agentId = req.user.agentId;
+
+    const orders = await Order.find({
+      agentId,
+      dueAmount: { $gt: 0 },
+    }).sort({ dueDate: 1 });
+
+    res.json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch due orders",
+    });
+  }
+};
+
+// OverDue Orders (Admin / Employee can see all orders with due amount > 0 and past due date)
+export const getOverdueOrders = async (req, res) => {
+  try {
+    const today = new Date();
+
+    const orders = await Order.find({
+      dueAmount: { $gt: 0 },
+      dueDate: { $lt: today },
+    });
+
+    res.json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch overdue orders",
+    });
+  }
+};
+
+// Agent Collection Performance (Admin / Employee with permission can see total collected amount by each agent in a date range)
+export const getAgentCollectionPerformance = async (req, res) => {
+  try {
+    const performance = await Payment.aggregate([
+      {
+        $group: {
+          _id: "$agentId",
+          totalCollected: { $sum: "$amount" },
+          transactions: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      data: performance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to load performance",
+    });
+  }
+};
+
 // CREATE SHIPMENT (DUMMY VERSION)
 export const createShipment = async (req, res) => {
   try {

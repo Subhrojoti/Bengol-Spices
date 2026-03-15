@@ -10,9 +10,13 @@ import {
   updateDeliveryStatus,
   generateDeliveryOtp,
   verifyDeliveryOtp,
-  completePayment,
   cancelOrder,
   getActiveOrders,
+  collectPayment,
+  getOrderPayments,
+  getAgentDueOrders,
+  getOverdueOrders,
+  getAgentCollectionPerformance,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
 import {
@@ -82,13 +86,37 @@ router.put(
   isDeliveryPartner,
   verifyDeliveryOtp,
 );
-//Complete Payment (Future code mode --- Razorpay / Stripe)
-router.put(
-  "/:orderId/complete-payment",
+
+// Collect Payment (Agent Access Only)
+router.post("/:orderId/collect-payment", protect, isAgent, collectPayment);
+
+// Get Payment Info (Admin / Employee with permission)
+router.get(
+  "/:orderId/payments",
   protect,
-  isAdminOrEmployee,
-  completePayment,
+  checkPermission("canSeePaymentInfo"),
+  getOrderPayments,
 );
+
+// Agent Due Orders (Agent Access Only)
+router.get("/due-orders", protect, isAgent, getAgentDueOrders);
+
+// Get OverDue Orders (Admin / Employee with permission)
+router.get(
+  "/overdue-orders",
+  protect,
+  checkPermission("canSeePaymentInfo"),
+  getOverdueOrders,
+);
+
+// Get Agent CollectionPerformance (Admin / Employee with permission)
+router.get(
+  "/agent-collection-performance",
+  protect,
+  checkPermission("canSeePaymentInfo"),
+  getAgentCollectionPerformance,
+);
+
 // CREATE SHIPMENT (EMPLOYEE / ADMIN) [Future code mode --- ShipRocket]
 // router.post(
 //   "/:orderId/create-shipment",
