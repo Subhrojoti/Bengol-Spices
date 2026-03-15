@@ -60,7 +60,7 @@ const ProductList = ({ onBack }) => {
 
     const items = state.addToCart.carts[consumerId]?.items || [];
 
-    return items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    return items.length;
   });
 
   const FallBackImage =
