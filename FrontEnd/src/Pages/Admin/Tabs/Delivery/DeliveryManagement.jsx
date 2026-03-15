@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  getAllAgentOrders,
+  getActiveOrders,
   getAllDeliveryPartners,
   assignOrderToPartner,
-  getAllReturns,
+  getActiveReturns,
   assignReturnToPartner,
 } from "../../../../api/services";
 import { toast } from "react-toastify";
@@ -53,7 +53,7 @@ const DeliveryManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      const data = await getAllAgentOrders();
+      const data = await getActiveOrders();
       if (data?.success) {
         setOrders(data.orders);
       }
@@ -79,7 +79,7 @@ const DeliveryManagement = () => {
 
   const fetchReturns = async () => {
     try {
-      const data = await getAllReturns();
+      const data = await getActiveReturns();
       if (data?.success) {
         setReturns(data.returns || data.data || []);
       }
