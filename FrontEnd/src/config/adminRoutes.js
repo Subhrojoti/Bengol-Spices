@@ -12,9 +12,10 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { AllInbox, LocalShipping } from "@mui/icons-material";
+import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
 import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
 import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
+import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 
 export const adminRoutes = [
   {
@@ -46,6 +47,12 @@ export const adminRoutes = [
     path: "order-management",
     icon: AllInbox,
     component: OrderManagement,
+  },
+  {
+    label: "Returns",
+    path: "return-management",
+    icon: OutboxOutlined,
+    component: ReturnManagement,
   },
   {
     label: "Product Creation",

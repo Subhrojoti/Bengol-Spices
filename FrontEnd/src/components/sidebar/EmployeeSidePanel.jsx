@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getEmployeeProfile } from "../../api/services";
 import {
   Box,
   List,
@@ -11,6 +12,7 @@ import {
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { employeeRoutes } from "../../config/employeeRoutes";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { Avatar } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 
 const COLLAPSED_WIDTH = 64;
@@ -20,6 +22,37 @@ const EmployeeSidePanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
+  const [profile, setProfile] = useState(null);
+
+  const firstName = profile?.name?.trim().split(" ")[0] || "Employee";
+
+  const initials = profile?.name
+    ? profile.name
+        .trim()
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "E";
+
+  // Fetch profile
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getEmployeeProfile();
+
+        if (res?.success) {
+          setProfile(res.employee);
+        }
+      } catch (err) {
+        console.error("Failed to fetch employee profile");
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   /* ===================== LOGOUT ===================== */
   const handleLogout = () => {
@@ -66,10 +99,10 @@ const EmployeeSidePanel = () => {
         }}>
         {expanded ? (
           <Typography variant="h6" fontWeight={700} noWrap>
-            Employee Panel
+            Hello, {firstName}
           </Typography>
         ) : (
-          <Typography fontWeight={700}>E</Typography>
+          <Typography fontWeight={700}>{initials}</Typography>
         )}
       </Box>
 
@@ -82,57 +115,109 @@ const EmployeeSidePanel = () => {
             flexDirection: "column",
             height: "100%",
           }}>
-          {employeeRoutes.map((route) => {
-            const Icon = route.icon;
+          {employeeRoutes
+            .filter((route) => route.path !== "profile")
+            .map((route) => {
+              const Icon = route.icon;
 
-            const isActive = matchPath(
-              { path: `/employee/${route.path}`, end: true },
-              location.pathname,
-            );
+              const isActive = matchPath(
+                { path: `/employee/${route.path}`, end: true },
+                location.pathname,
+              );
 
-            return (
-              <ListItem key={route.path} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  onClick={() => navigate(`/employee/${route.path}`)}
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: expanded ? "flex-start" : "center",
-                    px: expanded ? 2 : 1.5,
-                    borderRadius: 2,
-                    backgroundColor: isActive
-                      ? "rgba(255,255,255,0.25)"
-                      : "transparent",
-                    transition: "all 200ms ease",
-                  }}>
-                  <ListItemIcon
+              return (
+                <ListItem key={route.path} disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    onClick={() => navigate(`/employee/${route.path}`)}
                     sx={{
-                      minWidth: 0,
-                      mr: expanded ? 2 : 0,
-                      justifyContent: "center",
-                      color: isActive ? "#7c28e2" : "#1c1f23",
+                      minHeight: 48,
+                      justifyContent: expanded ? "flex-start" : "center",
+                      px: expanded ? 2 : 1.5,
+                      borderRadius: 2,
+                      backgroundColor: isActive
+                        ? "rgba(255,255,255,0.25)"
+                        : "transparent",
+                      transition: "all 200ms ease",
                     }}>
-                    <Icon />
-                  </ListItemIcon>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: expanded ? 2 : 0,
+                        justifyContent: "center",
+                        color: isActive ? "#7c28e2" : "#1c1f23",
+                      }}>
+                      <Icon />
+                    </ListItemIcon>
 
-                  <ListItemText
-                    primary={route.label}
-                    sx={{
-                      opacity: expanded ? 1 : 0,
-                      whiteSpace: "nowrap",
-                      transition: "opacity 150ms ease",
-                    }}
-                    primaryTypographyProps={{
-                      fontSize: 14,
-                      fontWeight: isActive ? 600 : 500,
-                    }}
+                    <ListItemText
+                      primary={route.label}
+                      sx={{
+                        opacity: expanded ? 1 : 0,
+                        whiteSpace: "nowrap",
+                        transition: "opacity 150ms ease",
+                      }}
+                      primaryTypographyProps={{
+                        fontSize: 14,
+                        fontWeight: isActive ? 600 : 500,
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+
+          {/* PROFILE + LOGOUT — STICKED TO BOTTOM */}
+          <Box
+            sx={{
+              mt: "auto",
+
+              pb: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.5,
+            }}>
+            {/* Profile */}
+            <ListItemButton
+              onClick={() => navigate("/employee/profile")}
+              sx={{
+                minHeight: 48,
+                justifyContent: expanded ? "flex-start" : "center",
+                px: expanded ? 2 : 1.5,
+                borderRadius: 2,
+              }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: expanded ? 2 : 0,
+                  justifyContent: "center",
+                }}>
+                {profile?.profilePic?.url ? (
+                  <Avatar
+                    src={profile.profilePic.url}
+                    sx={{ width: 28, height: 28 }}
                   />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
+                ) : (
+                  <Avatar sx={{ width: 28, height: 28 }}>
+                    <PersonIcon fontSize="small" />
+                  </Avatar>
+                )}
+              </ListItemIcon>
 
-          {/* LOGOUT — STICKED TO BOTTOM */}
-          <ListItem disablePadding sx={{ mt: "auto" }}>
+              <ListItemText
+                primary="Profile"
+                sx={{
+                  opacity: expanded ? 1 : 0,
+                  whiteSpace: "nowrap",
+                  transition: "opacity 150ms ease",
+                }}
+                primaryTypographyProps={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              />
+            </ListItemButton>
+
+            {/* Logout */}
             <ListItemButton
               onClick={handleLogout}
               sx={{
@@ -146,7 +231,7 @@ const EmployeeSidePanel = () => {
                   minWidth: 0,
                   mr: expanded ? 2 : 0,
                   justifyContent: "center",
-                  color: "#ffffff",
+                  color: "#aa1717",
                 }}>
                 <LogoutIcon />
               </ListItemIcon>
@@ -161,11 +246,10 @@ const EmployeeSidePanel = () => {
                 primaryTypographyProps={{
                   fontSize: 14,
                   fontWeight: 600,
-                  color: "#ffffff",
                 }}
               />
             </ListItemButton>
-          </ListItem>
+          </Box>
         </List>
       </Box>
     </Box>

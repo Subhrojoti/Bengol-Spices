@@ -1,13 +1,35 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  getAllAgentOrders,
+  getActiveOrders,
   getAllDeliveryPartners,
   assignOrderToPartner,
-  getAllReturns,
+  getActiveReturns,
   assignReturnToPartner,
 } from "../../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+const statusColors = {
+  PLACED: "bg-blue-500 text-white",
+  CONFIRMED: "bg-indigo-600 text-white",
+  ASSIGNED: "bg-purple-600 text-white",
+  SHIPPED: "bg-orange-300 text-black",
+  OUT_FOR_DELIVERY: "bg-yellow-400 text-black",
+  DELIVERED: "bg-green-500 text-white",
+  CANCELLED: "bg-red-600 text-white",
+
+  // Return statuses
+  INITIATED: "bg-blue-400 text-white",
+  PICKUP_ASSIGNED: "bg-purple-500 text-white",
+  PICKED_UP: "bg-yellow-400 text-black",
+  RECEIVED_AT_WAREHOUSE: "bg-orange-400 text-black",
+  REFUND_PROCESSED: "bg-green-400 text-white",
+  COMPLETED: "bg-green-600 text-white",
+  CANCELLED: "bg-red-600 text-white",
+};
+
+const getStatusColor = (status) =>
+  statusColors[status] || "bg-gray-200 text-gray-700";
 
 const DeliveryManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -31,7 +53,7 @@ const DeliveryManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      const data = await getAllAgentOrders();
+      const data = await getActiveOrders();
       if (data?.success) {
         setOrders(data.orders);
       }
@@ -57,7 +79,7 @@ const DeliveryManagement = () => {
 
   const fetchReturns = async () => {
     try {
-      const data = await getAllReturns();
+      const data = await getActiveReturns();
       if (data?.success) {
         setReturns(data.returns || data.data || []);
       }
@@ -211,7 +233,8 @@ const DeliveryManagement = () => {
                       <div className="flex justify-between mb-2">
                         <p className="font-semibold text-sm">{order.orderId}</p>
 
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
                           {order.status}
                         </span>
                       </div>
@@ -256,7 +279,8 @@ const DeliveryManagement = () => {
                       <div className="flex justify-between mb-2">
                         <p className="font-semibold text-sm">{ret.returnId}</p>
 
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(ret.status)}`}>
                           {ret.status}
                         </span>
                       </div>

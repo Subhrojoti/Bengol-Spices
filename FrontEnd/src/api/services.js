@@ -416,3 +416,17 @@ export const getEmployeeProfile = async () => {
   const response = await axiosInstance.get("/employee/profile");
   return response.data;
 };
+
+// Get active orders
+
+export const getActiveOrders = async () => {
+  const response = await axiosInstance.get("/agent/orders/active");
+  return response.data;
+};
+
+// Get active returns
+
+export const getActiveReturns = async () => {
+  const response = await axiosInstance.get("/agent/orders/active");
+  return response.data;
+};
