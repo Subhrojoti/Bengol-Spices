@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Tabs, Tab, Box } from "@mui/material";
 import DuePayments from "./tabs/DuePayments";
-import OverduePayments from "./tabs/OverduePayments";
+import OverDuePayments from "./tabs/OverDuePayments";
+import CompletedPayments from "./tabs/CompletedPayments";
 
 const PaymentManagement = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -38,13 +39,15 @@ const PaymentManagement = () => {
           }}>
           <Tab label="Due Payments" />
           <Tab label="Overdue Payments" />
+          <Tab label="Completed Payments" />
         </Tabs>
       </Box>
 
       {/* Content */}
       <div className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
         {activeTab === 0 && <DuePayments />}
-        {activeTab === 1 && <OverduePayments />}
+        {activeTab === 1 && <OverDuePayments />}
+        {activeTab === 2 && <CompletedPayments />}
       </div>
     </div>
   );

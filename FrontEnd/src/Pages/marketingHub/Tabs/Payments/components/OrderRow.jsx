@@ -1,34 +1,35 @@
 import { Button } from "@mui/material";
 
-const OrderRow = ({ order }) => {
+const OrderRow = ({ order, onPayNow }) => {
   return (
     <div className="flex justify-between items-center border border-gray-200 rounded-lg p-4 bg-white">
-      {/* Order Number */}
       <p className="font-medium text-gray-800">{order.orderNo}</p>
 
-      {/* Status + Button */}
       <div className="flex items-center gap-4">
-        {/* order Status for testing */}
-        {/* <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-          {order.status}
-        </span> */}
-        {/* Payment Status */}
         <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700">
           {order.paymentStatus}
         </span>
-
-        {/* Pay Button */}
         <Button
           variant="contained"
-          color="primary"
           size="small"
+          onClick={
+            order.paymentStatus !== "COMPLETED"
+              ? () => onPayNow(order)
+              : undefined
+          }
           sx={{
             textTransform: "none",
             borderRadius: "8px",
             fontWeight: 500,
             px: 2,
+            backgroundColor:
+              order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
+            "&:hover": {
+              backgroundColor:
+                order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
+            },
           }}>
-          Pay Now
+          {order.paymentStatus === "COMPLETED" ? "PAID" : "Pay Now"}
         </Button>
       </div>
     </div>

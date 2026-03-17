@@ -20,6 +20,8 @@ const PERMISSIONS = [
   { key: "canViewDashboardSummary", label: "View Dashboard Summary" },
   { key: "canCancelOrders", label: "Cancel Orders" },
   { key: "canManageAgents", label: "Manage Agents" },
+  { key: "canSeePaymentInfo", label: "View Payment Info" },
+  { key: "canSetTargets", label: "Manage Daily Targets" },
 ];
 
 const EmpCreation = () => {

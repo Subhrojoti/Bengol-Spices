@@ -430,3 +430,27 @@ export const getActiveReturns = async () => {
   const response = await axiosInstance.get("/agent/orders/active");
   return response.data;
 };
+
+// Collect order payment
+
+export const collectOrderPayment = async (orderId, payload) => {
+  const response = await axiosInstance.post(
+    `/agent/orders/${orderId}/collect-payment`,
+    payload,
+  );
+  return response.data;
+};
+
+// Payment history
+
+export const getOrderPayments = async (orderId) => {
+  const response = await axiosInstance.get(`/agent/orders/${orderId}/payments`);
+  return response.data;
+};
+
+// Get Due Orders
+
+export const getDueOrders = async () => {
+  const response = await axiosInstance.get("/agent/orders/due-orders");
+  return response.data;
+};

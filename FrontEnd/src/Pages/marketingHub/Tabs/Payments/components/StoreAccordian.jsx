@@ -5,7 +5,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import OrderRow from "./OrderRow";
 
-const StoreAccordion = ({ store }) => {
+const StoreAccordion = ({ store, onPayNow }) => {
   const [open, setOpen] = useState(false);
 
   const { storeName, ownerName, image, orders = [] } = store || {};
@@ -65,7 +65,11 @@ const StoreAccordion = ({ store }) => {
             {orders
               .filter((order) => order.status !== "CANCELLED")
               .map((order) => (
-                <OrderRow key={order._id} order={order} />
+                <OrderRow
+                  key={order.orderNo}
+                  order={order}
+                  onPayNow={onPayNow}
+                />
               ))}
           </div>
         </div>
