@@ -1,17 +1,18 @@
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import LocalShipping from "@mui/icons-material/LocalShipping";
-import AllInbox from "@mui/icons-material/AllInbox";
+
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import Groups3Icon from "@mui/icons-material/Groups3";
 import AdminDashboard from "../pages/Admin/Tabs/AdminDashboard/AdminDashboard";
 import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
 import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
+import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
 import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
 import PersonIcon from "@mui/icons-material/Person";
 import EmpProfile from "../components/profile/EmpProfile";
 import Agent from "../pages/Admin/Tabs/Agent/Agent";
+import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
 
 export const employeeRoutes = [
   {
@@ -47,6 +48,13 @@ export const employeeRoutes = [
     icon: AllInbox,
     permission: "canGetAllOrders",
     component: OrderManagement,
+  },
+  {
+    label: "Returns",
+    path: "return-management",
+    permission: "canAssignReturn",
+    icon: OutboxOutlined,
+    component: ReturnManagement,
   },
   {
     label: "Product Creation",
