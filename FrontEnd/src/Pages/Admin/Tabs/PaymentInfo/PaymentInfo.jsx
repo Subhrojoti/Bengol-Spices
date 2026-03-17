@@ -112,19 +112,33 @@ const PaymentInfo = () => {
                   setOpenStore(openStore === index ? null : index)
                 }>
                 <div className="flex items-center gap-4">
-                  {/* Store Avatar */}
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      bgcolor: "primary.main",
-                    }}>
-                    <StorefrontIcon sx={{ color: "#fff" }} />
-                  </Box>
+                  {store.storeImage ? (
+                    <Box
+                      component="img"
+                      src={store.storeImage}
+                      alt={store.storeName}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "1px solid #e5e7eb",
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: "primary.main",
+                      }}>
+                      <StorefrontIcon sx={{ color: "#fff" }} />
+                    </Box>
+                  )}
 
                   {/* Store Info */}
                   <div className="flex flex-col">
@@ -134,7 +148,7 @@ const PaymentInfo = () => {
                     </p>
 
                     {/* Consumer ID */}
-                    <p className="text-xs text-gray-400">{store.consumerId}</p>
+                    <p className="text-xs text-gray-500">{store.consumerId}</p>
 
                     {/* Location */}
                     <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
