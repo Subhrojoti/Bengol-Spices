@@ -454,3 +454,12 @@ export const getDueOrders = async () => {
   const response = await axiosInstance.get("/agent/orders/due-orders");
   return response.data;
 };
+
+// Payment Summary
+
+export const getPaymentSummary = async () => {
+  const response = await axiosInstance.get(
+    "/agent/orders/complete-payment-summary",
+  );
+  return response.data;
+};
