@@ -15,15 +15,11 @@ import {
   collectPayment,
   getOrderPayments,
   getAgentDueOrders,
-  getOverdueOrders,
   getAgentCollectionPerformance,
+  getCompletePaymentSummary,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
-import {
-  isAdminOrEmployee,
-  isAgent,
-  isDeliveryPartner,
-} from "../middleware/role.js";
+import { isAgent, isDeliveryPartner } from "../middleware/role.js";
 import { checkPermission } from "../middleware/permission.js";
 
 const router = express.Router();
@@ -103,10 +99,10 @@ router.get("/due-orders", protect, isAgent, getAgentDueOrders);
 
 // Get OverDue Orders (Admin / Employee with permission)
 router.get(
-  "/overdue-orders",
+  "/complete-payment-summary",
   protect,
   checkPermission("canSeePaymentInfo"),
-  getOverdueOrders,
+  getCompletePaymentSummary,
 );
 
 // Get Agent CollectionPerformance (Admin / Employee with permission)
