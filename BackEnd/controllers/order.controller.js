@@ -763,6 +763,7 @@ export const getAgentDueOrders = async (req, res) => {
     const orders = await Order.find({
       agentId,
       dueAmount: { $gt: 0 },
+      status: { $ne: "CANCELLED" },
     }).sort({ dueDate: 1 });
 
     res.json({
@@ -779,24 +780,114 @@ export const getAgentDueOrders = async (req, res) => {
 };
 
 // OverDue Orders (Admin / Employee can see all orders with due amount > 0 and past due date)
-export const getOverdueOrders = async (req, res) => {
+export const getCompletePaymentSummary = async (req, res) => {
   try {
-    const today = new Date();
+    // 🔍 Filters from query params
+    const { agentId, consumerId, paymentStatus, method, fromDate, toDate } =
+      req.query;
 
-    const orders = await Order.find({
-      dueAmount: { $gt: 0 },
-      dueDate: { $lt: today },
+    /* =============================
+       BUILD ORDER FILTER
+       ============================= */
+    const orderFilter = {};
+
+    if (agentId) orderFilter.agentId = agentId;
+    if (consumerId) orderFilter.consumerId = consumerId;
+    if (paymentStatus) orderFilter.paymentStatus = paymentStatus;
+
+    // ❌ Exclude cancelled orders
+    orderFilter.status = { $ne: "CANCELLED" };
+
+    // 📅 Date filter (order created date)
+    if (fromDate || toDate) {
+      orderFilter.createdAt = {};
+      if (fromDate) orderFilter.createdAt.$gte = new Date(fromDate);
+      if (toDate) orderFilter.createdAt.$lte = new Date(toDate);
+    }
+
+    /* =============================
+       FETCH ORDERS
+       ============================= */
+    const orders = await Order.find(orderFilter).sort({ createdAt: -1 }).lean(); // 🚀 faster & safe
+
+    const orderIds = orders.map((o) => o.orderId);
+
+    /* =============================
+       FETCH PAYMENTS
+       ============================= */
+    const paymentFilter = {
+      orderId: { $in: orderIds },
+    };
+
+    if (method) paymentFilter.method = method;
+
+    const payments = await Payment.find(paymentFilter).lean();
+
+    /* =============================
+       GROUP PAYMENTS BY ORDER
+       ============================= */
+    const paymentMap = {};
+
+    payments.forEach((p) => {
+      if (!paymentMap[p.orderId]) {
+        paymentMap[p.orderId] = [];
+      }
+      paymentMap[p.orderId].push(p);
     });
 
+    /* =============================
+       BUILD FINAL RESPONSE
+       ============================= */
+    const summary = orders.map((order) => {
+      const orderPayments = paymentMap[order.orderId] || [];
+
+      const totalPaid = orderPayments.reduce((sum, p) => sum + p.amount, 0);
+
+      return {
+        orderId: order.orderId,
+        consumerId: order.consumerId,
+        agentId: order.agentId,
+
+        // 💰 Order financials
+        totalAmount: order.totalAmount,
+        paidAmount: totalPaid,
+        dueAmount: order.totalAmount - totalPaid,
+
+        paymentStatus: order.paymentStatus,
+        orderStatus: order.status,
+
+        dueDate: order.dueDate,
+        createdAt: order.createdAt,
+
+        // 📍 Store info (important for admin UI)
+        store: order.deliveryAddress?.storeName,
+        phone: order.deliveryAddress?.phone,
+        city: order.deliveryAddress?.city,
+        state: order.deliveryAddress?.state,
+
+        // 💳 Payment breakdown
+        payments: orderPayments.map((p) => ({
+          amount: p.amount,
+          method: p.method,
+          collectedAt: p.createdAt,
+          collectedBy: p.collectedBy?.id,
+        })),
+      };
+    });
+
+    /* =============================
+       RESPONSE
+       ============================= */
     res.json({
       success: true,
-      count: orders.length,
-      data: orders,
+      count: summary.length,
+      data: summary,
     });
   } catch (error) {
+    console.error("Payment Summary Error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch overdue orders",
+      message: "Failed to fetch payment summary",
     });
   }
 };
