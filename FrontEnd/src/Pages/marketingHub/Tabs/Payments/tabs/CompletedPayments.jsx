@@ -65,18 +65,22 @@ const CompletedPayments = () => {
   }, []);
 
   return (
-    <div>
+    <div className="w-full">
       {stores.length === 0 ? (
-        <Typography align="center" sx={{ mt: 4 }}>
-          No completed payments available
-        </Typography>
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center border border-gray-200 rounded-xl bg-gray-50">
+          <div className="text-5xl mb-3">📦</div>
+
+          <h2 className="text-lg font-semibold text-gray-700">
+            No Completed Payments
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Completed orders will appear here once payments are settled.
+          </p>
+        </div>
       ) : (
         stores.map((store, index) => (
-          <StoreAccordion
-            key={index}
-            store={store}
-            onPayNow={() => {}} // no payment action needed
-          />
+          <StoreAccordion key={index} store={store} onPayNow={() => {}} />
         ))
       )}
     </div>

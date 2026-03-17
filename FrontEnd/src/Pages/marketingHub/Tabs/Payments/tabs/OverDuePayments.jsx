@@ -127,14 +127,30 @@ const OverDuePayments = () => {
   }, []);
 
   return (
-    <div>
-      {stores.map((store, index) => (
-        <StoreAccordion
-          key={index}
-          store={store}
-          onPayNow={handleOpenPayment}
-        />
-      ))}
+    <div className="w-full">
+      {stores.length === 0 ? (
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center border border-gray-200 rounded-xl bg-gray-50">
+          <div className="text-5xl mb-3">⚠️</div>
+
+          <h2 className="text-lg font-semibold text-gray-700">
+            No Overdue Payments
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            No payments have crossed the overdue period.
+          </p>
+        </div>
+      ) : (
+        <>
+          {stores.map((store, index) => (
+            <StoreAccordion
+              key={index}
+              store={store}
+              onPayNow={handleOpenPayment}
+            />
+          ))}
+        </>
+      )}
 
       <PaymentModal
         open={openPaymentModal}
