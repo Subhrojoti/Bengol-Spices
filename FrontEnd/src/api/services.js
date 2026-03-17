@@ -463,3 +463,12 @@ export const getPaymentSummary = async () => {
   );
   return response.data;
 };
+
+// Agent Performance based on collection
+
+export const getAgentPerformance = async () => {
+  const response = await axiosInstance.get(
+    "/agent/orders/agent-collection-performance",
+  );
+  return response.data;
+};
