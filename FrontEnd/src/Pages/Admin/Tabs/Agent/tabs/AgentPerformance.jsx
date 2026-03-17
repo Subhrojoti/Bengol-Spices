@@ -52,7 +52,7 @@ export default function AgentPerformance() {
   }, [data]);
 
   /* ================= CHART DATA FIX ================= */
-  // 👉 Create wave even if single data
+  // Create wave even if single data
   const chartData =
     data.length === 1
       ? [

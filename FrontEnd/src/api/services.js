@@ -472,3 +472,19 @@ export const getAgentPerformance = async () => {
   );
   return response.data;
 };
+
+// Create Targets
+
+export const createTarget = async (payload) => {
+  const response = await axiosInstance.post("/targets/admin/create", payload);
+  return response.data;
+};
+
+// Get target performance
+
+// services.js
+
+export const getTargetPerformance = async () => {
+  const response = await axiosInstance.get("/targets/admin/performance");
+  return response.data;
+};

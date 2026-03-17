@@ -11,11 +11,13 @@ import Groups3Icon from "@mui/icons-material/Groups3";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import PaymentIcon from "@mui/icons-material/Payment";
+import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
 import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
 import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
 import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
+import Targets from "../pages/Admin/Tabs/Targets/Targets";
 
 export const adminRoutes = [
   {
@@ -72,5 +74,11 @@ export const adminRoutes = [
     path: "payment-summary",
     icon: PaymentIcon,
     component: PaymentInfo,
+  },
+  {
+    label: "Targets",
+    path: "target-management",
+    icon: AdsClickIcon,
+    component: Targets,
   },
 ];
