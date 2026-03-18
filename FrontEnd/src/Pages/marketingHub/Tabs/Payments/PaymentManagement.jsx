@@ -34,7 +34,7 @@ const PaymentManagement = () => {
             },
             "& .Mui-selected": {
               backgroundColor: "primary.main",
-              color: "#fff",
+              color: "#fff !important",
             },
           }}>
           <Tab label="Due Payments" />

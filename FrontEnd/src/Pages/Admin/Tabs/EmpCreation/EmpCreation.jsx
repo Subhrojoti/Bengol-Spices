@@ -371,31 +371,24 @@ const EmpCreation = () => {
 
                                   const perms = emp.permissions || {};
 
-                                  setSelectedPermissions({
-                                    canManageProducts:
-                                      perms.canManageProducts || false,
-                                    canAssignDelivery:
-                                      perms.canAssignDelivery || false,
-                                    canConfirmOrders:
-                                      perms.canConfirmOrders || false,
-                                    canGetAllOrders:
-                                      perms.canGetAllOrders || false,
-                                    canGetAllDeliveryPartners:
-                                      perms.canGetAllDeliveryPartners || false,
-                                    canAssignReturn:
-                                      perms.canAssignReturn || false,
-                                    canViewDashboardSummary:
-                                      perms.canViewDashboardSummary || false,
-                                  });
+                                  const updatedPermissions = PERMISSIONS.reduce(
+                                    (acc, perm) => {
+                                      acc[perm.key] = perms[perm.key] || false;
+                                      return acc;
+                                    },
+                                    {},
+                                  );
+
+                                  setSelectedPermissions(updatedPermissions);
                                 }}
                                 className={`px-3 py-1 rounded-full text-xs font-medium transition
-        ${
-          enabledCount === totalPermissions
-            ? "bg-green-50 text-green-600"
-            : enabledCount > 0
-              ? "bg-yellow-50 text-yellow-600"
-              : "bg-red-50 text-red-600"
-        }`}>
+                                  ${
+                                    enabledCount === totalPermissions
+                                      ? "bg-green-50 text-green-600"
+                                      : enabledCount > 0
+                                        ? "bg-yellow-50 text-yellow-600"
+                                        : "bg-red-50 text-red-600"
+                                  }`}>
                                 {permissionLoadingId === emp.employeeId
                                   ? "Updating..."
                                   : accessLabel}

@@ -482,9 +482,14 @@ export const createTarget = async (payload) => {
 
 // Get target performance
 
-// services.js
-
 export const getTargetPerformance = async () => {
   const response = await axiosInstance.get("/targets/admin/performance");
   return response.data;
+};
+
+// Get daily target
+
+export const getDailyTarget = async () => {
+  const res = await axiosInstance.get("/targets/agent/today-target");
+  return res.data;
 };
