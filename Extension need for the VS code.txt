@@ -32,3 +32,31 @@ Need to Fix
 - Login Page Image update for All Login 
 - Proper Routing
 - All registration page instant photo click and upload changes
+- Permission Updated fix re-login should not be required
+
+Need To Do
+canSetTarget // permission
+Target feature
+Sale Area
+Due payment Integration
+Invoice Generation
+Cupon Code
+policy Page
+Agent DashBoard
+Employee Dashboard ---> same as Admin Dashboard
+Integration of Product Barcode Scan//
+-CSV file transfer
+
+Need One Search API for Admin and Employee so that They can search anyAgent By agentID
+
+Delivery App Pending APIs
+- Profile settings (info)
+- notifications
+- new Tab , completed tab deliveredOrders/Returns
+
+
+Fetures need to added
+- Notification after given access to employee.
+
+-New feature 
+per packet commission daily target
