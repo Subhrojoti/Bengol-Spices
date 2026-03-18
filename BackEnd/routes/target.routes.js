@@ -25,7 +25,8 @@ router.get("/agent/today-target", protect, isAgent, getTodayTarget);
 router.get(
   "/admin/performance",
   protect,
-  checkPermission("canSetTargets"),
+  checkPermission("canManageAgents"),
   getTargetPerformance,
 );
+
 export default router;
