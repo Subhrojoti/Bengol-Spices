@@ -31,7 +31,7 @@ router.put("/:employeeId/permissions", isAdmin, updateEmployeePermissions);
 // Approve Agent
 router.post(
   "/agents/:agentId/approve",
-  checkPermission("canApproveAgents"),
+  checkPermission("canManageAgents"),
   approveAgent,
 );
 
