@@ -29,14 +29,17 @@ const DuePayments = () => {
 
   const handleSubmitPayment = async () => {
     try {
+      const amount = Number(paymentAmount);
+
       const payload = {
-        amount: Number(paymentAmount),
+        amount,
         method: "CASH",
         note: "Payment collected",
       };
 
       await collectOrderPayment(selectedOrder.orderNo, payload);
 
+      // ✅ FIX: update both paid + due correctly
       setStores((prevStores) =>
         prevStores.map((store) => ({
           ...store,
@@ -44,9 +47,10 @@ const DuePayments = () => {
             order.orderNo === selectedOrder.orderNo
               ? {
                   ...order,
-                  dueAmount: order.dueAmount - paymentAmount,
+                  paidAmount: order.paidAmount + amount,
+                  dueAmount: order.dueAmount - amount,
                   paymentStatus:
-                    order.dueAmount - paymentAmount <= 0 ? "PAID" : "PARTIAL",
+                    order.dueAmount - amount <= 0 ? "COMPLETED" : "PARTIAL",
                 }
               : order,
           ),
@@ -64,15 +68,15 @@ const DuePayments = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch store metadata (includes image, name, etc.)
+        // 1️⃣ Fetch store metadata
         const storesRes = await myStores();
         const storesData = storesRes?.stores || [];
 
-        // Fetch due orders (already filtered from backend)
+        // 2️⃣ Fetch due orders
         const dueOrdersRes = await getDueOrders();
         const dueOrders = dueOrdersRes?.data || [];
 
-        // Group orders by consumerId (NO CANCELLED FILTER)
+        // 3️⃣ Group orders by consumerId
         const ordersMap = dueOrders.reduce((acc, order) => {
           const key = order.consumerId;
 
@@ -83,21 +87,26 @@ const DuePayments = () => {
             orderId: order.orderId,
             deliveryAddress: order.deliveryAddress,
             paymentStatus: order.paymentStatus,
-            dueAmount: order.dueAmount,
+
+            // ✅ FIX: include all required fields
             totalAmount: order.totalAmount,
+            paidAmount: order.paidAmount,
+            dueAmount: order.dueAmount,
+            createdAt: order.createdAt,
+
             status: order.status,
           });
 
           return acc;
         }, {});
 
-        // Merge stores with their respective due orders
+        // 4️⃣ Merge stores with orders
         const storesWithOrders = storesData.map((store) => ({
           ...store,
           orders: ordersMap[store.consumerId] || [],
         }));
 
-        // OPTIONAL: hide stores with no due orders
+        // 5️⃣ Filter stores with orders
         const filteredStores = storesWithOrders.filter(
           (store) => store.orders.length > 0,
         );
@@ -112,14 +121,30 @@ const DuePayments = () => {
   }, []);
 
   return (
-    <div>
-      {stores.map((store, index) => (
-        <StoreAccordion
-          key={index}
-          store={store}
-          onPayNow={handleOpenPayment}
-        />
-      ))}
+    <div className="w-full">
+      {stores.length === 0 ? (
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center border border-gray-200 rounded-xl bg-gray-50">
+          <div className="text-5xl mb-3">💰</div>
+
+          <h2 className="text-lg font-semibold text-gray-700">
+            No Due Payments
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            All payments are cleared. No pending dues at the moment.
+          </p>
+        </div>
+      ) : (
+        <>
+          {stores.map((store, index) => (
+            <StoreAccordion
+              key={index}
+              store={store}
+              onPayNow={handleOpenPayment}
+            />
+          ))}
+        </>
+      )}
 
       <PaymentModal
         open={openPaymentModal}

@@ -28,8 +28,10 @@ const OverDuePayments = () => {
 
   const handleSubmitPayment = async () => {
     try {
+      const amount = Number(paymentAmount);
+
       const payload = {
-        amount: Number(paymentAmount),
+        amount,
         method: "CASH",
         note: "Payment collected",
       };
@@ -43,11 +45,10 @@ const OverDuePayments = () => {
             order.orderNo === selectedOrder.orderNo
               ? {
                   ...order,
-                  dueAmount: order.dueAmount - paymentAmount,
+                  paidAmount: order.paidAmount + amount,
+                  dueAmount: order.dueAmount - amount,
                   paymentStatus:
-                    order.dueAmount - paymentAmount <= 0
-                      ? "COMPLETED"
-                      : "PARTIAL",
+                    order.dueAmount - amount <= 0 ? "COMPLETED" : "PARTIAL",
                 }
               : order,
           ),
@@ -75,7 +76,7 @@ const OverDuePayments = () => {
 
         const today = new Date();
 
-        // Overdue filter: today > createdAt + 7 days AND dueAmount > 0
+        // Overdue filter
         const overdueOrders = dueOrders.filter((order) => {
           if (order.dueAmount <= 0) return false;
 
@@ -97,16 +98,19 @@ const OverDuePayments = () => {
             orderId: order.orderId,
             deliveryAddress: order.deliveryAddress,
             paymentStatus: order.paymentStatus,
-            dueAmount: order.dueAmount,
+
             totalAmount: order.totalAmount,
-            status: order.status,
+            paidAmount: order.paidAmount,
+            dueAmount: order.dueAmount,
             createdAt: order.createdAt,
+
+            status: order.status,
           });
 
           return acc;
         }, {});
 
-        // Merge with stores (preserve image + metadata)
+        // Merge with stores
         const storesWithOrders = storesData.map((store) => ({
           ...store,
           orders: ordersMap[store.consumerId] || [],
@@ -127,14 +131,30 @@ const OverDuePayments = () => {
   }, []);
 
   return (
-    <div>
-      {stores.map((store, index) => (
-        <StoreAccordion
-          key={index}
-          store={store}
-          onPayNow={handleOpenPayment}
-        />
-      ))}
+    <div className="w-full">
+      {stores.length === 0 ? (
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center border border-gray-200 rounded-xl bg-gray-50">
+          <div className="text-5xl mb-3">⚠️</div>
+
+          <h2 className="text-lg font-semibold text-gray-700">
+            No Overdue Payments
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            No payments have crossed the overdue period.
+          </p>
+        </div>
+      ) : (
+        <>
+          {stores.map((store, index) => (
+            <StoreAccordion
+              key={index}
+              store={store}
+              onPayNow={handleOpenPayment}
+            />
+          ))}
+        </>
+      )}
 
       <PaymentModal
         open={openPaymentModal}

@@ -454,3 +454,42 @@ export const getDueOrders = async () => {
   const response = await axiosInstance.get("/agent/orders/due-orders");
   return response.data;
 };
+
+// Payment Summary
+
+export const getPaymentSummary = async () => {
+  const response = await axiosInstance.get(
+    "/agent/orders/complete-payment-summary",
+  );
+  return response.data;
+};
+
+// Agent Performance based on collection
+
+export const getAgentPerformance = async () => {
+  const response = await axiosInstance.get(
+    "/agent/orders/agent-collection-performance",
+  );
+  return response.data;
+};
+
+// Create Targets
+
+export const createTarget = async (payload) => {
+  const response = await axiosInstance.post("/targets/admin/create", payload);
+  return response.data;
+};
+
+// Get target performance
+
+export const getTargetPerformance = async () => {
+  const response = await axiosInstance.get("/targets/admin/performance");
+  return response.data;
+};
+
+// Get daily target
+
+export const getDailyTarget = async () => {
+  const res = await axiosInstance.get("/targets/agent/today-target");
+  return res.data;
+};

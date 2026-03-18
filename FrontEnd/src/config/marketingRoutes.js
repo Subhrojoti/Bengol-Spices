@@ -25,7 +25,12 @@ export const marketingRoutes = [
       () => import("../pages/MarketingHub/Tabs/MyStores/MyStoresBase"),
     ),
   },
-
+  {
+    label: "Targets",
+    path: "daily-targets",
+    fullPath: "/marketing/daily-targets",
+    component: lazy(() => import("../pages/MarketingHub/Tabs/Targets/Targets")),
+  },
   {
     label: "Payments",
     path: "payments",

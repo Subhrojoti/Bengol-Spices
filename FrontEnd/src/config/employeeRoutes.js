@@ -10,8 +10,12 @@ import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
 import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
 import PersonIcon from "@mui/icons-material/Person";
+import PaymentIcon from "@mui/icons-material/Payment";
+import AdsClickIcon from "@mui/icons-material/AdsClick";
 import EmpProfile from "../components/profile/EmpProfile";
 import Agent from "../pages/Admin/Tabs/Agent/Agent";
+import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
+import Targets from "../pages/Admin/Tabs/Targets/Targets";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
 
 export const employeeRoutes = [
@@ -32,7 +36,7 @@ export const employeeRoutes = [
     label: "Agent",
     path: "agent",
     icon: Groups3Icon,
-    permission: "canApproveAgents",
+    permission: "canManageAgents",
     component: Agent,
   },
   {
@@ -69,5 +73,19 @@ export const employeeRoutes = [
     icon: ListAltIcon,
     permission: "canManageProducts",
     component: AllProducts,
+  },
+  {
+    label: "Payment Info",
+    path: "payment-summary",
+    icon: PaymentIcon,
+    permission: "canSeePaymentInfo",
+    component: PaymentInfo,
+  },
+  {
+    label: "Targets",
+    path: "target-management",
+    permission: "canSetTargets",
+    icon: AdsClickIcon,
+    component: Targets,
   },
 ];

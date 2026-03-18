@@ -3,12 +3,22 @@ import { Avatar, Typography } from "@mui/material";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PhoneIcon from "@mui/icons-material/Phone";
 import OrderRow from "./OrderRow";
 
 const StoreAccordion = ({ store, onPayNow }) => {
   const [open, setOpen] = useState(false);
 
-  const { storeName, ownerName, image, orders = [] } = store || {};
+  const {
+    storeName,
+    ownerName,
+    image,
+    orders,
+    consumerId,
+    address,
+    phone = [],
+  } = store || {};
 
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden mb-4 bg-white">
@@ -31,11 +41,27 @@ const StoreAccordion = ({ store, onPayNow }) => {
 
           {/* Store Details */}
           <div className="flex-1">
-            <Typography fontWeight={600}>{storeName}</Typography>
+            <Typography fontWeight={600}>
+              {storeName} - {consumerId}
+            </Typography>
 
             <Typography variant="body2" color="text.secondary">
               Owner: {ownerName}
             </Typography>
+
+            {/* Location */}
+            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+              <LocationOnIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
+              <span>
+                {address.city}, {address.state}
+              </span>
+            </div>
+
+            {/* Phone (below location) */}
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <PhoneIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
+              <span>{phone}</span>
+            </div>
           </div>
 
           {/* Order Count */}
