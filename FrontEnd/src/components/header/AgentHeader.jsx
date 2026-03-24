@@ -48,7 +48,7 @@ const AgentHeader = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("agentToken");
     localStorage.removeItem("role");
     navigate("/agent/login", { replace: true });
   };

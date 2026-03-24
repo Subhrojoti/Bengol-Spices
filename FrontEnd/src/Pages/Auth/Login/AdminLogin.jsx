@@ -55,7 +55,7 @@ export default function Login() {
       const data = await adminLogin(email, password);
 
       if (data.success) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("adminToken", data.token);
         localStorage.setItem("role", "ADMIN");
 
         navigate("/admin/dashboard", { replace: true });

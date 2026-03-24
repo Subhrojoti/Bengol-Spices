@@ -58,7 +58,7 @@ export default function Login() {
       const data = await agentLogin(agentId, password);
 
       if (data.success) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("agentToken", data.token);
         localStorage.setItem("role", "AGENT");
 
         navigate("/marketing", { replace: true });
@@ -222,7 +222,7 @@ export default function Login() {
               Not an agent yet?{" "}
               <Link
                 component={RouterLink}
-                to="/onboarding"
+                to="/agent-onboarding"
                 underline="hover"
                 sx={{ fontWeight: 600 }}>
                 Apply Now

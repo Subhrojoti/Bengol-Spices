@@ -56,7 +56,7 @@ export default function EmployeeLogin() {
       const data = await employeeLogin(employeeId, password);
 
       if (data.success) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("employeeToken", data.token);
         localStorage.setItem("role", "EMPLOYEE");
 
         navigate("/employee/dashboard", { replace: true });

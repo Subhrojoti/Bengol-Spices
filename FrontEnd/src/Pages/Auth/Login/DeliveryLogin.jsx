@@ -62,7 +62,7 @@ export default function DeliveryLogin() {
       const data = await deliveryLogin(phone, password);
 
       if (data.success) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("deliveryToken", data.token);
         localStorage.setItem("role", "DELIVERY_PARTNER");
 
         navigate("/delivery/all-orders", { replace: true });

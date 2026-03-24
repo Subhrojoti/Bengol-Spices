@@ -25,7 +25,7 @@ const statusColors = {
   RECEIVED_AT_WAREHOUSE: "bg-orange-400 text-black",
   REFUND_PROCESSED: "bg-green-400 text-white",
   COMPLETED: "bg-green-600 text-white",
-  CANCELLED: "bg-red-600 text-white",
+  // CANCELLED: "bg-red-600 text-white",
 };
 
 const getStatusColor = (status) =>
