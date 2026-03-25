@@ -1,4 +1,4 @@
-import Home from "../pages/Home/Home";
+import Home from "../pages/common/HomeBase.jsx";
 import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import AgentLogin from "../pages/Auth/Login/AgentLogin";
 import AdminLogin from "../pages/Auth/Login/AdminLogin";
@@ -19,9 +19,20 @@ import { employeeRoutes } from "../config/employeeRoutes.js";
 import EmployeeBase from "../pages/Employee/EmployeeBase";
 import PermissionGuard from "../components/common/PermissionGuard.jsx";
 import PublicRoute from "../routes/PublicRoute";
+import { footerRoutes } from "../config/footerRoutes.js";
+import { mapRoutes } from "../config/mapRoutes.jsx";
+import HomeBase from "../pages/common/HomeBase.jsx";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
+  {
+    path: "/",
+    element: <HomeBase />,
+    children: [
+      // footer routes (about, careers, etc.)
+      ...mapRoutes(footerRoutes),
+    ],
+  },
   {
     path: "/admin/login",
     element: (
@@ -135,34 +146,31 @@ export const routes = [
     element: <ProtectedRoute redirectTo="/agent/login" />,
     children: [
       {
-        path: "/",
-        element: <Home />,
+        path: "/marketing",
+        element: <MarketingHub />, // layout (header/footer already here)
         children: [
+          // profile
           {
             path: "profile/settings",
             element: <ProfileSettings />,
           },
-          {
-            path: "marketing",
-            element: <MarketingHub />,
-            children: [
-              ...marketingRoutes.map((route) => {
-                const Component = route.component;
-                return {
-                  path: route.path,
-                  element: <Component />,
-                };
-              }),
 
-              /* Default route → first marketing tab */
-              {
-                index: true,
-                element: (() => {
-                  const DefaultComponent = marketingRoutes[0].component;
-                  return <DefaultComponent />;
-                })(),
-              },
-            ],
+          // marketing routes
+          ...marketingRoutes.map((route) => {
+            const Component = route.component;
+            return {
+              path: route.path,
+              element: <Component />,
+            };
+          }),
+
+          // default route
+          {
+            index: true,
+            element: (() => {
+              const DefaultComponent = marketingRoutes[0].component;
+              return <DefaultComponent />;
+            })(),
           },
         ],
       },
