@@ -20,13 +20,17 @@ export const registerDeliveryPartner = async (req, res) => {
       city,
       street,
       pincode,
+
+      // optional bank fields
+      accountHolderName,
+      accountNumber,
+      ifscCode,
+      bankName,
     } = req.body;
 
-    if (req.file) {
-      uploadedPublicId = req.file.filename; // Cloudinary public_id
-    }
+    if (!req.file) throw new Error("Document is required");
+    uploadedPublicId = req.file.filename;
 
-    // 🔥 Basic Validation
     if (
       !name ||
       !phone ||
@@ -38,26 +42,28 @@ export const registerDeliveryPartner = async (req, res) => {
       !street ||
       !pincode
     ) {
-      throw new Error("All fields including complete address are required");
+      throw new Error("All fields including address are required");
     }
 
-    if (!req.file) {
-      throw new Error("Document is required");
-    }
+    // 🔥 STRICT BANK VALIDATION
+    const hasAnyBankField =
+      accountHolderName || accountNumber || ifscCode || bankName;
 
-    // 🔥 Pincode Validation
-    if (!/^[0-9]{6}$/.test(pincode)) {
-      throw new Error("Invalid pincode format");
+    const hasAllBankFields =
+      accountHolderName && accountNumber && ifscCode && bankName;
+
+    if (hasAnyBankField && !hasAllBankFields) {
+      throw new Error("Please provide complete bank details");
     }
 
     const exists = await DeliveryPartner.findOne({ phone });
     if (exists) {
-      throw new Error("Delivery partner already registered");
+      throw new Error("Already registered");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await DeliveryPartner.create({
+    const partnerData = {
       name: name.trim(),
       phone: phone.trim(),
       password: hashedPassword,
@@ -72,19 +78,30 @@ export const registerDeliveryPartner = async (req, res) => {
         idNumber,
         documentUrl: req.file.path,
       },
-    });
+    };
 
-    return res.status(201).json({
+    // ✅ Add bank only if FULL data exists
+    if (hasAllBankFields) {
+      partnerData.bankDetails = {
+        accountHolderName,
+        accountNumber,
+        ifscCode,
+        bankName,
+      };
+    }
+
+    await DeliveryPartner.create(partnerData);
+
+    res.status(201).json({
       success: true,
-      message: "Delivery partner registered successfully",
+      message: "Registered successfully",
     });
   } catch (error) {
-    // 🔥 CLOUDINARY CLEANUP ON FAILURE
     if (uploadedPublicId) {
       await cloudinary.uploader.destroy(uploadedPublicId);
     }
 
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -96,21 +113,28 @@ export const loginDeliveryPartner = async (req, res) => {
   const { phone, password } = req.body;
 
   const partner = await DeliveryPartner.findOne({ phone, status: "ACTIVE" });
+
   if (!partner) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Phone No. or Password doesnot match" });
+    return res.status(404).json({
+      success: false,
+      message: "Phone No. or Password does not match",
+    });
   }
 
   const isMatch = await bcrypt.compare(password, partner.password);
+
   if (!isMatch) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Phone No. or Password doesnot match" });
+    return res.status(401).json({
+      success: false,
+      message: "Phone No. or Password does not match",
+    });
   }
 
-  partner.isOnline = true;
-  await partner.save();
+  // ✅ FIX: avoid .save()
+  await DeliveryPartner.updateOne(
+    { _id: partner._id },
+    { $set: { isOnline: true } },
+  );
 
   const token = jwt.sign(
     { id: partner._id, role: partner.role, name: partner.name },
@@ -319,6 +343,41 @@ export const getDeliveryPartnerDashboard = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to load dashboard",
+    });
+  }
+};
+
+/* Get Partner Profile */
+export const getProfile = async (req, res) => {
+  try {
+    const partnerId = req.user.id;
+
+    const partner =
+      await DeliveryPartner.findById(partnerId).select("-password");
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery partner not found",
+      });
+    }
+
+    // Convert to plain object
+    const data = partner.toObject();
+
+    // 👉 If bankDetails doesn't exist, remove it OR set null
+    if (!data.bankDetails || Object.keys(data.bankDetails).length === 0) {
+      data.bankDetails = null; // OR delete data.bankDetails;
+    }
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

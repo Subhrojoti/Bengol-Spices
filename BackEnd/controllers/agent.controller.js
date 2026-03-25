@@ -24,6 +24,7 @@ const cleanupCloudinaryFiles = async (files) => {
   }
 };
 
+// AGENT - APPLY
 export const applyAgent = async (req, res) => {
   try {
     const files = req.files || [];
@@ -46,7 +47,18 @@ export const applyAgent = async (req, res) => {
       });
     }
 
-    const { name, email, phone, address } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      address,
+
+      // ✅ NEW bank fields
+      accountHolderName,
+      accountNumber,
+      ifscCode,
+      bankName,
+    } = req.body;
 
     if (!name || !email || !phone || !address) {
       return res.status(400).json({
@@ -55,9 +67,24 @@ export const applyAgent = async (req, res) => {
       });
     }
 
+    // 🔥 STRICT BANK VALIDATION
+    const hasAnyBankField =
+      accountHolderName || accountNumber || ifscCode || bankName;
+
+    const hasAllBankFields =
+      accountHolderName && accountNumber && ifscCode && bankName;
+
+    if (hasAnyBankField && !hasAllBankFields) {
+      await cleanupCloudinaryFiles(req.files);
+
+      return res.status(400).json({
+        success: false,
+        message: "Please provide complete bank details",
+      });
+    }
+
     const existingAgent = await Agent.findOne({ email });
     if (existingAgent) {
-      // 🔥 CLEANUP uploaded files
       await cleanupCloudinaryFiles(req.files);
 
       return res.status(400).json({
@@ -65,13 +92,13 @@ export const applyAgent = async (req, res) => {
         message: "You have already applied",
       });
     }
+
     /* =============================
        CUSTOM AGENT ID GENERATION
        ============================= */
 
     const currentYear = new Date().getFullYear();
 
-    // Find latest agent for this year
     const lastAgent = await Agent.findOne({
       agentId: { $regex: `^BS${currentYear}` },
     }).sort({ createdAt: -1 });
@@ -79,8 +106,7 @@ export const applyAgent = async (req, res) => {
     let serialNumber = 1;
 
     if (lastAgent) {
-      const lastId = lastAgent.agentId; // BS2026-008
-      const lastNumber = parseInt(lastId.split("-")[1]);
+      const lastNumber = parseInt(lastAgent.agentId.split("-")[1]);
       serialNumber = lastNumber + 1;
     }
 
@@ -90,7 +116,7 @@ export const applyAgent = async (req, res) => {
        CREATE AGENT
        ============================= */
 
-    const agent = await Agent.create({
+    const agentData = {
       agentId: customAgentId,
       name,
       email,
@@ -103,7 +129,19 @@ export const applyAgent = async (req, res) => {
       },
       status: "PENDING",
       role: "AGENT",
-    });
+    };
+
+    // ✅ Add bank only if FULL data exists
+    if (hasAllBankFields) {
+      agentData.bankDetails = {
+        accountHolderName,
+        accountNumber,
+        ifscCode,
+        bankName,
+      };
+    }
+
+    const agent = await Agent.create(agentData);
 
     await sendAdminNotification({
       customAgentId,
@@ -115,12 +153,11 @@ export const applyAgent = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Application submitted successfully",
-      agentId: agent.agentId, // ✅ CUSTOM ID
+      agentId: agent.agentId,
     });
   } catch (error) {
     console.error("APPLY AGENT ERROR:", error);
 
-    // 🔥 CLEANUP uploaded files on any failure
     await cleanupCloudinaryFiles(req.files);
 
     if (error.code === 11000) {
@@ -140,7 +177,6 @@ export const applyAgent = async (req, res) => {
 // GET LOGGED-IN AGENT PROFILE
 export const getAgentProfile = async (req, res) => {
   try {
-    // id comes from JWT (agentLogin → protect middleware)
     const agentMongoId = req.user.id;
 
     const agent = await Agent.findById(agentMongoId).select(
@@ -154,9 +190,19 @@ export const getAgentProfile = async (req, res) => {
       });
     }
 
+    const data = agent.toObject();
+
+    // ✅ Handle missing bank details
+    if (!data.bankDetails || Object.keys(data.bankDetails).length === 0) {
+      data.bankDetails = null;
+    }
+
+    // ✅ Add helper flag (very useful for frontend)
+    data.hasBankDetails = !!data.bankDetails?.accountNumber;
+
     res.json({
       success: true,
-      agent,
+      agent: data,
     });
   } catch (error) {
     res.status(500).json({
