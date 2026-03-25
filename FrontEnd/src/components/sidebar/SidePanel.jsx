@@ -22,7 +22,7 @@ const SidePanel = () => {
 
   /* ===================== LOGOUT ===================== */
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("adminToken");
     localStorage.removeItem("role");
     navigate("/admin/login", { replace: true });
   };

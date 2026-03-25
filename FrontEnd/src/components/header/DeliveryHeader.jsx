@@ -50,14 +50,14 @@ const DeliveryHeader = () => {
     try {
       await deliveryLogout();
 
-      localStorage.removeItem("authToken");
+      localStorage.removeItem("deliveryToken");
       localStorage.removeItem("role");
 
       navigate("/delivery/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
 
-      localStorage.removeItem("authToken");
+      localStorage.removeItem("deliveryToken");
       localStorage.removeItem("role");
 
       navigate("/delivery/login", { replace: true });

@@ -12,8 +12,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { ShoppingCartOutlined } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  addToCart,
   clearCart,
   removeFromCart,
 } from "../../../../../redux/slices/addToCart/addToCart";
@@ -27,16 +29,19 @@ const MyCart = ({ onBack }) => {
 
   const [paymentMode, setPaymentMode] = useState("CASH");
   const [paidAmount, setPaidAmount] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const selectedStore = useSelector((state) => state.myStoresUi.selectedStore);
   const consumerId = selectedStore?.consumerId;
+
   const cartItems = useSelector((state) =>
     consumerId ? state.addToCart.carts[consumerId]?.items || [] : [],
   );
+
   const latitude = selectedStore?.location?.latitude;
   const longitude = selectedStore?.location?.longitude;
+
+  /* ---------------- STORE VALIDATIONS ---------------- */
 
   if (!selectedStore) {
     return (
@@ -95,13 +100,65 @@ const MyCart = ({ onBack }) => {
       </Box>
     );
   }
+
+  /* ---------------- EMPTY CART (NEW UI) ---------------- */
+
+  if (!cartItems.length) {
+    return (
+      <Box
+        height="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        flexDirection="column"
+        gap={3}>
+        <Box
+          sx={{
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            backgroundColor: "#f3f4f6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+          <ShoppingCartOutlined sx={{ fontSize: 36, color: "#9ca3af" }} />
+        </Box>
+
+        <Box textAlign="center">
+          <Typography variant="h6" fontWeight={600}>
+            Your cart is empty
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Add products to start creating an order
+          </Typography>
+        </Box>
+
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={onBack}
+          sx={{
+            textTransform: "none",
+            borderRadius: 2,
+            px: 3,
+          }}>
+          Browse Products
+        </Button>
+      </Box>
+    );
+  }
+
+  /* ---------------- CALCULATIONS ---------------- */
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0,
   );
-  console.log("consumer id", consumerId);
 
   const totalAmount = subtotal;
+
+  /* ---------------- ORDER ---------------- */
 
   const handleCreateOrder = async () => {
     if (!cartItems.length) return;
@@ -119,10 +176,8 @@ const MyCart = ({ onBack }) => {
       return;
     }
 
-    // Ensure address exists
     const storeAddress = selectedStore?.address || {};
-    console.log("Selected Store:", selectedStore);
-    console.log("Store Address:", selectedStore?.address);
+
     const payload = {
       consumerId,
       products: cartItems.map((item) => ({
@@ -144,8 +199,6 @@ const MyCart = ({ onBack }) => {
       },
     };
 
-    console.log("ORDER PAYLOAD", payload);
-
     try {
       setLoading(true);
       await createOrder(payload);
@@ -155,12 +208,13 @@ const MyCart = ({ onBack }) => {
       dispatch(setLeftView("CREATE"));
     } catch (err) {
       console.error("Order creation failed", err);
-
       toast.error("Failed to create order. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  /* ---------------- UI ---------------- */
 
   return (
     <Box display="flex" height="100%">
@@ -180,7 +234,6 @@ const MyCart = ({ onBack }) => {
         {cartItems.map((item) => (
           <Box key={item.id} py={3}>
             <Box display="flex" alignItems="center" gap={2}>
-              {/* IMAGE */}
               <Box
                 component="img"
                 src={item.image}
@@ -193,7 +246,6 @@ const MyCart = ({ onBack }) => {
                 }}
               />
 
-              {/* NAME + PRICE */}
               <Box flex={1}>
                 <Typography fontWeight={600}>{item.name}</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -203,7 +255,25 @@ const MyCart = ({ onBack }) => {
 
               {/* QTY */}
               <Box display="flex" alignItems="center" gap={1}>
-                <IconButton size="small">
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    if (item.quantity > 1) {
+                      dispatch(
+                        addToCart({
+                          consumerId,
+                          product: { ...item, quantity: -1 },
+                        }),
+                      );
+                    } else {
+                      dispatch(
+                        removeFromCart({
+                          consumerId,
+                          productId: item.id,
+                        }),
+                      );
+                    }
+                  }}>
                   <RemoveIcon fontSize="small" />
                 </IconButton>
 
@@ -219,25 +289,28 @@ const MyCart = ({ onBack }) => {
                   }}
                 />
 
-                <IconButton size="small">
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      addToCart({
+                        consumerId,
+                        product: { ...item, quantity: 1 },
+                      }),
+                    )
+                  }>
                   <AddIcon fontSize="small" />
                 </IconButton>
 
-                {/* UOM next to quantity (subtle) */}
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ minWidth: 24 }}>
+                <Typography variant="caption" color="text.secondary">
                   {item.uom}
                 </Typography>
               </Box>
 
-              {/* TOTAL */}
               <Typography fontWeight={600} width={90} textAlign="right">
                 ₹{item.unitPrice * item.quantity}
               </Typography>
 
-              {/* REMOVE */}
               <IconButton
                 onClick={() =>
                   dispatch(
@@ -287,8 +360,6 @@ const MyCart = ({ onBack }) => {
           <Typography fontWeight={700}>₹{totalAmount}</Typography>
         </Box>
 
-        {/* Payment Mode */}
-
         <TextField
           select
           label="Payment Mode"
@@ -309,8 +380,6 @@ const MyCart = ({ onBack }) => {
             onChange={(e) => setPaidAmount(e.target.value)}
             fullWidth
             sx={{ mb: 2 }}
-            inputProps={{ min: 0, max: totalAmount }}
-            helperText={`Max ₹${totalAmount}`}
           />
         )}
 

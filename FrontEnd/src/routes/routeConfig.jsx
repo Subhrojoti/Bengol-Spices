@@ -18,24 +18,41 @@ import EmployeeLogin from "../pages/Auth/Login/EmployeeLogin";
 import { employeeRoutes } from "../config/employeeRoutes.js";
 import EmployeeBase from "../pages/Employee/EmployeeBase";
 import PermissionGuard from "../components/common/PermissionGuard.jsx";
+import PublicRoute from "../routes/PublicRoute";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
   {
-    path: "/agent/login",
-    element: <AgentLogin />,
-  },
-  {
-    path: "/delivery/login",
-    element: <DeliveryLogin />,
+    path: "/admin/login",
+    element: (
+      <PublicRoute role="admin" redirectTo="/admin">
+        <AdminLogin />
+      </PublicRoute>
+    ),
   },
   {
     path: "/employee/login",
-    element: <EmployeeLogin />,
+    element: (
+      <PublicRoute role="employee" redirectTo="/employee">
+        <EmployeeLogin />
+      </PublicRoute>
+    ),
   },
   {
-    path: "/admin/login",
-    element: <AdminLogin />,
+    path: "/delivery/login",
+    element: (
+      <PublicRoute role="delivery" redirectTo="/delivery">
+        <DeliveryLogin />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/agent/login",
+    element: (
+      <PublicRoute role="agent" redirectTo="/">
+        <AgentLogin />
+      </PublicRoute>
+    ),
   },
   {
     path: "/agent-onboarding",

@@ -40,11 +40,6 @@ export const employeeLogin = async (employeeId, password) => {
   return response.data;
 };
 
-export const logout = () => {
-  localStorage.removeItem("authToken");
-  localStorage.removeItem("role");
-};
-
 export const agentList = async () => {
   const response = await axiosInstance.get("/admin/agents");
   return response.data;

@@ -56,7 +56,7 @@ const EmployeeSidePanel = () => {
 
   /* ===================== LOGOUT ===================== */
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("employeeToken");
     localStorage.removeItem("permissions");
     localStorage.removeItem("role");
 
