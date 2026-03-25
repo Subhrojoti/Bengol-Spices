@@ -6,6 +6,7 @@ import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
 import Payment from "../models/Payment.js";
+import { createNotification } from "../services/notification.service.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -72,6 +73,7 @@ export const placeOrder = async (req, res) => {
 
     for (const item of products) {
       if (
+        !item.productId ||
         !item.name ||
         !item.uom ||
         !item.quantity ||
@@ -159,6 +161,149 @@ export const placeOrder = async (req, res) => {
       ],
       paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
+
+    // =============================
+    // TARGET + COMMISSION + NOTIFICATION
+    // =============================
+
+    const today = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    const activeTargets = await Target.find({
+      type: "ORDER_PLACEMENT",
+      isActive: true,
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
+
+    for (const target of activeTargets) {
+      let progress = await AgentTargetProgress.findOne({
+        agentId,
+        date: today,
+        type: "ORDER_PLACEMENT",
+        targetId: target._id,
+      });
+
+      if (!progress) {
+        progress = await AgentTargetProgress.create({
+          agentId,
+          date: today,
+          type: "ORDER_PLACEMENT",
+          targetId: target._id,
+          count: 0,
+          incentiveEarned: 0,
+          productBreakdown: [],
+        });
+      }
+
+      let earned = 0;
+      let totalQty = 0;
+
+      for (const item of products) {
+        const qty = item.quantity;
+        totalQty += qty;
+
+        const rule = target.productRules?.find(
+          (r) =>
+            r.productId?.toString() === item.productId?.toString() ||
+            r.productName === item.name,
+        );
+
+        if (!rule) continue;
+
+        // ✅ PER PACKET
+        if (rule.perPacketCommission) {
+          earned += qty * rule.perPacketCommission;
+        }
+
+        // ✅ BULK (no duplicate)
+        if (
+          rule.bulkTarget &&
+          rule.bulkIncentive &&
+          !progress.bulkAchieved &&
+          progress.count + totalQty >= rule.bulkTarget
+        ) {
+          earned += rule.bulkIncentive;
+          progress.bulkAchieved = true;
+        }
+
+        // ✅ PRODUCT TRACK
+        const existing = progress.productBreakdown.find(
+          (p) => p.productId?.toString() === item.productId?.toString(),
+        );
+
+        if (existing) {
+          existing.quantity += qty;
+        } else {
+          progress.productBreakdown.push({
+            productId: item.productId,
+            quantity: qty,
+          });
+        }
+      }
+
+      // ✅ GLOBAL TARGET
+      if (
+        target.globalTarget?.totalPackets &&
+        !progress.targetAchieved &&
+        progress.count + totalQty >= target.globalTarget.totalPackets
+      ) {
+        earned += target.globalTarget.incentive;
+        progress.targetAchieved = true;
+
+        await createNotification({
+          title: "Target Achieved 🎉",
+          message: `You completed today's target and earned ₹${progress.incentiveEarned + earned}`,
+          recipientId: agentId,
+          recipientModel: "Agent",
+        });
+      }
+
+      progress.count += totalQty;
+      progress.incentiveEarned += earned;
+
+      // =============================
+      // 💰 PER ORDER EARNING NOTIFICATION
+      // =============================
+      if (earned > 0) {
+        await createNotification({
+          title: "Earning Update",
+          message: `💰 You earned ₹${earned} from this order`,
+          recipientId: agentId,
+          recipientModel: "Agent",
+        });
+      }
+
+      // =============================
+      // 🔥 MILESTONE NOTIFICATION
+      // =============================
+      if (target.globalTarget?.totalPackets) {
+        const percentage = Math.floor(
+          (progress.count / target.globalTarget.totalPackets) * 100,
+        );
+
+        const milestones = [50, 80];
+
+        for (const milestone of milestones) {
+          if (
+            percentage >= milestone &&
+            !progress.milestonesNotified.includes(milestone)
+          ) {
+            await createNotification({
+              title: "Target Progress",
+              message: `🔥 You reached ${milestone}% of your target`,
+              recipientId: agentId,
+              recipientModel: "Agent",
+            });
+
+            progress.milestonesNotified.push(milestone);
+          }
+        }
+      }
+
+      await progress.save();
+    }
 
     return res.status(201).json({
       success: true,
@@ -439,7 +584,7 @@ export const cancelOrder = async (req, res) => {
 export const assignDeliveryPartner = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { partnerId } = req.body; // this will be MongoDB _id
+    const { partnerId } = req.body; // MongoDB _id
 
     const order = await Order.findOne({ orderId });
 
@@ -465,10 +610,18 @@ export const assignDeliveryPartner = async (req, res) => {
         message: "Delivery partner not found or inactive",
       });
     }
+    // Check if already assigned to this partner
+    if (order.delivery?.partnerId?.toString() === partnerId) {
+      return res.status(400).json({
+        success: false,
+        message: "This partner is already assigned",
+      });
+    }
 
+    // ✅ Assign delivery
     order.delivery = {
       partnerId: partner._id,
-      assignedBy: req.user.employeeId,
+      assignedBy: req.user._id || req.user.id, // 🔥 FIXED (generic)
       assignedAt: new Date(),
     };
 
@@ -477,8 +630,19 @@ export const assignDeliveryPartner = async (req, res) => {
     order.statusHistory.push({
       status: "ASSIGNED",
       changedBy: {
-        id: req.user.employeeId || req.user.id,
+        id: req.user._id || req.user.id,
         role: req.user.role,
+      },
+    });
+
+    // ✅ FIXED notification
+    await createNotification({
+      title: "New Order Assigned",
+      message: `You have a new order (${order.orderId}) assigned`,
+      recipientId: partner._id, // 🔥 FIXED
+      recipientModel: "DeliveryPartner",
+      meta: {
+        orderId: order.orderId,
       },
     });
 

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import Employee from "../models/Employee.js";
 import { sendEmployeeWelcomeMail } from "../utils/email.js";
+import { createNotification } from "../services/notification.service.js";
 
 // ADMIN CREATE EMPLOYEE
 export const createEmployee = async (req, res) => {
@@ -114,12 +115,53 @@ export const updateEmployeePermissions = async (req, res) => {
       });
     }
 
+    // 🧠 Detect changes
+    const previousPermissions = { ...employee.permissions };
+
+    let granted = [];
+    let revoked = [];
+
+    for (const key in permissions) {
+      if (permissions[key] === true && !previousPermissions[key]) {
+        granted.push(key);
+      }
+
+      if (permissions[key] === false && previousPermissions[key]) {
+        revoked.push(key);
+      }
+    }
+
+    // ✅ Update permissions
     employee.permissions = {
       ...employee.permissions,
       ...permissions,
     };
 
     await employee.save();
+
+    // 🔥 Send notification based on change
+    if (granted.length > 0 || revoked.length > 0) {
+      let message = "";
+
+      if (granted.length > 0 && revoked.length === 0) {
+        message = "New permissions granted. Please re-login.";
+      } else if (revoked.length > 0 && granted.length === 0) {
+        message = "Some permissions were removed. Access may be restricted.";
+      } else {
+        message = "Your permissions have been updated. Please re-login.";
+      }
+
+      await createNotification({
+        title: "Permission Update",
+        message,
+        recipientId: employee._id, // ✅ always use _id
+        recipientModel: "Employee",
+        meta: {
+          granted,
+          revoked,
+        },
+      });
+    }
 
     return res.json({
       success: true,

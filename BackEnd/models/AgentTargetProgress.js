@@ -27,6 +27,34 @@ const progressSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    bulkAchieved: {
+      type: Boolean,
+      default: false,
+    },
+
+    milestonesNotified: {
+      type: [Number], // e.g. [50, 80, 100]
+      default: [],
+    },
+
+    targetAchieved: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ✅ NEW (optional, no breaking)
+    productBreakdown: [
+      {
+        productId: mongoose.Schema.Types.ObjectId,
+        quantity: Number,
+      },
+    ],
+
+    targetId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Target",
+    },
   },
   { timestamps: true },
 );

@@ -13,14 +13,40 @@ const targetSchema = new mongoose.Schema(
       required: true,
     },
 
-    requiredCount: {
-      type: Number,
-      required: true,
+    // ✅ OLD (keep for backward compatibility)
+    requiredCount: Number,
+    incentiveAmount: Number,
+
+    // ✅ NEW: Target mode
+    targetMode: {
+      type: String,
+      enum: ["PER_PACKET", "BULK", "HYBRID"],
+      default: "BULK",
     },
 
-    incentiveAmount: {
-      type: Number,
-      required: true,
+    // ✅ NEW: Product-specific rules
+    productRules: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+        },
+
+        productName: String,
+
+        // per packet commission
+        perPacketCommission: Number,
+
+        // bulk target
+        bulkTarget: Number,
+        bulkIncentive: Number,
+      },
+    ],
+
+    // ✅ NEW: Global bulk target (optional)
+    globalTarget: {
+      totalPackets: Number,
+      incentive: Number,
     },
 
     startDate: {
