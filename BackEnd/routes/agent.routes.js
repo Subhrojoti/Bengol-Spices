@@ -28,17 +28,17 @@ router.post(
       next();
     });
   },
-  applyAgent
+  applyAgent,
 );
 
-router.post("/auth/set-password", setPassword);
+router.post("/auth/agent-set-password", setPassword);
 
 // 🔒 AGENT ONLY ROUTE
 router.get(
   "/profile",
   protect, // 1️⃣ Check login
   isAgent, // 2️⃣ Check role = AGENT
-  getAgentProfile // 3️⃣ Controller
+  getAgentProfile, // 3️⃣ Controller
 );
 
 export default router;

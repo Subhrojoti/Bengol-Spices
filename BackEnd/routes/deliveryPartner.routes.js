@@ -6,6 +6,7 @@ import {
   getAllDeliveryPartners,
   getMyAssignedOrders,
   getDeliveryPartnerDashboard,
+  getProfile,
 } from "../controllers/deliveryPartner.controller.js";
 import { upload } from "../middleware/upload.js";
 import { protect } from "../middleware/auth.js";
@@ -30,4 +31,6 @@ router.get(
   isDeliveryPartner,
   getDeliveryPartnerDashboard,
 );
+
+router.get("/profile", protect, isDeliveryPartner, getProfile);
 export default router;
