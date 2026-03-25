@@ -45,6 +45,7 @@ const employeeSchema = new mongoose.Schema(
       canManageAgents: { type: Boolean, default: false },
       canSeePaymentInfo: { type: Boolean, default: false },
       canSetTargets: { type: Boolean, default: false },
+      canManageNotifications: { type: Boolean, default: false },
     },
 
     status: {
