@@ -30,6 +30,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ProfileMenu from "../profile/ProfileMenu";
 import { deliveryRoutes } from "../../config/deliveryRoutes";
 import { deliveryLogout } from "../../api/services";
+import NotificationBell from "../notifications/NotificationBell";
 
 const DeliveryHeader = () => {
   const theme = useTheme();
@@ -154,12 +155,9 @@ const DeliveryHeader = () => {
                 />
                 <Search fontSize="small" />
               </Box>
-
-              <IconButton size="small">
-                <Badge badgeContent={3} color="error">
-                  <NotificationsOutlined />
-                </Badge>
-              </IconButton>
+              <div className="p-1 ml-3">
+                <NotificationBell />
+              </div>
 
               <IconButton size="small">
                 <SettingsOutlined

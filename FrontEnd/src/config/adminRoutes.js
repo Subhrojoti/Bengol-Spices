@@ -10,6 +10,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Groups3Icon from "@mui/icons-material/Groups3";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import NotificationsActive from "@mui/icons-material/NotificationsActive";
 import PaymentIcon from "@mui/icons-material/Payment";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
@@ -18,6 +19,7 @@ import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
 import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
 import Targets from "../pages/Admin/Tabs/Targets/Targets";
+import CustomNotification from "../pages/Admin/Tabs/CustomNotification/CustomNotification";
 
 export const adminRoutes = [
   {
@@ -80,5 +82,11 @@ export const adminRoutes = [
     path: "target-management",
     icon: AdsClickIcon,
     component: Targets,
+  },
+  {
+    label: "Custom Notification",
+    path: "custom-notification",
+    icon: NotificationsActive,
+    component: CustomNotification,
   },
 ];

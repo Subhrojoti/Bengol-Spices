@@ -17,6 +17,8 @@ import Agent from "../pages/Admin/Tabs/Agent/Agent";
 import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
 import Targets from "../pages/Admin/Tabs/Targets/Targets";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
+import CustomNotification from "../pages/Admin/Tabs/CustomNotification/CustomNotification";
+import NotificationsActive from "@mui/icons-material/NotificationsActive";
 
 export const employeeRoutes = [
   {
@@ -87,5 +89,11 @@ export const employeeRoutes = [
     permission: "canSetTargets",
     icon: AdsClickIcon,
     component: Targets,
+  },
+  {
+    label: "Custom Notification",
+    path: "custom-notification",
+    icon: NotificationsActive,
+    component: CustomNotification,
   },
 ];
