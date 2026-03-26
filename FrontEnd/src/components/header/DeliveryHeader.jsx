@@ -162,7 +162,12 @@ const DeliveryHeader = () => {
               </IconButton>
 
               <IconButton size="small">
-                <SettingsOutlined />
+                <SettingsOutlined
+                  onClick={() => {
+                    navigate("/delivery/profile-settings");
+                    setDrawerOpen(false);
+                  }}
+                />
               </IconButton>
               <IconButton
                 size="small"

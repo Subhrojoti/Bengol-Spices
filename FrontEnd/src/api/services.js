@@ -488,3 +488,10 @@ export const getDailyTarget = async () => {
   const res = await axiosInstance.get("/targets/agent/today-target");
   return res.data;
 };
+
+// Get Delivery Partner Profile
+
+export const getDeliveryPartnerProfile = async () => {
+  const response = await axiosInstance.get("/delivery-partner/profile");
+  return response.data;
+};

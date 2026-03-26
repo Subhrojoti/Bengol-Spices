@@ -216,7 +216,7 @@ const AgentHeader = () => {
             <List>
               <ListItemButton
                 onClick={() => {
-                  navigate("/profile/settings");
+                  navigate("/agent/profile-settings");
                   setDrawerOpen(false);
                 }}>
                 <SettingsOutlined sx={{ mr: 2 }} />

@@ -22,6 +22,7 @@ const PERMISSIONS = [
   { key: "canManageAgents", label: "Manage Agents" },
   { key: "canSeePaymentInfo", label: "View Payment Info" },
   { key: "canSetTargets", label: "Manage Daily Targets" },
+  { key: "canManageNotifications", label: "Manage Notifications" },
 ];
 
 const EmpCreation = () => {
