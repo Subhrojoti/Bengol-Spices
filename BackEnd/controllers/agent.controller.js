@@ -1,6 +1,7 @@
 import Agent from "../models/Agent.js";
 import { sendAdminNotification } from "../utils/email.js";
 import cloudinary from "../config/cloudinary.js";
+import AgentSalesLocation from "../models/AgentSalesLocation.js";
 
 const cleanupCloudinaryFiles = async (files) => {
   if (!files) return;
@@ -208,6 +209,66 @@ export const getAgentProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch agent profile",
+    });
+  }
+};
+
+// ASSIGN SALES LOCATION
+export const assignSalesLocation = async (req, res) => {
+  try {
+    const { agentId, pincodes, state, city } = req.body;
+
+    if (!agentId || !pincodes || pincodes.length === 0 || !state) {
+      return res.status(400).json({
+        success: false,
+        message: "agentId, state and at least one pincode are required",
+      });
+    }
+
+    // ✅ Check Agent exists
+    const agent = await Agent.findOne({ agentId });
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
+    // ✅ Validate pincodes
+    const invalidPins = pincodes.filter((pin) => !/^[0-9]{6}$/.test(pin));
+
+    if (invalidPins.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid pincodes: ${invalidPins.join(", ")}`,
+      });
+    }
+
+    // ✅ Upsert (update or create)
+    const location = await AgentSalesLocation.findOneAndUpdate(
+      { agentId, state: state.toUpperCase() },
+      {
+        agentId,
+        pincodes,
+        state: state.toUpperCase(),
+        city,
+        assignedBy: req.user._id,
+        assignedByModel: req.user.role === "ADMIN" ? "Admin" : "Employee",
+      },
+      { new: true, upsert: true },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Sales location assigned successfully",
+      data: location,
+    });
+  } catch (error) {
+    console.error("ASSIGN LOCATION ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };

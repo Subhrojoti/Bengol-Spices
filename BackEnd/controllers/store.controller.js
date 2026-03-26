@@ -54,6 +54,26 @@ export const createStore = async (req, res) => {
 
     const consumerId = `CS${year}-${String(count + 1).padStart(4, "0")}`;
 
+    // ✅ CHECK AGENT LOCATION PERMISSION
+    const agentId = req.user.agentId;
+
+    const assignedLocations = await AgentSalesLocation.find({
+      agentId,
+      state: state.toUpperCase(),
+    });
+
+    if (!assignedLocations || assignedLocations.length === 0) {
+      throw new Error("You are not authorized to sell in this location");
+    }
+
+    // Flatten all allowed pincodes
+    const allowedPincodes = assignedLocations.flatMap((loc) => loc.pincodes);
+
+    // Check if requested pincode is allowed
+    if (!allowedPincodes.includes(pincode)) {
+      throw new Error("You are not authorized to sell in this location");
+    }
+
     const store = await Store.create({
       consumerId,
       storeName: storeName.trim(),
