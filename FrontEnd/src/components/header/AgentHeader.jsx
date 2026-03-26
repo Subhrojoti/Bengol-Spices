@@ -28,6 +28,7 @@ import ProfileMenu from "../profile/ProfileMenu";
 import { Divider } from "@mui/material";
 import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
 import Logout from "@mui/icons-material/Logout";
+import NotificationBell from "../notifications/NotificationBell";
 
 const AgentHeader = () => {
   const theme = useTheme();
@@ -149,11 +150,7 @@ const AgentHeader = () => {
           )}
 
           {/* Notifications (desktop/tablet only) */}
-          {!isMobile && (
-            <IconButton size="small">
-              <NotificationsOutlined />
-            </IconButton>
-          )}
+          {!isMobile && <NotificationBell />}
 
           {/* User Profile (desktop/tablet only) */}
           {!isMobile && <ProfileMenu />}
@@ -216,7 +213,7 @@ const AgentHeader = () => {
             <List>
               <ListItemButton
                 onClick={() => {
-                  navigate("/profile/settings");
+                  navigate("/agent/profile-settings");
                   setDrawerOpen(false);
                 }}>
                 <SettingsOutlined sx={{ mr: 2 }} />

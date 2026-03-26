@@ -14,6 +14,7 @@ import { employeeRoutes } from "../../config/employeeRoutes";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Avatar } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
+import NotificationBell from "../notifications/NotificationBell";
 
 const COLLAPSED_WIDTH = 64;
 const EXPANDED_WIDTH = 260;
@@ -76,7 +77,7 @@ const EmployeeSidePanel = () => {
         zIndex: 1300,
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflow: "visible",
         transition: "width 220ms ease",
         backdropFilter: "blur(20px)",
 
@@ -98,9 +99,12 @@ const EmployeeSidePanel = () => {
           transition: "all 200ms ease",
         }}>
         {expanded ? (
-          <Typography variant="h6" fontWeight={700} noWrap>
-            Hello, {firstName}
-          </Typography>
+          <div className="flex justify-between items-center w-full">
+            <Typography variant="h6" fontWeight={700} noWrap>
+              Hello, {firstName}
+            </Typography>
+            <NotificationBell color="#121212" popupPosition="left" />
+          </div>
         ) : (
           <Typography fontWeight={700}>{initials}</Typography>
         )}

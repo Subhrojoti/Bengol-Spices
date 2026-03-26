@@ -62,9 +62,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-8">
-        Admin Dashboard
-      </h1>
+      <h1 className="text-3xl font-semibold text-gray-800 mb-8">Dashboard</h1>
 
       {/* ================= KPI GRID ================= */}
       <div className="grid grid-cols-3 gap-6 mb-8">

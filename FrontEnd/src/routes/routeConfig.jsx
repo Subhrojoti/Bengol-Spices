@@ -22,6 +22,7 @@ import PublicRoute from "../routes/PublicRoute";
 import { footerRoutes } from "../config/footerRoutes.js";
 import { mapRoutes } from "../config/mapRoutes.jsx";
 import HomeBase from "../pages/common/HomeBase.jsx";
+import DeliveryProfile from "../components/profile/DeliveryProfile.jsx";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -60,7 +61,7 @@ export const routes = [
   {
     path: "/agent/login",
     element: (
-      <PublicRoute role="agent" redirectTo="/">
+      <PublicRoute role="agent" redirectTo="/marketing">
         <AgentLogin />
       </PublicRoute>
     ),
@@ -145,16 +146,15 @@ export const routes = [
   {
     element: <ProtectedRoute redirectTo="/agent/login" />,
     children: [
+      // profile
+      {
+        path: "/agent/profile-settings",
+        element: <ProfileSettings />,
+      },
       {
         path: "/marketing",
-        element: <MarketingHub />, // layout (header/footer already here)
+        element: <MarketingHub />,
         children: [
-          // profile
-          {
-            path: "profile/settings",
-            element: <ProfileSettings />,
-          },
-
           // marketing routes
           ...marketingRoutes.map((route) => {
             const Component = route.component;
@@ -186,8 +186,8 @@ export const routes = [
         element: <DeliveryHub />,
         children: [
           {
-            path: "profile/settings",
-            element: <ProfileSettings />,
+            path: "/delivery/profile-settings",
+            element: <DeliveryProfile />,
           },
 
           {

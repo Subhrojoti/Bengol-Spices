@@ -488,3 +488,30 @@ export const getDailyTarget = async () => {
   const res = await axiosInstance.get("/targets/agent/today-target");
   return res.data;
 };
+
+// Get Delivery Partner Profile
+
+export const getDeliveryPartnerProfile = async () => {
+  const response = await axiosInstance.get("/delivery-partner/profile");
+  return response.data;
+};
+
+// Get Notifications
+export const getNotifications = async () => {
+  const res = await axiosInstance.get("/api/notifications");
+  return res.data;
+};
+
+// Read Notifications
+
+export const markNotificationAsRead = async (id) => {
+  const res = await axiosInstance.patch(`/api/notifications/${id}/read`);
+  return res.data;
+};
+
+// Send Custom Notifications
+
+export const sendNotification = async (payload) => {
+  const response = await axiosInstance.post("/api/notifications/send", payload);
+  return response.data;
+};
