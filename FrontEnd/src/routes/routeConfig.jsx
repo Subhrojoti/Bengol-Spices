@@ -61,7 +61,7 @@ export const routes = [
   {
     path: "/agent/login",
     element: (
-      <PublicRoute role="agent" redirectTo="/">
+      <PublicRoute role="agent" redirectTo="/marketing">
         <AgentLogin />
       </PublicRoute>
     ),
@@ -153,7 +153,7 @@ export const routes = [
       },
       {
         path: "/marketing",
-        element: <MarketingHub />, // layout (header/footer already here)
+        element: <MarketingHub />,
         children: [
           // marketing routes
           ...marketingRoutes.map((route) => {
