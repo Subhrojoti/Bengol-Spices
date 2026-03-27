@@ -68,7 +68,12 @@ const SidePanel = () => {
       </Box>
 
       {/* Menu */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}>
         <List
           sx={{
             px: 1,
@@ -88,7 +93,7 @@ const SidePanel = () => {
                 <ListItemButton
                   onClick={() => navigate(`/admin/${route.path}`)}
                   sx={{
-                    minHeight: 48,
+                    minHeight: 40,
                     justifyContent: expanded ? "flex-start" : "center",
                     px: expanded ? 2 : 1.5,
                     borderRadius: 2,

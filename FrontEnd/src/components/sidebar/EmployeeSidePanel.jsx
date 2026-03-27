@@ -134,7 +134,7 @@ const EmployeeSidePanel = () => {
                   <ListItemButton
                     onClick={() => navigate(`/employee/${route.path}`)}
                     sx={{
-                      minHeight: 48,
+                      minHeight: 40,
                       justifyContent: expanded ? "flex-start" : "center",
                       px: expanded ? 2 : 1.5,
                       borderRadius: 2,

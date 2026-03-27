@@ -23,6 +23,7 @@ const PERMISSIONS = [
   { key: "canSeePaymentInfo", label: "View Payment Info" },
   { key: "canSetTargets", label: "Manage Daily Targets" },
   { key: "canManageNotifications", label: "Manage Notifications" },
+  { key: "canAssignLocations", label: "Assign Locations" },
 ];
 
 const EmpCreation = () => {
