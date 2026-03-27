@@ -29,6 +29,12 @@ export default function DeliveryPartnerRegister() {
     street: "",
     pincode: "",
     document: null,
+
+    // NEW FIELDS
+    accountHolderName: "",
+    accountNumber: "",
+    ifscCode: "",
+    bankName: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -69,6 +75,18 @@ export default function DeliveryPartnerRegister() {
 
     if (!form.document) newErrors.document = "Document is required";
 
+    // NEW VALIDATIONS
+    if (!form.accountHolderName.trim())
+      newErrors.accountHolderName = "Account holder name is required";
+
+    if (!/^\d{9,18}$/.test(form.accountNumber))
+      newErrors.accountNumber = "Enter valid account number";
+
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifscCode))
+      newErrors.ifscCode = "Enter valid IFSC code";
+
+    if (!form.bankName.trim()) newErrors.bankName = "Bank name is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -90,6 +108,12 @@ export default function DeliveryPartnerRegister() {
       formData.append("street", form.street);
       formData.append("pincode", form.pincode);
       formData.append("document", form.document);
+
+      // NEW FIELDS
+      formData.append("accountHolderName", form.accountHolderName);
+      formData.append("accountNumber", form.accountNumber);
+      formData.append("ifscCode", form.ifscCode);
+      formData.append("bankName", form.bankName);
 
       await deliveryPartnerRegister(formData);
 
@@ -133,7 +157,7 @@ export default function DeliveryPartnerRegister() {
         alignItems: "center",
         py: 6,
       }}>
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Paper elevation={10} sx={{ p: 4, borderRadius: 3 }}>
           {!isSubmitted ? (
             <>
@@ -141,213 +165,248 @@ export default function DeliveryPartnerRegister() {
                 Delivery Partner Registration
               </Typography>
 
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", mt: 1, mb: 3 }}>
+              <Typography sx={{ mb: 3 }}>
                 Register to start delivering with us
               </Typography>
 
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Full Name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    error={!!errors.name}
-                    helperText={errors.name}
-                    sx={inputStyles}
-                  />
+              <Grid
+                container
+                spacing={10}
+                sx={{
+                  justifyContent: "center",
+                  mb: 4,
+                  "& .MuiTextField-root": inputStyles,
+                }}>
+                {/* COLUMN 1 */}
+                <Grid item xs={12} md={4}>
+                  <Stack spacing={3}>
+                    <TextField
+                      label="Full Name"
+                      variant="standard"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      error={!!errors.name}
+                      helperText={errors.name}
+                      fullWidth
+                    />
+
+                    <TextField
+                      type="password"
+                      variant="standard"
+                      label="Password"
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      error={!!errors.password}
+                      helperText={errors.password}
+                      fullWidth
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="Phone"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      error={!!errors.phone}
+                      helperText={errors.phone}
+                      fullWidth
+                    />
+
+                    <TextField
+                      select
+                      variant="standard"
+                      label="ID Type"
+                      name="idType"
+                      value={form.idType}
+                      onChange={handleChange}
+                      fullWidth>
+                      <MenuItem value="AADHAAR">AADHAAR</MenuItem>
+                      <MenuItem value="PAN">PAN</MenuItem>
+                      <MenuItem value="DL">Driving License</MenuItem>
+                    </TextField>
+
+                    <TextField
+                      variant="standard"
+                      label="ID Number"
+                      name="idNumber"
+                      value={form.idNumber}
+                      onChange={handleChange}
+                      error={!!errors.idNumber}
+                      helperText={errors.idNumber}
+                      fullWidth
+                    />
+                  </Stack>
                 </Grid>
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Phone"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    error={!!errors.phone}
-                    helperText={errors.phone}
-                    sx={inputStyles}
-                  />
+                {/* COLUMN 2 */}
+                <Grid item xs={12} md={4}>
+                  <Stack spacing={3}>
+                    <TextField
+                      variant="standard"
+                      label="State"
+                      name="state"
+                      value={form.state}
+                      onChange={handleChange}
+                      error={!!errors.state}
+                      helperText={errors.state}
+                      fullWidth
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="City"
+                      name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      error={!!errors.city}
+                      helperText={errors.city}
+                      fullWidth
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="Street"
+                      name="street"
+                      value={form.street}
+                      onChange={handleChange}
+                      error={!!errors.street}
+                      helperText={errors.street}
+                      fullWidth
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="Pincode"
+                      name="pincode"
+                      value={form.pincode}
+                      onChange={handleChange}
+                      error={!!errors.pincode}
+                      helperText={errors.pincode}
+                      fullWidth
+                    />
+
+                    <Stack spacing={1}>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        startIcon={<UploadIcon />}
+                        sx={{
+                          color: "#0f766e",
+                          borderColor: "#0f766e",
+                          textTransform: "none",
+                          fontWeight: 500,
+
+                          "& .MuiSvgIcon-root": {
+                            color: "#0f766e",
+                          },
+
+                          "&:hover": {
+                            borderColor: "#115e59",
+                            backgroundColor: "rgba(15,118,110,0.08)",
+                          },
+                        }}>
+                        Upload Document
+                        <input hidden type="file" onChange={handleFileChange} />
+                      </Button>
+
+                      {errors.document && (
+                        <Typography variant="caption" color="error">
+                          {errors.document}
+                        </Typography>
+                      )}
+
+                      {form.document && (
+                        <Typography variant="caption">
+                          {form.document.name}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Stack>
                 </Grid>
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Password"
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    error={!!errors.password}
-                    helperText={errors.password}
-                    sx={inputStyles}
-                  />
-                </Grid>
+                {/* COLUMN 3 */}
+                <Grid item xs={12} md={4}>
+                  <Stack spacing={3}>
+                    <TextField
+                      variant="standard"
+                      label="Account Holder Name"
+                      name="accountHolderName"
+                      value={form.accountHolderName}
+                      onChange={handleChange}
+                      error={!!errors.accountHolderName}
+                      helperText={errors.accountHolderName}
+                      fullWidth
+                    />
 
-                <Grid item xs={12}>
-                  <TextField
-                    select
-                    fullWidth
-                    variant="standard"
-                    label="ID Type"
-                    name="idType"
-                    value={form.idType}
-                    onChange={handleChange}
-                    sx={inputStyles}>
-                    <MenuItem value="AADHAAR">AADHAAR</MenuItem>
-                    <MenuItem value="PAN">PAN</MenuItem>
-                    <MenuItem value="DL">Driving License</MenuItem>
-                  </TextField>
-                </Grid>
+                    <TextField
+                      variant="standard"
+                      label="Account Number"
+                      name="accountNumber"
+                      value={form.accountNumber}
+                      onChange={handleChange}
+                      error={!!errors.accountNumber}
+                      helperText={errors.accountNumber}
+                      fullWidth
+                    />
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="ID Number"
-                    name="idNumber"
-                    value={form.idNumber}
-                    onChange={handleChange}
-                    error={!!errors.idNumber}
-                    helperText={errors.idNumber}
-                    sx={inputStyles}
-                  />
-                </Grid>
+                    <TextField
+                      variant="standard"
+                      label="IFSC Code"
+                      name="ifscCode"
+                      value={form.ifscCode}
+                      onChange={handleChange}
+                      error={!!errors.ifscCode}
+                      helperText={errors.ifscCode}
+                      fullWidth
+                    />
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="State"
-                    name="state"
-                    value={form.state}
-                    onChange={handleChange}
-                    error={!!errors.state}
-                    helperText={errors.state}
-                    sx={inputStyles}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="City"
-                    name="city"
-                    value={form.city}
-                    onChange={handleChange}
-                    error={!!errors.city}
-                    helperText={errors.city}
-                    sx={inputStyles}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Street"
-                    name="street"
-                    value={form.street}
-                    onChange={handleChange}
-                    error={!!errors.street}
-                    helperText={errors.street}
-                    sx={inputStyles}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Pincode"
-                    name="pincode"
-                    value={form.pincode}
-                    onChange={handleChange}
-                    error={!!errors.pincode}
-                    helperText={errors.pincode}
-                    sx={inputStyles}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Stack spacing={1}>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<UploadIcon />}
-                      sx={{
-                        color: "#0f766e",
-                        borderColor: "#0f766e",
-                        "&:hover": {
-                          borderColor: "#0d5f57",
-                          backgroundColor: "rgba(15,118,110,0.08)",
-                        },
-                      }}>
-                      Upload Document
-                      <input
-                        hidden
-                        type="file"
-                        accept="application/pdf,image/*"
-                        onChange={handleFileChange}
-                      />
-                    </Button>
-
-                    {errors.document && (
-                      <Typography variant="caption" color="error">
-                        {errors.document}
-                      </Typography>
-                    )}
-
-                    {form.document && (
-                      <Typography variant="caption">
-                        {form.document.name}
-                      </Typography>
-                    )}
+                    <TextField
+                      variant="standard"
+                      label="Bank Name"
+                      name="bankName"
+                      value={form.bankName}
+                      onChange={handleChange}
+                      error={!!errors.bankName}
+                      helperText={errors.bankName}
+                      fullWidth
+                    />
                   </Stack>
                 </Grid>
               </Grid>
 
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
+              <Box
                 sx={{
-                  mt: 4,
-                  py: 1.3,
-                  fontWeight: 600,
-                  textTransform: "none",
-                  backgroundColor: "#0f766e",
-                  "&:hover": {
-                    backgroundColor: "#115e59",
-                  },
+                  display: "flex",
+                  justifyContent: "flex-end",
                 }}>
-                {isSubmitting ? (
-                  <CircularProgress size={22} sx={{ color: "#fff" }} />
-                ) : (
-                  "REGISTER"
-                )}
-              </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  sx={{
+                    px: 6,
+                    py: 1.2,
+                    fontWeight: 600,
+                    borderRadius: "10px",
+                    backgroundColor: "#0f766e",
+                    "&:hover": {
+                      backgroundColor: "#115e59",
+                    },
+                  }}>
+                  {isSubmitting ? (
+                    <CircularProgress size={22} sx={{ color: "#fff" }} />
+                  ) : (
+                    "REGISTER"
+                  )}
+                </Button>
+              </Box>
             </>
           ) : (
             <Box sx={{ textAlign: "center", py: 6 }}>
-              <CheckCircleIcon
-                sx={{ fontSize: 56, color: "success.main", mb: 2 }}
-              />
-              <Typography variant="h6" fontWeight={700}>
-                Registration Successful
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                You can now proceed to login page to access your account.
-              </Typography>
+              <CheckCircleIcon sx={{ fontSize: 56 }} />
+              <Typography>Registration Successful</Typography>
             </Box>
           )}
         </Paper>
