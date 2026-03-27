@@ -515,3 +515,13 @@ export const sendNotification = async (payload) => {
   const response = await axiosInstance.post("/api/notifications/send", payload);
   return response.data;
 };
+
+// Assign location
+
+export const assignLocation = async (payload) => {
+  const response = await axiosInstance.post(
+    "/agent/store/assign-location",
+    payload,
+  );
+  return response.data;
+};

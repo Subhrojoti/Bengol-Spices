@@ -11,6 +11,7 @@ import Groups3Icon from "@mui/icons-material/Groups3";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import NotificationsActive from "@mui/icons-material/NotificationsActive";
+import AddLocationIcon from "@mui/icons-material/AddLocation";
 import PaymentIcon from "@mui/icons-material/Payment";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
@@ -20,6 +21,7 @@ import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
 import Targets from "../pages/Admin/Tabs/Targets/Targets";
 import CustomNotification from "../pages/Admin/Tabs/CustomNotification/CustomNotification";
+import AssignLocation from "../pages/Admin/Tabs/AssignLocation/AssignLocation";
 
 export const adminRoutes = [
   {
@@ -88,5 +90,11 @@ export const adminRoutes = [
     path: "custom-notification",
     icon: NotificationsActive,
     component: CustomNotification,
+  },
+  {
+    label: "Assign Location",
+    path: "assign-location",
+    icon: AddLocationIcon,
+    component: AssignLocation,
   },
 ];

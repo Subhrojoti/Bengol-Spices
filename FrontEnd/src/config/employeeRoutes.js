@@ -10,6 +10,7 @@ import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
 import AllProducts from "../pages/Admin/Tabs/AllProducts/AllProducts";
 import PersonIcon from "@mui/icons-material/Person";
+import AddLocationIcon from "@mui/icons-material/AddLocation";
 import PaymentIcon from "@mui/icons-material/Payment";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import EmpProfile from "../components/profile/EmpProfile";
@@ -19,6 +20,7 @@ import Targets from "../pages/Admin/Tabs/Targets/Targets";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
 import CustomNotification from "../pages/Admin/Tabs/CustomNotification/CustomNotification";
 import NotificationsActive from "@mui/icons-material/NotificationsActive";
+import AssignLocation from "../pages/Admin/Tabs/AssignLocation/AssignLocation";
 
 export const employeeRoutes = [
   {
@@ -93,7 +95,15 @@ export const employeeRoutes = [
   {
     label: "Custom Notification",
     path: "custom-notification",
+    permission: "canManageNotifications",
     icon: NotificationsActive,
     component: CustomNotification,
+  },
+  {
+    label: "Assign Location",
+    path: "assign-location",
+    permission: "canAssignLocations",
+    icon: AddLocationIcon,
+    component: AssignLocation,
   },
 ];
