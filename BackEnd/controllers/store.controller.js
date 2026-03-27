@@ -1,6 +1,8 @@
 import Store from "../models/store.js";
 import cloudinary from "../config/cloudinary.js";
 import AgentTargetProgress from "../models/AgentTargetProgress.js";
+import AgentSalesLocation from "../models/AgentSalesLocation.js";
+import Counter from "../models/Counter.js";
 
 //Store Creation - POST /api/stores
 export const createStore = async (req, res) => {
@@ -46,13 +48,16 @@ export const createStore = async (req, res) => {
       throw new Error("Store already registered with this phone");
     }
 
-    // 🔑 Generate consumerId
+    // 🔑 ✅ SAFE consumerId generation using Counter
     const year = new Date().getFullYear();
-    const count = await Store.countDocuments({
-      consumerId: { $regex: `^CS${year}` },
-    });
 
-    const consumerId = `CS${year}-${String(count + 1).padStart(4, "0")}`;
+    const counter = await Counter.findByIdAndUpdate(
+      `store-${year}`, // unique key per year
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    );
+
+    const consumerId = `CS${year}-${String(counter.seq).padStart(4, "0")}`;
 
     // ✅ CHECK AGENT LOCATION PERMISSION
     const agentId = req.user.agentId;
@@ -66,10 +71,8 @@ export const createStore = async (req, res) => {
       throw new Error("You are not authorized to sell in this location");
     }
 
-    // Flatten all allowed pincodes
     const allowedPincodes = assignedLocations.flatMap((loc) => loc.pincodes);
 
-    // Check if requested pincode is allowed
     if (!allowedPincodes.includes(pincode)) {
       throw new Error("You are not authorized to sell in this location");
     }

@@ -1,4 +1,3 @@
-// models/Agent.js
 import mongoose from "mongoose";
 
 const agentSchema = new mongoose.Schema(
@@ -21,7 +20,7 @@ const agentSchema = new mongoose.Schema(
 
     documents: {
       aadhaar: {
-        type: String, // file path / url
+        type: String,
         required: true,
       },
       pan: {
@@ -34,15 +33,36 @@ const agentSchema = new mongoose.Schema(
       },
     },
 
+    // ✅ OLD FIELD (KEEP - DO NOT REMOVE)
     address: {
       type: String,
-      required: true,
+    },
+
+    // ✅ NEW STRUCTURED ADDRESS
+    addressDetails: {
+      state: {
+        type: String,
+        uppercase: true,
+        trim: true,
+      },
+      city: {
+        type: String,
+        trim: true,
+      },
+      street: {
+        type: String,
+        trim: true,
+      },
+      pincode: {
+        type: String,
+        match: /^[0-9]{6}$/,
+      },
     },
 
     agentId: {
       type: String,
       unique: true,
-      sparse: true, // important
+      sparse: true,
     },
 
     password: {
@@ -62,6 +82,7 @@ const agentSchema = new mongoose.Schema(
       type: String,
       default: "AGENT",
     },
+
     bankDetails: {
       accountHolderName: {
         type: String,

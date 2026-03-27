@@ -52,19 +52,39 @@ export const applyAgent = async (req, res) => {
       name,
       email,
       phone,
+
+      // ✅ FULL ADDRESS (manual input)
       address,
 
-      // ✅ NEW bank fields
+      // ✅ STRUCTURED ADDRESS
+      state,
+      city,
+      street,
+      pincode,
+
+      // ✅ BANK FIELDS
       accountHolderName,
       accountNumber,
       ifscCode,
       bankName,
     } = req.body;
 
-    if (!name || !email || !phone || !address) {
+    // ✅ VALIDATION (updated safely)
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !address ||
+      !state ||
+      !city ||
+      !street ||
+      !pincode
+    ) {
+      await cleanupCloudinaryFiles(req.files);
+
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "All fields including full address are required",
       });
     }
 
@@ -95,23 +115,17 @@ export const applyAgent = async (req, res) => {
     }
 
     /* =============================
-       CUSTOM AGENT ID GENERATION
+       SAFE AGENT ID GENERATION
        ============================= */
-
     const currentYear = new Date().getFullYear();
 
-    const lastAgent = await Agent.findOne({
-      agentId: { $regex: `^BS${currentYear}` },
-    }).sort({ createdAt: -1 });
+    const counter = await Counter.findByIdAndUpdate(
+      `agent-${currentYear}`,
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    );
 
-    let serialNumber = 1;
-
-    if (lastAgent) {
-      const lastNumber = parseInt(lastAgent.agentId.split("-")[1]);
-      serialNumber = lastNumber + 1;
-    }
-
-    const customAgentId = `BS${currentYear}-${String(serialNumber).padStart(3, "0")}`;
+    const customAgentId = `BS${currentYear}-${String(counter.seq).padStart(3, "0")}`;
 
     /* =============================
        CREATE AGENT
@@ -119,26 +133,38 @@ export const applyAgent = async (req, res) => {
 
     const agentData = {
       agentId: customAgentId,
-      name,
-      email,
-      phone,
-      address,
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+
+      // ✅ FULL ADDRESS (user input)
+      address: address.trim(),
+
+      // ✅ STRUCTURED ADDRESS
+      addressDetails: {
+        state: state.trim().toUpperCase(),
+        city: city.trim(),
+        street: street.trim(),
+        pincode: pincode.trim(),
+      },
+
       documents: {
         aadhaar: aadhaarPath,
         pan: panPath,
         photo: photoPath,
       },
+
       status: "PENDING",
       role: "AGENT",
     };
 
-    // ✅ Add bank only if FULL data exists
+    // ✅ ADD BANK DETAILS ONLY IF COMPLETE
     if (hasAllBankFields) {
       agentData.bankDetails = {
-        accountHolderName,
-        accountNumber,
-        ifscCode,
-        bankName,
+        accountHolderName: accountHolderName.trim(),
+        accountNumber: accountNumber.trim(),
+        ifscCode: ifscCode.trim().toUpperCase(),
+        bankName: bankName.trim(),
       };
     }
 
