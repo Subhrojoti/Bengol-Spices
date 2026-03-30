@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { footerRoutes } from "../../config/footerRoutes";
+import logoMain from "../../assets/logo/BS_Logo_main.png";
 
 const HIDDEN_TABS = ["privacy", "terms", "cookies"];
 
@@ -15,7 +16,6 @@ const HomeHeader = () => {
 
   const firstTab = visibleTabs[0]?.path;
 
-  // ✅ REDIRECT when "/"
   React.useEffect(() => {
     if (location.pathname === "/" && firstTab) {
       navigate(`/${firstTab}`, { replace: true });
@@ -31,16 +31,15 @@ const HomeHeader = () => {
   return (
     <div className="flex items-center justify-between px-6 md:px-20 lg:px-32 xl:px-40 py-2 bg-white shadow-sm">
       {/* LEFT */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div
-          className="bg-orange-600 p-1.5 rounded-xl cursor-pointer"
+          className=" cursor-pointer flex items-center justify-center"
           onClick={() => navigate("/")}>
-          <h1 className="text-sm font-semibold tracking-wide text-white">
-            Bengol
-          </h1>
-          <h1 className="text-sm font-semibold tracking-wide text-white pl-6 -mt-1">
-            Spices
-          </h1>
+          <img
+            src={logoMain}
+            alt="Bengol Spices"
+            className="h-14 object-contain"
+          />
         </div>
 
         <h1 className="text-sm font-semibold text-gray-800 tracking-wide uppercase">

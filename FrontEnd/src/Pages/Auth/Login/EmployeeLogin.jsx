@@ -12,20 +12,23 @@ import { useNavigate } from "react-router-dom";
 import { employeeLogin } from "../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import slide1 from "../../../assets/Slides/Slide1.png";
+import slide2 from "../../../assets/Slides/Slide2.png";
+import slide3 from "../../../assets/Slides/Slide3.png";
 
 const spiceImages = [
   {
-    img: "https://images.unsplash.com/photo-1505577058444-a3dab90d4253?auto=format&fit=crop&w=1400&q=80",
+    img: slide1,
     title: "Bengol Spices",
     desc: "Authentic spices sourced with tradition and purity.",
   },
   {
-    img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1400&q=80",
+    img: slide2,
     title: "Rich Flavours",
     desc: "Bold aromas and vibrant blends for everyday cooking.",
   },
   {
-    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1400&q=80",
+    img: slide3,
     title: "Premium Quality",
     desc: "Carefully selected ingredients for modern kitchens.",
   },

@@ -14,20 +14,23 @@ import { useNavigate } from "react-router-dom";
 import { deliveryLogin } from "../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import slide4 from "../../../assets/Slides/Slide4.png";
+import slide5 from "../../../assets/Slides/Slide5.png";
+import slide6 from "../../../assets/Slides/Slide6.png";
 
 const deliveryImages = [
   {
-    img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1400&q=80",
+    img: slide4,
     title: "Fast & Reliable Delivery",
     desc: "Delivering freshness straight to customers’ doors.",
   },
   {
-    img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=1400&q=80",
+    img: slide5,
     title: "Track Every Order",
     desc: "Smart logistics powered by technology.",
   },
   {
-    img: "https://images.unsplash.com/photo-1605902711622-cfb43c4437b5?auto=format&fit=crop&w=1400&q=80",
+    img: slide6,
     title: "On-Time Guarantee",
     desc: "Efficiency that keeps customers happy.",
   },

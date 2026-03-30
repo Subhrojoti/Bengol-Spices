@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo/BS_Logo_New.png";
 
 const Footer = () => {
   return (
@@ -8,13 +9,17 @@ const Footer = () => {
       <div className="flex flex-col md:flex-row w-full justify-center">
         {/* LEFT */}
         <div className="md:w-1/4 flex items-start">
-          <div>
-            <h1 className="text-3xl font-semibold text-orange-600">
-              Bengol Spices
-            </h1>
-            <p className="text-sm mt-2 text-gray-500">
-              © {new Date().getFullYear()} Bengol Spices
-            </p>
+          <div className="-mt-5">
+            <div
+              className=" cursor-pointer flex items-center justify-center"
+              onClick={() => navigate("/")}>
+              <img
+                src={logo}
+                alt="Bengol Spices"
+                className="h-24 object-contain"
+              />
+            </div>
+            <p className="text-sm mt-2 text-gray-500">© 2025 Bengol Spices</p>
           </div>
         </div>
 
