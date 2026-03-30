@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  agentDashboard,
   applyAgent,
   getAgentProfile,
+  leaderboard,
 } from "../controllers/agent.controller.js";
 import { upload } from "../middleware/upload.js";
 import { setPassword } from "../controllers/auth.controller.js";
@@ -42,3 +44,9 @@ router.get(
 );
 
 export default router;
+
+// Agent dashboard route (Protected, Agent only)
+router.get("/dashboard", protect, isAgent, agentDashboard);
+
+// Agent Leaderboard Route
+router.get("/leaderboard", protect, isAgent, leaderboard);
