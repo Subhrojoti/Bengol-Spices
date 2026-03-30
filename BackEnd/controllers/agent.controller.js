@@ -2,6 +2,8 @@ import Agent from "../models/Agent.js";
 import { sendAdminNotification } from "../utils/email.js";
 import cloudinary from "../config/cloudinary.js";
 import AgentSalesLocation from "../models/AgentSalesLocation.js";
+import { getAgentDashboard } from "../services/dashboard.service.js";
+import { getLeaderboard } from "../services/leaderboard.service.js";
 
 const cleanupCloudinaryFiles = async (files) => {
   if (!files) return;
@@ -295,6 +297,73 @@ export const assignSalesLocation = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+// Agent Dashboard
+
+export const agentDashboard = async (req, res) => {
+  const agentId = req.user.agentId; // ✅ FROM TOKEN
+  try {
+    const { from, to } = req.query;
+
+    // ✅ DEFAULT (1 MONTH)
+    const endDate = to ? new Date(to) : new Date();
+    const startDate = from
+      ? new Date(from)
+      : new Date(new Date().setMonth(endDate.getMonth() - 1));
+
+    const data = await getAgentDashboard({
+      agentId,
+      from: startDate,
+      to: endDate,
+    });
+
+    // console.log("FROM:", startDate);
+    // console.log("TO:", endDate);
+    // console.log("AGENT:", agentId);
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Dashboard error",
+    });
+  }
+};
+
+// Agent Leaderboard
+
+export const leaderboard = async (req, res) => {
+  try {
+    const { from, to, limit } = req.query;
+
+    // ✅ Default: last 30 days
+    const endDate = to ? new Date(to) : new Date();
+    const startDate = from
+      ? new Date(from)
+      : new Date(new Date().setDate(endDate.getDate() - 30));
+
+    const data = await getLeaderboard({
+      from: startDate,
+      to: endDate,
+      limit: limit || 10,
+    });
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Leaderboard error",
     });
   }
 };
