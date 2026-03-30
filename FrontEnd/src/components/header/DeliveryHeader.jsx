@@ -1,17 +1,17 @@
 import React from "react";
+import logoMain from "../../assets/logo/BS_Logo_main.png";
 import {
   AppBar,
   Toolbar,
   Box,
   IconButton,
-  InputBase,
+  Tooltip,
   Typography,
   Drawer,
   List,
   ListItemButton,
   ListItemText,
   useMediaQuery,
-  Badge,
   Divider,
   Tabs,
   Tab,
@@ -93,7 +93,13 @@ const DeliveryHeader = () => {
               gap={1.2}
               sx={{ cursor: "pointer" }}
               onClick={() => navigate("/delivery")}>
-              <LocalShipping sx={{ color: "#0f766e" }} />
+              <div className=" cursor-pointer flex items-center justify-center">
+                <img
+                  src={logoMain}
+                  alt="Bengol Spices"
+                  className="h-14 object-contain"
+                />
+              </div>
               <Typography fontWeight={700} fontSize={16} color="#0f172a">
                 Delivery Panel
               </Typography>
@@ -138,7 +144,7 @@ const DeliveryHeader = () => {
           {/* RIGHT SECTION */}
           {!isMobile && (
             <>
-              <Box
+              {/* <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -154,27 +160,37 @@ const DeliveryHeader = () => {
                   sx={{ fontSize: 14, flex: 1 }}
                 />
                 <Search fontSize="small" />
-              </Box>
+              </Box> */}
+
               <div className="p-1 ml-3">
-                <NotificationBell />
+                <Tooltip title="Notifications" arrow>
+                  <div>
+                    <NotificationsOutlined className="text-gray-500 cursor-pointer" />
+                  </div>
+                </Tooltip>
               </div>
 
-              <IconButton size="small">
-                <SettingsOutlined
+              <Tooltip title="Profile Settings" arrow>
+                <IconButton
+                  size="small"
                   onClick={() => {
                     navigate("/delivery/profile-settings");
                     setDrawerOpen(false);
-                  }}
-                />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  handleLogout();
-                  setDrawerOpen(false);
-                }}>
-                <PowerSettingsNew />
-              </IconButton>
+                  }}>
+                  <SettingsOutlined />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Logout" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    handleLogout();
+                    setDrawerOpen(false);
+                  }}>
+                  <PowerSettingsNew />
+                </IconButton>
+              </Tooltip>
 
               <ProfileMenu />
             </>

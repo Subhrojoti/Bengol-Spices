@@ -1,4 +1,5 @@
 import React from "react";
+import logoMain from "../../assets/logo/BS_Logo_main.png";
 import {
   AppBar,
   Toolbar,
@@ -13,7 +14,7 @@ import {
   ListItemButton,
   ListItemText,
   useMediaQuery,
-  Badge,
+  Tooltip,
 } from "@mui/material";
 import {
   Search,
@@ -80,7 +81,13 @@ const AgentHeader = () => {
             gap={1.2}
             sx={{ cursor: "pointer" }}
             onClick={() => navigate("/marketing")}>
-            <Restaurant color="secondary" />
+            <div className=" cursor-pointer flex items-center justify-center">
+              <img
+                src={logoMain}
+                alt="Bengol Spices"
+                className="h-14 object-contain"
+              />
+            </div>
             <Typography
               fontWeight={600}
               fontSize={16}
@@ -121,7 +128,7 @@ const AgentHeader = () => {
           <Box flexGrow={1} />
 
           {/* Desktop / Tablet Search Bar */}
-          {!isMobile && (
+          {/* {!isMobile && (
             <Box
               sx={{
                 display: "flex",
@@ -140,20 +147,32 @@ const AgentHeader = () => {
               />
               <Search fontSize="small" color="action" />
             </Box>
-          )}
+          )} */}
 
           {/* Mobile Search Icon */}
-          {isMobile && (
+          {/* {isMobile && (
             <IconButton size="small">
               <Search />
             </IconButton>
-          )}
+          )} */}
 
           {/* Notifications (desktop/tablet only) */}
-          {!isMobile && <NotificationBell />}
+          {!isMobile && (
+            <Tooltip title="Notifications" arrow>
+              <div>
+                <NotificationBell />
+              </div>
+            </Tooltip>
+          )}
 
           {/* User Profile (desktop/tablet only) */}
-          {!isMobile && <ProfileMenu />}
+          {!isMobile && (
+            <Tooltip title="My Profile" arrow>
+              <div>
+                <ProfileMenu />
+              </div>
+            </Tooltip>
+          )}
 
           {/* Mobile Hamburger */}
           {isMobile && (

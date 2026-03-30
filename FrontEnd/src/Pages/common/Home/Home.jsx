@@ -1,6 +1,20 @@
 import React from "react";
+import { Typography } from "@mui/material";
+import coriander from "../../../assets/products/BS_Coriander_Powder.jpeg";
+import cumin from "../../../assets/products/BS_Cumin_Powder.jpeg";
+import garamMasala from "../../../assets/products/BS_Garam_Masala.jpeg";
+import redChilli from "../../../assets/products/BS_Red_Chilli_Powder.jpeg";
+import turmeric from "../../../assets/products/BS_Turmeric_Powder.jpeg";
 
 const Home = () => {
+  const products = [
+    { name: "Coriander Powder", image: coriander },
+    { name: "Cumin Powder", image: cumin },
+    { name: "Garam Masala", image: garamMasala },
+    { name: "Red Chilli Powder", image: redChilli },
+    { name: "Turmeric Powder", image: turmeric },
+  ];
+
   return (
     <div className="bg-white">
       {/* HERO SECTION */}
@@ -60,32 +74,62 @@ const Home = () => {
         </div>
       </div>
 
-      {/* CATEGORY GRID */}
-      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16">
-        <h2 className="text-2xl font-semibold mb-10">Our Product Categories</h2>
+      {/* PRODUCT GRID */}
+      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-20">
+        {/* Section Title */}
+        <Typography
+          variant="h5"
+          className="!font-semibold !mb-12 !tracking-wide text-gray-900">
+          Our Products
+        </Typography>
 
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-center">
-          {[
-            "Turmeric",
-            "Chilli",
-            "Cumin",
-            "Coriander",
-            "Garam Masala",
-            "Pepper",
-            "Cardamom",
-            "Cloves",
-            "Mustard",
-            "Fenugreek",
-            "Spice Mix",
-            "Organic",
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <img
-                src={`https://source.unsplash.com/100x100/?spices,${item}`}
-                alt={item}
-                className="w-20 h-20 object-cover rounded-full mb-2"
-              />
-              <p className="text-sm">{item}</p>
+        <div className="flex gap-8 scrollbar-hide py-4">
+          {products.map((item, i) => (
+            <div
+              key={i}
+              className="
+          min-w-[200px] flex-shrink-0 text-center
+          bg-white/40 backdrop-blur-lg
+          rounded-2xl p-4
+          border border-white/20
+          shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+          hover:shadow-[0_18px_45px_rgba(0,0,0,0.25)]
+          transition-all duration-300
+          hover:-translate-y-1
+        ">
+              {/* Image Container (Bevel Effect) */}
+              <div
+                className="
+            relative rounded-xl overflow-hidden
+            before:absolute before:inset-0
+            before:bg-gradient-to-br 
+            before:from-white/40 before:via-transparent before:to-black/25
+            before:pointer-events-none
+          ">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="
+              w-full h-[240px] object-cover
+              rounded-xl
+              shadow-inner
+              border border-gray-200
+            "
+                />
+              </div>
+
+              {/* Product Name */}
+              <Typography
+                variant="body2"
+                className="
+    !mt-4
+    !font-semibold
+    uppercase
+    tracking-[0.02em]
+    text-gray-800
+  ">
+                {item.name}
+              </Typography>
             </div>
           ))}
         </div>
