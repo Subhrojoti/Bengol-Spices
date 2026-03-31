@@ -34,46 +34,7 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
   };
 
   // 🚀 PARALLEL EXECUTION (VERY IMPORTANT)
-  const [
-    profitData,
-    returnAmountData,
-    orderData,
-    returnData,
-    progressData,
-    storeCount,
-  ] = await Promise.all([
-    // 🔥 PROFIT BASE DATA
-    Order.aggregate([
-      {
-        $match: {
-          status: "DELIVERED",
-          createdAt: { $gte: startOfYear, $lte: endOfYear },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalSales: { $sum: "$totalAmount" },
-          totalDue: { $sum: "$dueAmount" },
-        },
-      },
-    ]),
-
-    // 🔥 RETURN AMOUNT
-    Return.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startOfYear, $lte: endOfYear },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalRefund: { $sum: "$refund.amount" },
-        },
-      },
-    ]),
-
+  const [orderData, returnData, progressData, storeCount] = await Promise.all([
     // =========================
     // 🟢 ORDER AGGREGATION
     // =========================
