@@ -44,7 +44,7 @@ const Targets = () => {
 
   if (!data || !data.target) {
     return (
-      <Box className="flex flex-col justify-center items-center h-[60vh] text-center">
+      <Box className="flex flex-col justify-center items-center h-[90vh] text-center">
         <TrackChangesIcon sx={{ fontSize: 60, color: "#9ca3af" }} />
         <Typography variant="h6" className="mt-4 text-gray-500">
           No target assigned for today
