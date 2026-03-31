@@ -19,6 +19,8 @@ import {
   getCompletePaymentSummary,
   createRazorpayOrder,
   verifyRazorpayPayment,
+  createOrderPayment,
+  verifyPaymentAndPlaceOrder,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
 import { isAgent, isDeliveryPartner } from "../middleware/role.js";
@@ -118,6 +120,20 @@ router.get(
 // Razorpay Payment Gateway route
 router.post("/razorpay/create", protect, isAgent, createRazorpayOrder);
 router.post("/razorpay/verify", protect, isAgent, verifyRazorpayPayment);
+
+// Razorpay Inital Payment Route (Agent Access Only)
+router.post(
+  "/razorpay/create-initial-payment",
+  protect,
+  isAgent,
+  createOrderPayment,
+);
+router.post(
+  "/razorpay/verify-initial-payment",
+  protect,
+  isAgent,
+  verifyPaymentAndPlaceOrder,
+);
 
 // CREATE SHIPMENT (EMPLOYEE / ADMIN) [Future code mode --- ShipRocket]
 // router.post(
