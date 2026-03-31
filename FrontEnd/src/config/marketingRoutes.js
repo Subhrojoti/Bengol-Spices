@@ -9,7 +9,9 @@ export const marketingRoutes = [
     label: "Overview",
     path: "overview",
     fullPath: "/marketing/overview",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/Overview")),
+    component: lazy(
+      () => import("../pages/MarketingHub/Tabs/Overview/Overview"),
+    ),
   },
   {
     label: "Store Creation",
