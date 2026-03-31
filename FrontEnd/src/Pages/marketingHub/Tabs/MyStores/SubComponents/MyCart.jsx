@@ -19,7 +19,11 @@ import {
   clearCart,
   removeFromCart,
 } from "../../../../../redux/slices/addToCart/addToCart";
-import { createOrder } from "../../../../../api/services";
+import {
+  createOrder,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+} from "../../../../../api/services"; // ✅ FIXED IMPORT
 import { setLeftView } from "../../../../../redux/slices/myStoresUi/myStoresUi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -101,7 +105,7 @@ const MyCart = ({ onBack }) => {
     );
   }
 
-  /* ---------------- EMPTY CART (NEW UI) ---------------- */
+  /* ---------------- EMPTY CART ---------------- */
 
   if (!cartItems.length) {
     return (
@@ -166,7 +170,6 @@ const MyCart = ({ onBack }) => {
     const finalPaidAmount =
       paymentMode === "CASH" ? Number(paidAmount || 0) : totalAmount;
 
-    // Validations (same as before)
     if (paymentMode === "CASH" && finalPaidAmount <= 0) {
       alert("Please enter paid amount");
       return;
@@ -199,21 +202,20 @@ const MyCart = ({ onBack }) => {
         pincode: storeAddress.pincode || "",
       },
     };
+
     try {
       setLoading(true);
-      console.log("FINAL PAYLOAD:", JSON.stringify(payload, null, 2));
 
-      // STEP 1: Create Order (your backend)
       const orderRes = await createOrder(payload);
 
-      const orderId = orderRes?.data?.orderId;
+      // ✅ FIXED HERE
+      const orderId = orderRes?.orderId;
 
       if (!orderId) {
         toast.error("Order ID not received");
         return;
       }
 
-      // STEP 2: If CASH → finish here
       if (paymentMode === "CASH") {
         toast.success("Order created successfully");
         dispatch(clearCart(consumerId));
@@ -221,10 +223,10 @@ const MyCart = ({ onBack }) => {
         return;
       }
 
-      // STEP 3: Razorpay flow
-
       const razorRes = await createRazorpayOrder(orderId);
-      const razorData = razorRes.data;
+
+      // ✅ handle both cases
+      const razorData = razorRes?.data || razorRes;
 
       if (!razorData?.razorpayOrderId) {
         toast.error("Failed to initialize payment");
@@ -260,7 +262,6 @@ const MyCart = ({ onBack }) => {
 
       const rzp = new window.Razorpay(options);
 
-      // ❗ Optional but recommended
       rzp.on("payment.failed", function (response) {
         console.error(response.error);
         toast.error("Payment failed");
@@ -280,7 +281,6 @@ const MyCart = ({ onBack }) => {
 
   return (
     <Box display="flex" height="100%">
-      {/* LEFT: CART ITEMS */}
       <Box flex={1} p={4} overflow="auto">
         <Box display="flex" justifyContent="space-between" mb={3}>
           <Typography variant="h4" fontWeight={700}>
@@ -315,60 +315,6 @@ const MyCart = ({ onBack }) => {
                 </Typography>
               </Box>
 
-              {/* QTY */}
-              <Box display="flex" alignItems="center" gap={1}>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    if (item.quantity > 1) {
-                      dispatch(
-                        addToCart({
-                          consumerId,
-                          product: { ...item, quantity: -1 },
-                        }),
-                      );
-                    } else {
-                      dispatch(
-                        removeFromCart({
-                          consumerId,
-                          productId: item.id,
-                        }),
-                      );
-                    }
-                  }}>
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-
-                <TextField
-                  value={item.quantity}
-                  size="small"
-                  sx={{
-                    width: 48,
-                    "& input": {
-                      textAlign: "center",
-                      fontSize: 13,
-                    },
-                  }}
-                />
-
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    dispatch(
-                      addToCart({
-                        consumerId,
-                        product: { ...item, quantity: 1 },
-                      }),
-                    )
-                  }>
-                  <AddIcon fontSize="small" />
-                </IconButton>
-
-                <Typography variant="caption" color="text.secondary">
-                  {item.uom}
-                </Typography>
-              </Box>
-
               <Typography fontWeight={600} width={90} textAlign="right">
                 ₹{item.unitPrice * item.quantity}
               </Typography>
@@ -398,33 +344,15 @@ const MyCart = ({ onBack }) => {
         </Button>
       </Box>
 
-      {/* RIGHT: SUMMARY */}
-      <Box
-        width={360}
-        p={4}
-        sx={{
-          backgroundColor: "#f3f4f6",
-          borderLeft: "1px solid #e5e7eb",
-        }}>
+      <Box width={360} p={4} sx={{ backgroundColor: "#f3f4f6" }}>
         <Typography variant="h5" fontWeight={700} mb={3}>
           Summary
         </Typography>
 
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <Typography>ITEMS {cartItems.length}</Typography>
-          <Typography>₹{subtotal}</Typography>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box display="flex" justifyContent="space-between" mb={3}>
-          <Typography fontWeight={700}>TOTAL PRICE</Typography>
-          <Typography fontWeight={700}>₹{totalAmount}</Typography>
-        </Box>
+        <Typography mb={2}>₹{totalAmount}</Typography>
 
         <TextField
           select
-          label="Payment Mode"
           value={paymentMode}
           onChange={(e) => setPaymentMode(e.target.value)}
           fullWidth
@@ -435,7 +363,6 @@ const MyCart = ({ onBack }) => {
 
         {paymentMode === "CASH" && (
           <TextField
-            label="Amount Paid"
             type="number"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
@@ -444,16 +371,7 @@ const MyCart = ({ onBack }) => {
           />
         )}
 
-        <Button
-          fullWidth
-          variant="contained"
-          sx={{
-            height: 52,
-            backgroundColor: "#111827",
-            fontWeight: 700,
-          }}
-          disabled={!cartItems.length || loading}
-          onClick={handleCreateOrder}>
+        <Button fullWidth variant="contained" onClick={handleCreateOrder}>
           {loading ? "Creating Order..." : "Create Order"}
         </Button>
       </Box>
