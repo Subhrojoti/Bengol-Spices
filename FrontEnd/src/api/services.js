@@ -576,3 +576,15 @@ export const verifyRazorpayInitialPayment = async (payload) => {
   );
   return response.data;
 };
+
+// FAQ data
+
+export const getFaqs = async () => {
+  try {
+    const response = await axiosInstance.get("/api/faqs");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching FAQs:", error);
+    throw error;
+  }
+};
