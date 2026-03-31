@@ -1,42 +1,51 @@
-import React, { useState } from "react";
-
-const categories = ["Partner Onboarding", "Legal", "FAQs", "Agent Onboarding"];
-
-const faqsData = [
-  {
-    question: "I want to partner my store with Bengol Spices",
-    answer:
-      "You can partner with Bengol Spices by registering through our platform. Our team will guide you through onboarding, verification, and activation.",
-  },
-  {
-    question: "What are the mandatory documents required for onboarding?",
-    answer:
-      "You will need business registration details, GST information, identity proof, and bank account details for onboarding.",
-  },
-  {
-    question: "How can I opt-out from the platform?",
-    answer:
-      "You can raise a support request through the dashboard or contact our support team for account deactivation.",
-  },
-  {
-    question: "How long does it take to activate my account after submission?",
-    answer:
-      "Activation usually takes 2–5 business days depending on verification and documentation completeness.",
-  },
-  {
-    question: "Are there any onboarding fees?",
-    answer:
-      "Onboarding fees may vary based on business type and region. Please check with our support team for details.",
-  },
-];
+import React, { useEffect, useState } from "react";
+import { getFaqs } from "../../../api/services";
 
 const HelpAndSupport = () => {
   const [activeIndex, setActiveIndex] = useState(null);
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [activeCategory, setActiveCategory] = useState("GENERAL");
+  const [faqs, setFaqs] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const toggle = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
+
+  // Fetch FAQs
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await getFaqs();
+        if (res?.success) {
+          const data = res.data || [];
+
+          // Save all FAQs
+          setFaqs(data);
+
+          // Extract unique categories
+          const uniqueCategories = [
+            ...new Set(data.map((item) => item.category)),
+          ];
+
+          setCategories(uniqueCategories);
+
+          // Default category
+          if (uniqueCategories.length) {
+            setActiveCategory(uniqueCategories[0]);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
+
+  // Filter FAQs by category
+  const filteredFaqs = faqs.filter(
+    (item) => item.category === activeCategory && item.isActive,
+  );
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -47,7 +56,10 @@ const HelpAndSupport = () => {
             {categories.map((cat) => (
               <div
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setActiveIndex(null);
+                }}
                 className={`px-4 py-3 rounded-lg cursor-pointer text-sm font-medium transition ${
                   activeCategory === cat
                     ? "bg-gray-100 text-black"
@@ -64,36 +76,60 @@ const HelpAndSupport = () => {
           <h2 className="text-2xl font-semibold mb-6">{activeCategory}</h2>
 
           <div className="bg-white rounded-xl shadow-sm divide-y">
-            {faqsData.map((item, index) => {
-              const isOpen = activeIndex === index;
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((item, index) => {
+                const isOpen = activeIndex === index;
 
-              return (
-                <div key={index}>
-                  {/* QUESTION */}
-                  <div
-                    onClick={() => toggle(index)}
-                    className={`flex justify-between items-center px-6 py-5 cursor-pointer text-sm ${
-                      isOpen ? "text-orange-600" : "text-gray-800"
-                    }`}>
-                    <span>{item.question}</span>
-
-                    <span
-                      className={`transition-transform ${
-                        isOpen ? "rotate-180" : ""
+                return (
+                  <div key={item._id}>
+                    {/* QUESTION */}
+                    <div
+                      onClick={() => toggle(index)}
+                      className={`flex justify-between items-center px-6 py-5 cursor-pointer ${
+                        isOpen ? "text-orange-600" : "text-gray-600"
                       }`}>
-                      ▼
-                    </span>
-                  </div>
+                      <span className="text-md font-bold">{item.question}</span>
 
-                  {/* ANSWER */}
-                  {isOpen && (
-                    <div className="px-6 pb-5 text-sm text-gray-600 leading-6">
-                      {item.answer}
+                      <span
+                        className={`transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}>
+                        ▼
+                      </span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+
+                    {/* ANSWER */}
+                    {isOpen && (
+                      <div className="px-6 pb-5 text-sm text-gray-600 leading-6 font-normal">
+                        {item.answer}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="px-6 py-5 text-sm text-gray-500">
+                No FAQs available.
+              </div>
+            )}
+          </div>
+
+          {/* SUPPORT CONTACT */}
+          <div className="mt-8 bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-lg font-semibold mb-2">Need more help?</h3>
+            <p className="text-sm text-gray-600">
+              If your query is not resolved, feel free to contact our support
+              team.
+            </p>
+
+            <div className="mt-3 text-sm">
+              📧{" "}
+              <a
+                href="mailto:support@bengolspices.com"
+                className="text-orange-600 font-medium">
+                support@bengolspices.com
+              </a>
+            </div>
           </div>
         </div>
       </div>
