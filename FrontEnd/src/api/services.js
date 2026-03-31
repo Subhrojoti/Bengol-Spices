@@ -537,3 +537,15 @@ export const getAgentDashboard = async () => {
     throw error;
   }
 };
+
+// Leaderboard
+
+export const getLeaderboard = async () => {
+  try {
+    const res = await axiosInstance.get("/agent/leaderboard");
+    return res.data;
+  } catch (error) {
+    console.error("Leaderboard API error:", error);
+    throw error;
+  }
+};

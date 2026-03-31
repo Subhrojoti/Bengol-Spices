@@ -34,6 +34,14 @@ export const marketingRoutes = [
     component: lazy(() => import("../pages/MarketingHub/Tabs/Targets/Targets")),
   },
   {
+    label: "Leaderboard",
+    path: "leaderboard",
+    fullPath: "/marketing/leaderboard",
+    component: lazy(
+      () => import("../pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
+    ),
+  },
+  {
     label: "Payments",
     path: "payments",
     fullPath: "/marketing/payments",
