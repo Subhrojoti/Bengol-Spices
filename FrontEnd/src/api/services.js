@@ -549,3 +549,30 @@ export const getLeaderboard = async () => {
     throw error;
   }
 };
+
+// Payments RazorPay - Due/Overdue payments
+
+export const createRazorpayOrder = (orderId) => {
+  return axiosInstance.post("/agent/orders/razorpay/create", { orderId });
+};
+
+export const verifyRazorpayPayment = (data) => {
+  return axiosInstance.post("/agent/orders/razorpay/verify", data);
+};
+
+// Razorpay - My Cart payments
+export const createRazorpayInitialPayment = async (amount) => {
+  const response = await axiosInstance.post(
+    "/agent/orders/razorpay/create-initial-payment",
+    { amount },
+  );
+  return response.data;
+};
+
+export const verifyRazorpayInitialPayment = async (payload) => {
+  const response = await axiosInstance.post(
+    "/agent/orders/razorpay/verify-initial-payment",
+    payload,
+  );
+  return response.data;
+};

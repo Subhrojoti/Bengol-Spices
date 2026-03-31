@@ -109,7 +109,7 @@ const ProfileMenu = () => {
         <MenuItem
           onClick={() => {
             handleClose();
-            navigate("/profile/settings");
+            navigate("/agent/profile-settings");
           }}>
           <ListItemIcon>
             <Settings fontSize="small" />

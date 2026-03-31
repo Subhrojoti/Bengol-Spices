@@ -27,19 +27,22 @@ const DuePayments = () => {
     setSelectedOrder(null);
   };
 
-  const handleSubmitPayment = async () => {
+  const handleSubmitPayment = async (isRazorpay = false) => {
     try {
       const amount = Number(paymentAmount);
 
-      const payload = {
-        amount,
-        method: "CASH",
-        note: "Payment collected",
-      };
+      //  Only call API for CASH
+      if (!isRazorpay) {
+        const payload = {
+          amount,
+          method: "CASH",
+          note: "Payment collected",
+        };
 
-      await collectOrderPayment(selectedOrder.orderNo, payload);
+        await collectOrderPayment(selectedOrder.orderNo, payload);
+      }
 
-      // ✅ FIX: update both paid + due correctly
+      // ALWAYS update UI state (for both CASH & Razorpay)
       setStores((prevStores) =>
         prevStores.map((store) => ({
           ...store,
@@ -57,7 +60,11 @@ const DuePayments = () => {
         })),
       );
 
-      toast.success("Payment collected successfully");
+      // Toast only for CASH (Razorpay already shows success)
+      if (!isRazorpay) {
+        toast.success("Payment collected successfully");
+      }
+
       handleClosePayment();
     } catch (error) {
       console.error("Payment collection failed", error);
@@ -74,7 +81,18 @@ const DuePayments = () => {
 
         // 2️⃣ Fetch due orders
         const dueOrdersRes = await getDueOrders();
-        const dueOrders = dueOrdersRes?.data || [];
+        const today = new Date();
+
+        const dueOrders = (dueOrdersRes?.data || []).filter((order) => {
+          if (order.dueAmount <= 0) return false;
+
+          const orderDate = new Date(order.createdAt);
+          const dueLimitDate = new Date(orderDate);
+          dueLimitDate.setDate(dueLimitDate.getDate() + 7);
+
+          // ✅ Only include orders within 7 days
+          return today <= dueLimitDate;
+        });
 
         // 3️⃣ Group orders by consumerId
         const ordersMap = dueOrders.reduce((acc, order) => {

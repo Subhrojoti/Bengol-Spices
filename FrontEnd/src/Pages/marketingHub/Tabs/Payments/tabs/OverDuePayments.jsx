@@ -26,18 +26,22 @@ const OverDuePayments = () => {
     setSelectedOrder(null);
   };
 
-  const handleSubmitPayment = async () => {
+  const handleSubmitPayment = async (isRazorpay = false) => {
     try {
       const amount = Number(paymentAmount);
 
-      const payload = {
-        amount,
-        method: "CASH",
-        note: "Payment collected",
-      };
+      // ✅ Only call API for CASH
+      if (!isRazorpay) {
+        const payload = {
+          amount,
+          method: "CASH",
+          note: "Payment collected",
+        };
 
-      await collectOrderPayment(selectedOrder.orderNo, payload);
+        await collectOrderPayment(selectedOrder.orderNo, payload);
+      }
 
+      // ✅ ALWAYS update UI state (for both CASH & Razorpay)
       setStores((prevStores) =>
         prevStores.map((store) => ({
           ...store,
@@ -46,7 +50,7 @@ const OverDuePayments = () => {
               ? {
                   ...order,
                   paidAmount: order.paidAmount + amount,
-                  dueAmount: order.dueAmount - amount,
+                  dueAmount: Math.max(order.dueAmount - amount, 0), // ✅ safer
                   paymentStatus:
                     order.dueAmount - amount <= 0 ? "COMPLETED" : "PARTIAL",
                 }
@@ -55,7 +59,11 @@ const OverDuePayments = () => {
         })),
       );
 
-      toast.success("Payment collected successfully");
+      // ✅ Toast only for CASH
+      if (!isRazorpay) {
+        toast.success("Payment collected successfully");
+      }
+
       handleClosePayment();
     } catch (error) {
       console.error("Payment collection failed", error);
