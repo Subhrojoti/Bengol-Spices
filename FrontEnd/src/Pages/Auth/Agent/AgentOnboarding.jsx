@@ -24,7 +24,11 @@ export default function Onboarding() {
     aadhaarFile: null,
     panFile: null,
 
-    // ✅ NEW FIELDS
+    state: "",
+    city: "",
+    street: "",
+    pincode: "",
+
     accountHolderName: "",
     accountNumber: "",
     ifscCode: "",
@@ -60,7 +64,11 @@ export default function Onboarding() {
     if (!form.aadhaarFile) newErrors.aadhaarFile = "Aadhaar required";
     if (!form.panFile) newErrors.panFile = "PAN required";
 
-    // ✅ NEW VALIDATIONS
+    if (!form.state.trim()) newErrors.state = "State required";
+    if (!form.city.trim()) newErrors.city = "City required";
+    if (!form.street.trim()) newErrors.street = "Street required";
+    if (!/^\d{6}$/.test(form.pincode)) newErrors.pincode = "Invalid pincode";
+
     if (!form.accountHolderName.trim())
       newErrors.accountHolderName = "Required";
 
@@ -89,11 +97,15 @@ export default function Onboarding() {
       formData.append("phone", form.phone);
       formData.append("address", form.address);
 
+      formData.append("state", form.state);
+      formData.append("city", form.city);
+      formData.append("street", form.street);
+      formData.append("pincode", form.pincode);
+
       formData.append("aadhaar", form.aadhaarFile);
       formData.append("pan", form.panFile);
       formData.append("photo", form.photo);
 
-      // ✅ NEW FIELDS
       formData.append("accountHolderName", form.accountHolderName);
       formData.append("accountNumber", form.accountNumber);
       formData.append("ifscCode", form.ifscCode);
@@ -103,7 +115,7 @@ export default function Onboarding() {
 
       setIsSubmitted(true);
     } catch (error) {
-      console.error("Submission failed", error);
+      console.error("Submission failed", error.response?.data);
     } finally {
       setIsSubmitting(false);
     }
@@ -119,7 +131,7 @@ export default function Onboarding() {
         alignItems: "center",
         py: 6,
       }}>
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Paper elevation={12} sx={{ p: 4, borderRadius: 3 }}>
           {!isSubmitted ? (
             <>
@@ -141,7 +153,7 @@ export default function Onboarding() {
                   mb: 4,
                 }}>
                 {/* COLUMN 1 */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <Stack spacing={3}>
                     <TextField
                       variant="standard"
@@ -179,9 +191,53 @@ export default function Onboarding() {
                     />
                   </Stack>
                 </Grid>
-
                 {/* COLUMN 2 */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
+                  <Stack spacing={3}>
+                    <TextField
+                      variant="standard"
+                      label="State"
+                      name="state"
+                      value={form.state}
+                      onChange={handleChange}
+                      error={!!errors.state}
+                      helperText={errors.state}
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="City"
+                      name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      error={!!errors.city}
+                      helperText={errors.city}
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="Street"
+                      name="street"
+                      value={form.street}
+                      onChange={handleChange}
+                      error={!!errors.street}
+                      helperText={errors.street}
+                    />
+
+                    <TextField
+                      variant="standard"
+                      label="Pincode"
+                      name="pincode"
+                      value={form.pincode}
+                      onChange={handleChange}
+                      error={!!errors.pincode}
+                      helperText={errors.pincode}
+                    />
+                  </Stack>
+                </Grid>
+
+                {/* COLUMN 3 */}
+                <Grid item xs={12} md={3}>
                   <Stack spacing={3}>
                     <TextField
                       variant="standard"
@@ -222,8 +278,8 @@ export default function Onboarding() {
                   </Stack>
                 </Grid>
 
-                {/* COLUMN 3 */}
-                <Grid item xs={12} md={4}>
+                {/* COLUMN 4 */}
+                <Grid item xs={12} md={3}>
                   <Stack spacing={4} pt={2}>
                     {/* PROFILE PHOTO */}
                     <Stack spacing={0.5}>

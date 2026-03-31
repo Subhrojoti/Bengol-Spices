@@ -16,6 +16,7 @@ import {
   FormControl,
   Grid,
   Tooltip,
+  TextField, // ✅ ADDED
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
@@ -44,6 +45,7 @@ export default function AgentManagement() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [agents, setAgents] = useState([]);
   const [openRow, setOpenRow] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // ✅ ADDED
 
   const navigate = useNavigate();
 
@@ -53,7 +55,6 @@ export default function AgentManagement() {
 
       toast.success(`Agent ${agent.name} approved`);
 
-      // Update UI locally
       setAgents((prev) =>
         prev.map((a) =>
           a.agentId === agent.agentId ? { ...a, status: "APPROVED" } : a,
@@ -82,7 +83,6 @@ export default function AgentManagement() {
     }
   };
 
-  /* ===================== FETCH AGENTS ===================== */
   useEffect(() => {
     const fetchAgents = async () => {
       try {
@@ -98,12 +98,14 @@ export default function AgentManagement() {
   }, []);
 
   /* ===================== FILTER LOGIC ===================== */
-  const filteredAgents =
+  const filteredAgents = (
     statusFilter === "ALL"
       ? agents
-      : agents.filter((agent) => agent.status === statusFilter);
+      : agents.filter((agent) => agent.status === statusFilter)
+  ).filter((agent) =>
+    agent.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+  ); // ✅ ADDED SEARCH FILTER
 
-  /* ===================== STATUS CHIP ===================== */
   const getStatusChip = (status) => {
     switch (status) {
       case "APPROVED":
@@ -125,14 +127,17 @@ export default function AgentManagement() {
         flexDirection: "column",
         overflow: "hidden",
       }}>
-      {/* ===== HEADER (TITLE + FILTER) ===== */}
+      {/* ===== HEADER (FILTER + SEARCH) ===== */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "flex-start",
+          alignItems: "center",
+          gap: 4,
           mb: 2,
         }}>
-        <FormControl size="small">
+        {/* LEFT: FILTER */}
+        <FormControl size="large">
           <Select
             value={statusFilter}
             displayEmpty
@@ -141,7 +146,7 @@ export default function AgentManagement() {
               borderRadius: "8px",
               backgroundColor: "#f9fafb",
               "& .MuiSelect-select": {
-                py: 0.5, // reduce vertical padding
+                py: 1.1,
                 px: 1.5,
               },
             }}>
@@ -151,9 +156,22 @@ export default function AgentManagement() {
             <MenuItem value="REJECTED">Rejected</MenuItem>
           </Select>
         </FormControl>
+
+        {/*SEARCH BAR */}
+        <TextField
+          size="small"
+          placeholder="Search by name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            width: 250,
+            bgcolor: "white",
+            borderRadius: "8px",
+          }}
+        />
       </Box>
 
-      {/* ===================== AGENT TABLE ===================== */}
+      {/* ===================== TABLE ===================== */}
       <Card
         sx={{
           flex: 1,
@@ -165,7 +183,6 @@ export default function AgentManagement() {
           sx={{
             flex: 1,
             overflowY: "auto",
-
             marginRight: "-2rem",
             paddingRight: "2rem",
           }}>
