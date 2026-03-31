@@ -525,3 +525,15 @@ export const assignLocation = async (payload) => {
   );
   return response.data;
 };
+
+// Agent Dashboard
+
+export const getAgentDashboard = async () => {
+  try {
+    const res = await axiosInstance.get("/agent/dashboard");
+    return res.data;
+  } catch (error) {
+    console.error("Dashboard API error:", error);
+    throw error;
+  }
+};
