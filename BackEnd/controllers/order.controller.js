@@ -128,7 +128,7 @@ export const placeOrder = async (req, res) => {
       totalAmount += item.totalPrice;
     }
 
-    if (paidAmount <= 0 || paidAmount > totalAmount) {
+    if (paidAmount < 0 || paidAmount > totalAmount) {
       return res.status(400).json({
         success: false,
         message: "Invalid paid amount",
@@ -1277,6 +1277,140 @@ export const verifyRazorpayPayment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Payment verification failed",
+    });
+  }
+};
+
+// Initial Payment Razorpayment during placing order
+export const createOrderPayment = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || amount < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Minimum amount should be ₹1",
+      });
+    }
+
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: amount * 100,
+      currency: "INR",
+      receipt: `order_${Date.now()}`,
+    });
+
+    return res.json({
+      success: true,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      key: process.env.RAZORPAY_KEY_ID,
+    });
+  } catch (error) {
+    console.error("CREATE ORDER PAYMENT ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create Razorpay order",
+    });
+  }
+};
+
+// Verify initial payment for order placement
+export const verifyPaymentAndPlaceOrder = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      amount,
+      orderPayload, // 👈 full order body (same as placeOrder)
+    } = req.body;
+
+    const numericAmount = Number(amount);
+
+    /* =============================
+       🔐 VERIFY SIGNATURE
+       ============================= */
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment signature",
+      });
+    }
+
+    /* =============================
+       🔁 DUPLICATE CHECK
+       ============================= */
+
+    const existing = await Payment.findOne({
+      razorpayPaymentId: razorpay_payment_id,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already processed",
+      });
+    }
+
+    /* =============================
+       🧠 USE YOUR EXISTING LOGIC
+       ============================= */
+
+    req.body = {
+      ...orderPayload,
+      paidAmount: numericAmount / 100, // ✅ override safely
+      paymentMode:
+        numericAmount / 100 === orderPayload.totalAmount ? "ONLINE" : "MIXED",
+    };
+
+    // ⚡ Call your existing controller
+    const response = await new Promise((resolve) => {
+      placeOrder(req, {
+        status: (code) => ({
+          json: (data) => resolve({ code, data }),
+        }),
+      });
+    });
+
+    if (!response.data.success) {
+      return res.status(400).json(response.data);
+    }
+
+    /* =============================
+       💾 SAVE PAYMENT
+       ============================= */
+
+    await Payment.create({
+      orderId: response.data.orderId,
+      consumerId: orderPayload.consumerId,
+      agentId: req.user?.agentId,
+      amount: numericAmount / 100,
+      method: "RAZORPAY",
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+      collectedBy: {
+        id: req.user?.agentId,
+        role: "AGENT",
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: "Order placed with payment",
+      orderId: response.data.orderId,
+    });
+  } catch (error) {
+    console.error("VERIFY + PLACE ORDER ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Order placement failed",
     });
   }
 };
