@@ -5,6 +5,8 @@ import Employee from "../models/Employee.js";
 import Admin from "../models/Admin.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
+import Product from "../models/Product.js";
+import Target from "../models/Target.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
 import Payment from "../models/Payment.js";
 import { createNotification } from "../services/notification.service.js";
@@ -74,8 +76,8 @@ export const placeOrder = async (req, res) => {
     let totalAmount = 0;
 
     for (const item of products) {
+      // ✅ BASIC VALIDATION (NO productId required)
       if (
-        !item.productId ||
         !item.name ||
         !item.uom ||
         !item.quantity ||
@@ -88,6 +90,39 @@ export const placeOrder = async (req, res) => {
           message: "Invalid product details",
         });
       }
+
+      /* =============================
+         AUTO FETCH PRODUCT (SAFE)
+         ============================= */
+
+      let productDoc = null;
+
+      if (item.productId) {
+        productDoc = await Product.findById(item.productId);
+      } else {
+        productDoc = await Product.findOne({
+          name: item.name,
+          status: "ACTIVE",
+        });
+      }
+
+      /* =============================
+         ENRICH DATA (NO BREAK)
+         ============================= */
+
+      if (productDoc) {
+        item.productId = productDoc._id;
+        item.name = productDoc.name;
+
+        // Optional safety (uncomment if needed)
+        // item.unitPrice = productDoc.discountPrice || productDoc.price;
+
+        item.image = productDoc.images?.front?.url;
+      }
+
+      /* =============================
+         CALCULATE TOTAL
+         ============================= */
 
       item.totalPrice = item.quantity * item.unitPrice;
       totalAmount += item.totalPrice;
@@ -109,9 +144,9 @@ export const placeOrder = async (req, res) => {
     const currentYear = new Date().getFullYear();
 
     const counter = await Counter.findByIdAndUpdate(
-      `order_${currentYear}`, // unique key per year
-      { $inc: { seq: 1 } }, // atomic increment
-      { new: true, upsert: true }, // create if not exists
+      `order_${currentYear}`,
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
     );
 
     const serial = String(counter.seq).padStart(4, "0");
@@ -164,9 +199,9 @@ export const placeOrder = async (req, res) => {
       paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
 
-    // =============================
-    // TARGET + COMMISSION + NOTIFICATION
-    // =============================
+    /* =============================
+       TARGET + COMMISSION + NOTIFICATION
+       ============================= */
 
     const today = new Date().toLocaleDateString("en-CA", {
       timeZone: "Asia/Kolkata",
@@ -196,6 +231,7 @@ export const placeOrder = async (req, res) => {
           count: 0,
           incentiveEarned: 0,
           productBreakdown: [],
+          milestonesNotified: [],
         });
       }
 
@@ -214,12 +250,10 @@ export const placeOrder = async (req, res) => {
 
         if (!rule) continue;
 
-        // ✅ PER PACKET
         if (rule.perPacketCommission) {
           earned += qty * rule.perPacketCommission;
         }
 
-        // ✅ BULK (no duplicate)
         if (
           rule.bulkTarget &&
           rule.bulkIncentive &&
@@ -230,7 +264,6 @@ export const placeOrder = async (req, res) => {
           progress.bulkAchieved = true;
         }
 
-        // ✅ PRODUCT TRACK
         const existing = progress.productBreakdown.find(
           (p) => p.productId?.toString() === item.productId?.toString(),
         );
@@ -245,7 +278,6 @@ export const placeOrder = async (req, res) => {
         }
       }
 
-      // ✅ GLOBAL TARGET
       if (
         target.globalTarget?.totalPackets &&
         !progress.targetAchieved &&
@@ -265,9 +297,6 @@ export const placeOrder = async (req, res) => {
       progress.count += totalQty;
       progress.incentiveEarned += earned;
 
-      // =============================
-      // 💰 PER ORDER EARNING NOTIFICATION
-      // =============================
       if (earned > 0) {
         await createNotification({
           title: "Earning Update",
@@ -277,9 +306,6 @@ export const placeOrder = async (req, res) => {
         });
       }
 
-      // =============================
-      // 🔥 MILESTONE NOTIFICATION
-      // =============================
       if (target.globalTarget?.totalPackets) {
         const percentage = Math.floor(
           (progress.count / target.globalTarget.totalPackets) * 100,
