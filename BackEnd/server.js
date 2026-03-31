@@ -13,6 +13,8 @@ import productRoutes from "./routes/product.routes.js";
 import returnRoutes from "./routes/return.routes.js";
 import targetRoutes from "./routes/target.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import faqRoutes from "./routes/faq.routes.js";
+// import { seedFAQs } from "./utils/seedFaqs.js";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 connectDB();
+
+//await seedFAQs();
 
 // console.log(process.env.CLOUDINARY_API_KEY);
 
@@ -37,6 +41,7 @@ app.use("/products", productRoutes);
 app.use("/returns", returnRoutes);
 app.use("/targets", targetRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/faqs", faqRoutes);
 
 const PORT = process.env.PORT || 5000;
 
