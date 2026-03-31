@@ -21,9 +21,9 @@ import {
 } from "../../../../../redux/slices/addToCart/addToCart";
 import {
   createOrder,
-  createRazorpayOrder,
-  verifyRazorpayPayment,
-} from "../../../../../api/services"; // ✅ FIXED IMPORT
+  createRazorpayInitialPayment,
+  verifyRazorpayInitialPayment,
+} from "../../../../../api/services";
 import { setLeftView } from "../../../../../redux/slices/myStoresUi/myStoresUi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -167,11 +167,10 @@ const MyCart = ({ onBack }) => {
   const handleCreateOrder = async () => {
     if (!cartItems.length) return;
 
-    const finalPaidAmount =
-      paymentMode === "CASH" ? Number(paidAmount || 0) : totalAmount;
+    const finalPaidAmount = Number(paidAmount || 0);
 
-    if (paymentMode === "CASH" && finalPaidAmount <= 0) {
-      alert("Please enter paid amount");
+    if (finalPaidAmount <= 0) {
+      alert("Please enter valid paid amount");
       return;
     }
 
@@ -181,6 +180,21 @@ const MyCart = ({ onBack }) => {
     }
 
     const storeAddress = selectedStore?.address || {};
+
+    const orderPayload = {
+      consumerId,
+      products: cartItems.map((item) => ({
+        name: item.name,
+        uom: item.uom,
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+      })),
+      totalAmount,
+      paidAmount: finalPaidAmount,
+      paymentMode: "ONLINE",
+      latitude,
+      longitude,
+    };
 
     const payload = {
       consumerId,
@@ -192,7 +206,7 @@ const MyCart = ({ onBack }) => {
         image: item.image,
       })),
       paidAmount: finalPaidAmount,
-      paymentMode: paymentMode === "RAZORPAY" ? "CASH" : paymentMode,
+      paymentMode,
       latitude,
       longitude,
       deliveryAddress: {
@@ -206,51 +220,46 @@ const MyCart = ({ onBack }) => {
     try {
       setLoading(true);
 
-      const orderRes = await createOrder(payload);
-
-      // ✅ FIXED HERE
-      const orderId = orderRes?.orderId;
-
-      if (!orderId) {
-        toast.error("Order ID not received");
-        return;
-      }
-
+      /* -------- CASH FLOW (UNCHANGED) -------- */
       if (paymentMode === "CASH") {
+        await createOrder(payload);
+
         toast.success("Order created successfully");
         dispatch(clearCart(consumerId));
         dispatch(setLeftView("CREATE"));
         return;
       }
 
-      const razorRes = await createRazorpayOrder(orderId);
+      /* -------- RAZORPAY FLOW -------- */
 
-      // ✅ handle both cases
-      const razorData = razorRes?.data || razorRes;
+      const razorpayRes = await createRazorpayInitialPayment(finalPaidAmount);
 
-      if (!razorData?.razorpayOrderId) {
-        toast.error("Failed to initialize payment");
+      if (!razorpayRes?.success) {
+        toast.error("Failed to initiate payment");
         return;
       }
 
+      const { razorpayOrderId, key, amount } = razorpayRes;
+
       const options = {
-        key: razorData.key,
-        amount: razorData.amount,
+        key,
+        amount,
         currency: "INR",
-        order_id: razorData.razorpayOrderId,
+        name: "Order Payment",
+        description: "Complete your payment",
+        order_id: razorpayOrderId,
 
         handler: async function (response) {
           try {
-            await verifyRazorpayPayment({
+            await verifyRazorpayInitialPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              orderId,
-              amount: razorData.amount,
+              amount,
+              orderPayload,
             });
 
-            toast.success("Payment successful");
-
+            toast.success("Payment successful & Order created");
             dispatch(clearCart(consumerId));
             dispatch(setLeftView("CREATE"));
           } catch (err) {
@@ -258,19 +267,16 @@ const MyCart = ({ onBack }) => {
             toast.error("Payment verification failed");
           }
         },
+
+        theme: {
+          color: "#111827",
+        },
       };
 
       const rzp = new window.Razorpay(options);
-
-      rzp.on("payment.failed", function (response) {
-        console.error(response.error);
-        toast.error("Payment failed");
-      });
-
       rzp.open();
     } catch (err) {
-      console.error(err);
-      console.error("FULL ERROR:", err.response?.data || err);
+      console.error("Order/payment failed", err);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
@@ -281,6 +287,7 @@ const MyCart = ({ onBack }) => {
 
   return (
     <Box display="flex" height="100%">
+      {/* LEFT */}
       <Box flex={1} p={4} overflow="auto">
         <Box display="flex" justifyContent="space-between" mb={3}>
           <Typography variant="h4" fontWeight={700}>
@@ -315,6 +322,59 @@ const MyCart = ({ onBack }) => {
                 </Typography>
               </Box>
 
+              <Box display="flex" alignItems="center" gap={1}>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    if (item.quantity > 1) {
+                      dispatch(
+                        addToCart({
+                          consumerId,
+                          product: { ...item, quantity: -1 },
+                        }),
+                      );
+                    } else {
+                      dispatch(
+                        removeFromCart({
+                          consumerId,
+                          productId: item.id,
+                        }),
+                      );
+                    }
+                  }}>
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+
+                <TextField
+                  value={item.quantity}
+                  size="small"
+                  sx={{
+                    width: 48,
+                    "& input": {
+                      textAlign: "center",
+                      fontSize: 13,
+                    },
+                  }}
+                />
+
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      addToCart({
+                        consumerId,
+                        product: { ...item, quantity: 1 },
+                      }),
+                    )
+                  }>
+                  <AddIcon fontSize="small" />
+                </IconButton>
+
+                <Typography variant="caption" color="text.secondary">
+                  {item.uom}
+                </Typography>
+              </Box>
+
               <Typography fontWeight={600} width={90} textAlign="right">
                 ₹{item.unitPrice * item.quantity}
               </Typography>
@@ -344,25 +404,44 @@ const MyCart = ({ onBack }) => {
         </Button>
       </Box>
 
-      <Box width={360} p={4} sx={{ backgroundColor: "#f3f4f6" }}>
+      {/* RIGHT */}
+      <Box
+        width={360}
+        p={4}
+        sx={{
+          backgroundColor: "#f3f4f6",
+          borderLeft: "1px solid #e5e7eb",
+        }}>
         <Typography variant="h5" fontWeight={700} mb={3}>
           Summary
         </Typography>
 
-        <Typography mb={2}>₹{totalAmount}</Typography>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <Typography>ITEMS {cartItems.length}</Typography>
+          <Typography>₹{subtotal}</Typography>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Box display="flex" justifyContent="space-between" mb={3}>
+          <Typography fontWeight={700}>TOTAL PRICE</Typography>
+          <Typography fontWeight={700}>₹{totalAmount}</Typography>
+        </Box>
 
         <TextField
           select
+          label="Payment Mode"
           value={paymentMode}
           onChange={(e) => setPaymentMode(e.target.value)}
           fullWidth
           sx={{ mb: 2 }}>
           <MenuItem value="CASH">Cash</MenuItem>
-          <MenuItem value="RAZORPAY">Razorpay</MenuItem>
+          <MenuItem value="ONLINE">Razorpay</MenuItem>
         </TextField>
 
-        {paymentMode === "CASH" && (
+        {(paymentMode === "CASH" || paymentMode === "ONLINE") && (
           <TextField
+            label="Amount Paid"
             type="number"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
@@ -371,8 +450,17 @@ const MyCart = ({ onBack }) => {
           />
         )}
 
-        <Button fullWidth variant="contained" onClick={handleCreateOrder}>
-          {loading ? "Creating Order..." : "Create Order"}
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{
+            height: 52,
+            backgroundColor: "#111827",
+            fontWeight: 700,
+          }}
+          disabled={!cartItems.length || loading}
+          onClick={handleCreateOrder}>
+          {loading ? "Processing..." : "Create Order"}
         </Button>
       </Box>
     </Box>

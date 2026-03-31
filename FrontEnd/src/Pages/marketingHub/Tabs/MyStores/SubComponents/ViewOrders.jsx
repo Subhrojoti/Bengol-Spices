@@ -603,7 +603,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
                                   </div>
 
                                   <Typography fontWeight={600}>
-                                    ₹{product.unitPrice}
+                                    ₹{product.totalPrice}
                                   </Typography>
                                 </div>
                               ))}
