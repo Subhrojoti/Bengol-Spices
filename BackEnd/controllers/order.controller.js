@@ -1170,14 +1170,16 @@ export const createRazorpayOrder = async (req, res) => {
     }
 
     const razorpayOrder = await razorpayInstance.orders.create({
-      amount: order.dueAmount * 100, // FULL due OR you can pass custom amount
+      amount: order.dueAmount * 100,
       currency: "INR",
       receipt: order.orderId,
     });
 
     res.json({
       success: true,
-      razorpayOrder,
+      razorpayOrderId: razorpayOrder.id, // ✅ used in frontend
+      amount: razorpayOrder.amount, // ✅ used in frontend
+      key: process.env.RAZORPAY_KEY_ID, // ✅ REQUIRED for checkout
     });
   } catch (err) {
     console.error(err);
@@ -1196,10 +1198,13 @@ export const verifyRazorpayPayment = async (req, res) => {
       amount,
     } = req.body;
 
+    // ✅ Ensure number
+    const numericAmount = Number(amount);
+
     // 🔐 Verify Signature
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET) // ✅ FIXED
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
@@ -1208,7 +1213,8 @@ export const verifyRazorpayPayment = async (req, res) => {
         message: "Invalid payment signature",
       });
     }
-    // 🔍 Idempotency check (prevent duplicate processing)
+
+    // 🔍 Idempotency check
     const existing = await Payment.findOne({
       razorpayPaymentId: razorpay_payment_id,
     });
@@ -1219,38 +1225,42 @@ export const verifyRazorpayPayment = async (req, res) => {
         message: "Payment already processed",
       });
     }
-    // 🔍 Fetch order and validate amount
+
+    // 🔍 Fetch order
     const order = await Order.findOne({ orderId });
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (amount > order.dueAmount) {
+    // ✅ Correct unit comparison (paise vs rupees)
+    if (numericAmount > order.dueAmount * 100) {
       return res.status(400).json({
         message: "Amount exceeds due",
       });
     }
 
-    // ✅ SAVE PAYMENT (MATCHING YOUR MODEL)
+    // ✅ Save payment
     await Payment.create({
       orderId: order.orderId,
       consumerId: order.consumerId,
       agentId: order.agentId,
-      amount,
+      amount: numericAmount / 100, // store in rupees
       method: "RAZORPAY",
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
       collectedBy: {
-        id: order.agentId, // since agent owns order
+        id: order.agentId,
         role: "AGENT",
       },
     });
 
-    // ✅ UPDATE ORDER (same as your collectPayment)
-    order.paidAmount += amount;
-    order.dueAmount -= amount;
+    // ✅ Update order
+    const paidAmountInRupees = numericAmount / 100;
+
+    order.paidAmount += paidAmountInRupees;
+    order.dueAmount -= paidAmountInRupees;
 
     if (order.dueAmount === 0) {
       order.paymentStatus = "COMPLETED";
