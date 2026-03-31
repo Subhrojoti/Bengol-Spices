@@ -72,7 +72,9 @@ export default function AssignLocation() {
   };
 
   // ------------------ FETCH PINCODES ------------------
-  const fetchPincodes = async (city) => {
+  const fetchPincodes = async (city, stateParam) => {
+    if (!city || !stateParam) return;
+
     try {
       const res = await axios.get(
         `https://api.postalpincode.in/postoffice/${city}`,
@@ -82,7 +84,7 @@ export default function AssignLocation() {
 
       if (data?.Status === "Success") {
         const filtered = data.PostOffice.filter(
-          (po) => po.State.toLowerCase() === form.state.toLowerCase(),
+          (po) => po.State.toLowerCase() === stateParam.toLowerCase(),
         );
 
         const pins = [...new Set(filtered.map((po) => po.Pincode))];
@@ -196,7 +198,38 @@ export default function AssignLocation() {
                 }}>
                 <Select
                   value={form.agentId}
-                  onChange={(e) => handleChange("agentId", e.target.value)}
+                  onChange={async (e) => {
+                    const selectedId = e.target.value;
+
+                    handleChange("agentId", selectedId);
+
+                    // find full agent object
+                    const selectedAgent = agents.find(
+                      (agent) => agent.agentId === selectedId,
+                    );
+
+                    const rawState = selectedAgent?.addressDetails?.state || "";
+
+                    const state =
+                      stateList.find(
+                        (s) => s.name.toLowerCase() === rawState.toLowerCase(),
+                      )?.name || "";
+                    const city = selectedAgent?.addressDetails?.city || "";
+
+                    // If state exists → set + fetch cities
+                    if (state) {
+                      handleChange("state", state);
+
+                      await fetchCities(state); // wait so city list is ready
+                    }
+
+                    // If city exists → set + fetch pincodes
+                    if (city) {
+                      handleChange("city", city);
+
+                      fetchPincodes(city, state);
+                    }
+                  }}
                   displayEmpty
                   className="bg-white">
                   <MenuItem value="" disabled>
@@ -293,7 +326,7 @@ export default function AssignLocation() {
                   value={form.city}
                   onChange={(e) => {
                     handleChange("city", e.target.value);
-                    fetchPincodes(e.target.value);
+                    fetchPincodes(e.target.value, form.state);
                   }}
                   displayEmpty
                   className="bg-white">
