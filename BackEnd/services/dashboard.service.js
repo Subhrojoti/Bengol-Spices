@@ -2,7 +2,12 @@ import Order from "../models/Order.js";
 import Return from "../models/Return.js";
 import AgentTargetProgress from "../models/AgentTargetProgress.js";
 import Store from "../models/store.js";
+import Agent from "../models/Agent.js";
+import Employee from "../models/Employee.js";
+import Product from "../models/Product.js";
+import DeliveryPartner from "../models/DeliveryPartner.js";
 
+// Agent Dashboard Service
 export const getAgentDashboard = async ({ agentId, from, to }) => {
   const start = new Date(from);
   const end = new Date(to);
@@ -29,7 +34,46 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
   };
 
   // 🚀 PARALLEL EXECUTION (VERY IMPORTANT)
-  const [orderData, returnData, progressData, storeCount] = await Promise.all([
+  const [
+    profitData,
+    returnAmountData,
+    orderData,
+    returnData,
+    progressData,
+    storeCount,
+  ] = await Promise.all([
+    // 🔥 PROFIT BASE DATA
+    Order.aggregate([
+      {
+        $match: {
+          status: "DELIVERED",
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: "$totalAmount" },
+          totalDue: { $sum: "$dueAmount" },
+        },
+      },
+    ]),
+
+    // 🔥 RETURN AMOUNT
+    Return.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRefund: { $sum: "$refund.amount" },
+        },
+      },
+    ]),
+
     // =========================
     // 🟢 ORDER AGGREGATION
     // =========================
@@ -238,6 +282,314 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     monthly: finalMonthly,
     growth: {
       salesGrowth: calculateGrowth(finalMonthly),
+    },
+  };
+};
+
+// Admin Dashboard Service
+export const getAdminDashboard = async ({ year }) => {
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear = new Date(year, 11, 31, 23, 59, 59);
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // =========================
+  // 🚀 PARALLEL QUERIES (FIXED ORDER)
+  // =========================
+  const [
+    totalOrders,
+    totalAgents,
+    totalEmployees,
+    totalStores,
+    totalProducts,
+    totalDeliveryPartners,
+
+    deliveredOrders,
+    cancelledOrders,
+    pendingPayments,
+    totalReturns,
+
+    revenueData,
+    returnsData,
+    monthlyOrders,
+
+    topAgents,
+    topProducts,
+    stateSales,
+
+    profitData,
+    returnAmountData,
+  ] = await Promise.all([
+    // ================= COUNTS =================
+    Order.countDocuments(),
+    Agent.countDocuments(),
+    Employee.countDocuments(),
+    Store.countDocuments(),
+    Product.countDocuments(),
+    DeliveryPartner.countDocuments(),
+
+    // ================= ORDER STATS =================
+    Order.countDocuments({ status: "DELIVERED" }),
+    Order.countDocuments({ status: "CANCELLED" }),
+    Order.countDocuments({ paymentStatus: "PENDING" }),
+    Return.countDocuments({
+      createdAt: { $gte: startOfYear, $lte: endOfYear },
+    }),
+
+    // ================= REVENUE =================
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          sales: { $sum: "$totalAmount" },
+          collected: { $sum: "$paidAmount" },
+          due: { $sum: "$dueAmount" },
+          profit: { $sum: "$paidAmount" }, // ✅ consistent logic
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+
+    // ================= RETURNS =================
+    Return.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          returns: { $sum: 1 },
+        },
+      },
+    ]),
+
+    // ================= ORDERS =================
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          delivered: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "DELIVERED"] }, 1, 0],
+            },
+          },
+          cancelled: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "CANCELLED"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]),
+
+    // ================= TOP AGENTS =================
+    Order.aggregate([
+      {
+        $match: {
+          status: "DELIVERED",
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: "$agentId",
+          sales: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { sales: -1 } },
+      { $limit: 5 },
+    ]),
+
+    // ================= TOP PRODUCTS =================
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.name",
+          revenue: { $sum: "$products.totalPrice" },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 },
+    ]),
+
+    // ================= STATE SALES =================
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: "$deliveryAddress.state",
+          sales: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { sales: -1 } },
+    ]),
+
+    // ================= PROFIT =================
+    Order.aggregate([
+      {
+        $match: {
+          status: "DELIVERED",
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: "$totalAmount" },
+          totalDue: { $sum: "$dueAmount" },
+          totalCollected: { $sum: "$paidAmount" },
+        },
+      },
+    ]),
+
+    // ================= REFUNDS =================
+    Return.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfYear, $lte: endOfYear },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRefund: { $sum: "$refund.amount" },
+        },
+      },
+    ]),
+  ]);
+
+  // =========================
+  // 🧠 CLEAN FORMATTERS
+  // =========================
+
+  const mapByMonth = (data = []) => {
+    const map = {};
+    data.forEach((d) => {
+      if (d && d._id) map[d._id] = d;
+    });
+    return map;
+  };
+
+  const revenueMap = mapByMonth(revenueData);
+  const returnsMap = mapByMonth(returnsData);
+  const ordersMap = mapByMonth(monthlyOrders);
+
+  // ✅ Revenue
+  const revenueMonthly = months.map((month, i) => {
+    const val = revenueMap[i + 1] || {};
+    return {
+      month,
+      sales: val.sales || 0,
+      collected: val.collected || 0,
+      due: val.due || 0,
+      profit: val.profit || 0,
+    };
+  });
+
+  // ✅ Returns
+  const returnsMonthly = months.map((month, i) => {
+    const val = returnsMap[i + 1] || {};
+    return {
+      month,
+      returns: val.returns || 0,
+    };
+  });
+
+  // ✅ Orders
+  const ordersMonthly = months.map((month, i) => {
+    const val = ordersMap[i + 1] || {};
+    return {
+      month,
+      delivered: val.delivered || 0,
+      cancelled: val.cancelled || 0,
+    };
+  });
+
+  // =========================
+  // 💰 FINAL FINANCIALS
+  // =========================
+
+  const totalSales = profitData?.[0]?.totalSales || 0;
+  const totalDue = profitData?.[0]?.totalDue || 0;
+  const totalCollected = profitData?.[0]?.totalCollected || 0;
+  const totalRefund = returnAmountData?.[0]?.totalRefund || 0;
+  const returnRate =
+    totalOrders > 0
+      ? Number(((totalReturns / totalOrders) * 100).toFixed(2))
+      : 0;
+
+  const profit = totalCollected - totalRefund;
+
+  return {
+    counts: {
+      orders: totalOrders,
+      agents: totalAgents,
+      employees: totalEmployees,
+      stores: totalStores,
+      products: totalProducts,
+      deliveryPartners: totalDeliveryPartners,
+    },
+
+    orderStats: {
+      delivered: deliveredOrders,
+      cancelled: cancelledOrders,
+      pendingPayments,
+      totalReturns,
+      returnRate,
+    },
+
+    charts: {
+      revenue: revenueMonthly,
+      returns: returnsMonthly,
+      orders: ordersMonthly,
+    },
+
+    insights: {
+      topAgents,
+      topProducts,
+      stateSales,
+    },
+
+    financials: {
+      totalSales,
+      totalRefund,
+      totalDue,
+      profit,
     },
   };
 };

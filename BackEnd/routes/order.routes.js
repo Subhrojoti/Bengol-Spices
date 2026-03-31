@@ -17,6 +17,8 @@ import {
   getAgentDueOrders,
   getAgentCollectionPerformance,
   getCompletePaymentSummary,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
 } from "../controllers/order.controller.js";
 import { protect } from "../middleware/auth.js";
 import { isAgent, isDeliveryPartner } from "../middleware/role.js";
@@ -97,7 +99,7 @@ router.get(
 // Agent Due Orders (Agent Access Only)
 router.get("/due-orders", protect, isAgent, getAgentDueOrders);
 
-// Get OverDue Orders (Admin / Employee with permission)
+// Get Complete Payment Summary (Admin / Employee with permission)
 router.get(
   "/complete-payment-summary",
   protect,
@@ -112,6 +114,10 @@ router.get(
   checkPermission("canSeePaymentInfo"),
   getAgentCollectionPerformance,
 );
+
+// Razorpay Payment Gateway route
+router.post("/razorpay/create", protect, isAgent, createRazorpayOrder);
+router.post("/razorpay/verify", protect, isAgent, verifyRazorpayPayment);
 
 // CREATE SHIPMENT (EMPLOYEE / ADMIN) [Future code mode --- ShipRocket]
 // router.post(

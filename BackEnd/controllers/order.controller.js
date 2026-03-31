@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import Counter from "../models/Counter.js";
 import DeliveryPartner from "../models/DeliveryPartner.js";
 import Employee from "../models/Employee.js";
@@ -7,6 +8,7 @@ import Store from "../models/store.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
 import Payment from "../models/Payment.js";
 import { createNotification } from "../services/notification.service.js";
+import { razorpayInstance } from "../config/razorpay.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -1122,6 +1124,123 @@ export const createShipment = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to create shipment",
+    });
+  }
+};
+
+// Create Razorpay Order
+export const createRazorpayOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.dueAmount <= 0) {
+      return res.status(400).json({ message: "No due amount left" });
+    }
+
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: order.dueAmount * 100, // FULL due OR you can pass custom amount
+      currency: "INR",
+      receipt: order.orderId,
+    });
+
+    res.json({
+      success: true,
+      razorpayOrder,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Razorpay order failed" });
+  }
+};
+
+// Verify Razorpay Payment
+export const verifyRazorpayPayment = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId,
+      amount,
+    } = req.body;
+
+    // 🔐 Verify Signature
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment signature",
+      });
+    }
+    // 🔍 Idempotency check (prevent duplicate processing)
+    const existing = await Payment.findOne({
+      razorpayPaymentId: razorpay_payment_id,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already processed",
+      });
+    }
+    // 🔍 Fetch order and validate amount
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (amount > order.dueAmount) {
+      return res.status(400).json({
+        message: "Amount exceeds due",
+      });
+    }
+
+    // ✅ SAVE PAYMENT (MATCHING YOUR MODEL)
+    await Payment.create({
+      orderId: order.orderId,
+      consumerId: order.consumerId,
+      agentId: order.agentId,
+      amount,
+      method: "RAZORPAY",
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+      collectedBy: {
+        id: order.agentId, // since agent owns order
+        role: "AGENT",
+      },
+    });
+
+    // ✅ UPDATE ORDER (same as your collectPayment)
+    order.paidAmount += amount;
+    order.dueAmount -= amount;
+
+    if (order.dueAmount === 0) {
+      order.paymentStatus = "COMPLETED";
+    }
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Payment successful",
+    });
+  } catch (error) {
+    console.error("RAZORPAY VERIFY ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Payment verification failed",
     });
   }
 };

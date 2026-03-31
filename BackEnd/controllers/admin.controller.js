@@ -8,7 +8,7 @@ import {
   sendAgentApprovalMail,
   sendAgentRejectionMail,
 } from "../utils/email.js";
-import Employee from "../models/Employee.js";
+import { getAdminDashboard } from "../services/dashboard.service.js";
 
 export const approveAgent = async (req, res) => {
   try {
@@ -121,187 +121,29 @@ export const rejectAgent = async (req, res) => {
   }
 };
 
-// To Give Permission to a specific Employee
-// export const updateProductPermission = async (req, res) => {
-//   try {
-//     const { employeeId } = req.params;
-//     const { canManageProducts } = req.body;
-
-//     const employee = await Employee.findOne({ employeeId });
-//     if (!employee) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Employee not found",
-//       });
-//     }
-
-//     employee.canManageProducts = canManageProducts;
-//     await employee.save();
-
-//     return res.json({
-//       success: true,
-//       message: "Product permission updated successfully",
-//       canManageProducts: employee.canManageProducts,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: error,
-//     });
-//   }
-// };
-
-//Dashboard Summary API
+// GET DASHBOARD SUMMARY (ADMIN / EMPLOYEE with permission)
 export const getDashboardSummary = async (req, res) => {
   try {
-    const now = new Date();
+    const year = req?.query?.year
+      ? parseInt(req.query.year)
+      : new Date().getFullYear();
 
-    /* =============================
-       YEAR FILTER (Optional)
-       ============================= */
+    const data = await getAdminDashboard({ year });
 
-    const year = req.query.year ? parseInt(req.query.year) : now.getFullYear();
-
-    const startOfYear = new Date(year, 0, 1);
-    const endOfYear = new Date(year, 11, 31, 23, 59, 59);
-
-    /* =============================
-       PARALLEL DATABASE QUERIES
-       ============================= */
-
-    const [
-      totalOrders,
-      totalAgents,
-      totalEmployees,
-      totalStores,
-      totalProducts,
-      totalDeliveryPartners,
-      deliveredOrders,
-      pendingOrders,
-      monthlyRevenueData,
-      totalRevenueData,
-    ] = await Promise.all([
-      // Counts
-      Order.countDocuments(),
-      Agent.countDocuments(),
-      Employee.countDocuments(),
-      Store.countDocuments({ isVerified: true }),
-      Product.countDocuments(),
-      DeliveryPartner.countDocuments(),
-
-      // Order stats
-      Order.countDocuments({ status: "DELIVERED" }),
-      Order.countDocuments({
-        status: { $in: ["PLACED", "CONFIRMED", "SHIPPED", "OUT_FOR_DELIVERY"] },
-      }),
-
-      // Monthly revenue for selected year
-      Order.aggregate([
-        {
-          $match: {
-            status: "DELIVERED",
-            createdAt: {
-              $gte: startOfYear,
-              $lte: endOfYear,
-            },
-          },
-        },
-        {
-          $group: {
-            _id: { $month: "$createdAt" },
-            revenue: { $sum: "$totalAmount" },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]),
-
-      // Total lifetime revenue
-      Order.aggregate([
-        {
-          $match: { status: "DELIVERED" },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: "$totalAmount" },
-          },
-        },
-      ]),
-    ]);
-
-    /* =============================
-       MONTHLY BREAKDOWN STRUCTURE
-       ============================= */
-
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    const monthlyBreakdown = months.map((month, index) => {
-      const found = monthlyRevenueData.find((m) => m._id === index + 1);
-
-      return {
-        month,
-        revenue: found ? found.revenue : 0,
-      };
-    });
-
-    const totalMonthlyRevenue = monthlyBreakdown.reduce(
-      (sum, m) => sum + m.revenue,
-      0,
-    );
-
-    const totalRevenue =
-      totalRevenueData.length > 0 ? totalRevenueData[0].total : 0;
-
-    /* =============================
-       FINAL RESPONSE
-       ============================= */
-
-    return res.json({
+    res.json({
       success: true,
-      summary: {
-        counts: {
-          orders: totalOrders,
-          agents: totalAgents,
-          employees: totalEmployees,
-          stores: totalStores,
-          products: totalProducts,
-          deliveryPartners: totalDeliveryPartners,
-        },
-        orderStats: {
-          delivered: deliveredOrders,
-          pending: pendingOrders,
-        },
-        revenue: {
-          year,
-          totalMonthlyRevenue,
-          totalRevenue,
-          currency: "INR",
-          monthlyBreakdown,
-        },
-      },
+      data,
       meta: {
-        lastUpdated: new Date(),
+        year,
+        generatedAt: new Date(),
       },
     });
   } catch (error) {
-    console.error("DASHBOARD SUMMARY ERROR:", error);
+    console.error("ADMIN DASHBOARD ERROR:", error);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Failed to fetch dashboard summary",
+      message: "Failed to fetch admin dashboard",
     });
   }
 };
