@@ -4,6 +4,7 @@ import cloudinary from "../config/cloudinary.js";
 import AgentSalesLocation from "../models/AgentSalesLocation.js";
 import { getAgentDashboard } from "../services/dashboard.service.js";
 import { getLeaderboard } from "../services/leaderboard.service.js";
+import Counter from "../models/Counter.js";
 
 const cleanupCloudinaryFiles = async (files) => {
   if (!files) return;
@@ -29,8 +30,13 @@ const cleanupCloudinaryFiles = async (files) => {
 
 // AGENT - APPLY
 export const applyAgent = async (req, res) => {
+  let uploadedFiles = req.files;
+
   try {
-    const files = req.files || [];
+    /* =============================
+       FILE HANDLING
+    ============================= */
+    const files = uploadedFiles || [];
 
     const getFilePath = (fieldName) => {
       if (Array.isArray(files)) {
@@ -50,28 +56,27 @@ export const applyAgent = async (req, res) => {
       });
     }
 
+    /* =============================
+       BODY DATA
+    ============================= */
     const {
       name,
       email,
       phone,
-
-      // ✅ FULL ADDRESS (manual input)
       address,
-
-      // ✅ STRUCTURED ADDRESS
       state,
       city,
       street,
       pincode,
-
-      // ✅ BANK FIELDS
       accountHolderName,
       accountNumber,
       ifscCode,
       bankName,
     } = req.body;
 
-    // ✅ VALIDATION (updated safely)
+    /* =============================
+       BASIC VALIDATION
+    ============================= */
     if (
       !name ||
       !email ||
@@ -82,7 +87,7 @@ export const applyAgent = async (req, res) => {
       !street ||
       !pincode
     ) {
-      await cleanupCloudinaryFiles(req.files);
+      await cleanupCloudinaryFiles(uploadedFiles);
 
       return res.status(400).json({
         success: false,
@@ -90,7 +95,9 @@ export const applyAgent = async (req, res) => {
       });
     }
 
-    // 🔥 STRICT BANK VALIDATION
+    /* =============================
+       BANK VALIDATION
+    ============================= */
     const hasAnyBankField =
       accountHolderName || accountNumber || ifscCode || bankName;
 
@@ -98,7 +105,7 @@ export const applyAgent = async (req, res) => {
       accountHolderName && accountNumber && ifscCode && bankName;
 
     if (hasAnyBankField && !hasAllBankFields) {
-      await cleanupCloudinaryFiles(req.files);
+      await cleanupCloudinaryFiles(uploadedFiles);
 
       return res.status(400).json({
         success: false,
@@ -106,43 +113,30 @@ export const applyAgent = async (req, res) => {
       });
     }
 
-    const existingAgent = await Agent.findOne({ email });
-    if (existingAgent) {
-      await cleanupCloudinaryFiles(req.files);
+    /* =============================
+       CHECK EXISTING EMAIL
+    ============================= */
+    const existingAgent = await Agent.findOne({ email }).lean();
 
-      return res.status(400).json({
+    if (existingAgent) {
+      await cleanupCloudinaryFiles(uploadedFiles);
+
+      return res.status(409).json({
         success: false,
-        message: "You have already applied",
+        message: "Email already registered",
       });
     }
 
     /* =============================
-       SAFE AGENT ID GENERATION
-       ============================= */
-    const currentYear = new Date().getFullYear();
-
-    const counter = await Counter.findByIdAndUpdate(
-      `agent-${currentYear}`,
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true },
-    );
-
-    const customAgentId = `BS${currentYear}-${String(counter.seq).padStart(3, "0")}`;
-
-    /* =============================
-       CREATE AGENT
-       ============================= */
-
+       BASE AGENT DATA
+    ============================= */
     const agentData = {
-      agentId: customAgentId,
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
 
-      // ✅ FULL ADDRESS (user input)
       address: address.trim(),
 
-      // ✅ STRUCTURED ADDRESS
       addressDetails: {
         state: state.trim().toUpperCase(),
         city: city.trim(),
@@ -160,7 +154,6 @@ export const applyAgent = async (req, res) => {
       role: "AGENT",
     };
 
-    // ✅ ADD BANK DETAILS ONLY IF COMPLETE
     if (hasAllBankFields) {
       agentData.bankDetails = {
         accountHolderName: accountHolderName.trim(),
@@ -170,15 +163,64 @@ export const applyAgent = async (req, res) => {
       };
     }
 
-    const agent = await Agent.create(agentData);
+    /* =============================
+       SAFE AGENT ID GENERATION
+    ============================= */
+    const currentYear = new Date().getFullYear();
 
+    let agent;
+    let retries = 5;
+
+    while (retries > 0) {
+      try {
+        const counter = await Counter.findByIdAndUpdate(
+          `agent-${currentYear}`,
+          { $inc: { seq: 1 } },
+          { new: true, upsert: true },
+        );
+
+        const customAgentId = `BS${currentYear}-${String(counter.seq).padStart(3, "0")}`;
+
+        agentData.agentId = customAgentId;
+
+        agent = await Agent.create(agentData);
+
+        // success → break loop
+        break;
+      } catch (error) {
+        // 🔁 Retry only for agentId conflict
+        if (error.code === 11000 && error.keyPattern?.agentId) {
+          console.warn("Duplicate agentId, retrying...");
+          retries--;
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    if (!agent) {
+      await cleanupCloudinaryFiles(uploadedFiles);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate unique agent ID",
+      });
+    }
+
+    /* =============================
+       NOTIFICATION
+    ============================= */
     await sendAdminNotification({
-      customAgentId,
+      customAgentId: agent.agentId,
       name,
       email,
       phone,
     });
 
+    /* =============================
+       SUCCESS RESPONSE
+    ============================= */
     return res.status(201).json({
       success: true,
       message: "Application submitted successfully",
@@ -187,15 +229,28 @@ export const applyAgent = async (req, res) => {
   } catch (error) {
     console.error("APPLY AGENT ERROR:", error);
 
-    await cleanupCloudinaryFiles(req.files);
+    await cleanupCloudinaryFiles(uploadedFiles);
 
+    /* =============================
+       DUPLICATE ERROR HANDLING
+    ============================= */
     if (error.code === 11000) {
+      const field = Object.keys(error.keyValue || {})[0];
+
       return res.status(409).json({
         success: false,
-        message: "Agent ID conflict, please retry",
+        message:
+          field === "email"
+            ? "Email already registered"
+            : field === "agentId"
+              ? "Agent ID conflict, auto-retrying failed"
+              : `${field} already exists`,
       });
     }
 
+    /* =============================
+       GENERIC ERROR
+    ============================= */
     return res.status(500).json({
       success: false,
       message: error.message || "Internal Server Error",
