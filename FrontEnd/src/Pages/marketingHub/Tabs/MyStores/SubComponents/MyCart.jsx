@@ -166,6 +166,7 @@ const MyCart = ({ onBack }) => {
     const finalPaidAmount =
       paymentMode === "CASH" ? Number(paidAmount || 0) : totalAmount;
 
+    // Validations (same as before)
     if (paymentMode === "CASH" && finalPaidAmount <= 0) {
       alert("Please enter paid amount");
       return;
@@ -188,7 +189,7 @@ const MyCart = ({ onBack }) => {
         image: item.image,
       })),
       paidAmount: finalPaidAmount,
-      paymentMode,
+      paymentMode: paymentMode === "RAZORPAY" ? "CASH" : paymentMode,
       latitude,
       longitude,
       deliveryAddress: {
@@ -198,17 +199,78 @@ const MyCart = ({ onBack }) => {
         pincode: storeAddress.pincode || "",
       },
     };
-
     try {
       setLoading(true);
-      await createOrder(payload);
+      console.log("FINAL PAYLOAD:", JSON.stringify(payload, null, 2));
 
-      toast.success("Order created successfully");
-      dispatch(clearCart(consumerId));
-      dispatch(setLeftView("CREATE"));
+      // STEP 1: Create Order (your backend)
+      const orderRes = await createOrder(payload);
+
+      const orderId = orderRes?.data?.orderId;
+
+      if (!orderId) {
+        toast.error("Order ID not received");
+        return;
+      }
+
+      // STEP 2: If CASH → finish here
+      if (paymentMode === "CASH") {
+        toast.success("Order created successfully");
+        dispatch(clearCart(consumerId));
+        dispatch(setLeftView("CREATE"));
+        return;
+      }
+
+      // STEP 3: Razorpay flow
+
+      const razorRes = await createRazorpayOrder(orderId);
+      const razorData = razorRes.data;
+
+      if (!razorData?.razorpayOrderId) {
+        toast.error("Failed to initialize payment");
+        return;
+      }
+
+      const options = {
+        key: razorData.key,
+        amount: razorData.amount,
+        currency: "INR",
+        order_id: razorData.razorpayOrderId,
+
+        handler: async function (response) {
+          try {
+            await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderId,
+              amount: razorData.amount,
+            });
+
+            toast.success("Payment successful");
+
+            dispatch(clearCart(consumerId));
+            dispatch(setLeftView("CREATE"));
+          } catch (err) {
+            console.error(err);
+            toast.error("Payment verification failed");
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      // ❗ Optional but recommended
+      rzp.on("payment.failed", function (response) {
+        console.error(response.error);
+        toast.error("Payment failed");
+      });
+
+      rzp.open();
     } catch (err) {
-      console.error("Order creation failed", err);
-      toast.error("Failed to create order. Please try again.");
+      console.error(err);
+      console.error("FULL ERROR:", err.response?.data || err);
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -368,8 +430,7 @@ const MyCart = ({ onBack }) => {
           fullWidth
           sx={{ mb: 2 }}>
           <MenuItem value="CASH">Cash</MenuItem>
-          <MenuItem value="UPI">UPI</MenuItem>
-          <MenuItem value="CARD">Card</MenuItem>
+          <MenuItem value="RAZORPAY">Razorpay</MenuItem>
         </TextField>
 
         {paymentMode === "CASH" && (

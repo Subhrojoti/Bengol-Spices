@@ -549,3 +549,13 @@ export const getLeaderboard = async () => {
     throw error;
   }
 };
+
+// Payments RazorPay
+
+export const createRazorpayOrder = (orderId) => {
+  return axiosInstance.post("/agent/orders/razorpay/create", { orderId });
+};
+
+export const verifyRazorpayPayment = (data) => {
+  return axiosInstance.post("/agent/orders/razorpay/verify", data);
+};
