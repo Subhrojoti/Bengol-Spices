@@ -79,9 +79,9 @@ const Overview = () => {
     };
   });
 
-  const orderStatusData = [
-    { name: "Delivered", value: summary.totalOrdersDelivered },
-    { name: "Pending", value: summary.totalDue },
+  const salesStatusData = [
+    { name: "Total Sales", value: summary.totalSalesAmount },
+    { name: "Total Due", value: summary.totalDue },
   ];
 
   const COLORS = ["#22c55e", "#ef4444"];
@@ -213,17 +213,17 @@ const Overview = () => {
 
         {/* ===== ORDER STATUS DONUT ===== */}
         <div className="bg-white rounded-3xl shadow border p-6">
-          <h3 className="text-md font-semibold mb-6">Order Status</h3>
+          <h3 className="text-md font-semibold mb-6">Sales Status</h3>
 
           <div className="h-[260px]">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
-                  data={orderStatusData}
+                  data={salesStatusData}
                   innerRadius={70}
                   outerRadius={100}
                   dataKey="value">
-                  {orderStatusData.map((entry, index) => (
+                  {salesStatusData.map((entry, index) => (
                     <Cell key={index} fill={COLORS[index]} />
                   ))}
                 </Pie>
@@ -234,13 +234,11 @@ const Overview = () => {
 
           <div className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Delivered</span>
-              <span className="font-medium">
-                {summary.totalOrdersDelivered}
-              </span>
+              <span className="text-gray-600">Total Sales</span>
+              <span className="font-medium">{summary.totalSalesAmount}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Pending</span>
+              <span className="text-gray-600">Total Due</span>
               <span className="font-medium">{summary.totalDue}</span>
             </div>
           </div>
