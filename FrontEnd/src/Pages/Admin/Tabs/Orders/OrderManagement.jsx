@@ -9,6 +9,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import StoreIcon from "@mui/icons-material/Store";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -200,28 +201,39 @@ const OrderManagement = () => {
                   setSelectedConsumer(consumerId);
                   setExpandedOrder(null);
                 }}
-                className={`p-4 rounded-xl cursor-pointer border transition
-                  ${
-                    selectedConsumer === consumerId
-                      ? "bg-blue-100 border-blue-500 border-2"
-                      : "bg-blue-50 hover:bg-blue-100 border-blue-200"
-                  }
-                `}>
-                <p className="font-semibold">Store ID: {consumerId}</p>
+                className={`p-4 rounded-xl cursor-pointer border transition flex gap-4 items-start
+    ${
+      selectedConsumer === consumerId
+        ? "bg-blue-100 border-blue-500 border-2"
+        : "bg-blue-50 hover:bg-blue-100 border-blue-200"
+    }
+  `}>
+                {/* LEFT ICON */}
+                <div className="bg-white p-2 rounded-lg shadow-sm">
+                  <StoreIcon className="text-blue-600" fontSize="large" />
+                </div>
 
-                <p className="text-sm font-medium  opacity-80">
-                  Store Name:{" "}
-                  {consumers[consumerId].deliveryAddress.storeName}{" "}
-                </p>
-                <p className="text-sm font-medium opacity-80">
-                  Location: {consumers[consumerId].deliveryAddress.state}{" "}
-                </p>
-                <p className="text-sm opacity-80">
-                  Registered By: {consumers[consumerId].agentId}
-                </p>
-                <p className="text-sm opacity-80 font-semibold">
-                  Total Orders: {consumers[consumerId].orders.length}
-                </p>
+                {/* RIGHT CONTENT */}
+                <div className="flex flex-col">
+                  <p className="font-semibold">Store ID: {consumerId}</p>
+
+                  <p className="text-sm font-medium opacity-80">
+                    Store Name:{" "}
+                    {consumers[consumerId].deliveryAddress.storeName}
+                  </p>
+
+                  <p className="text-sm font-medium opacity-80">
+                    Location: {consumers[consumerId].deliveryAddress.state}
+                  </p>
+
+                  <p className="text-sm opacity-80">
+                    Registered By: {consumers[consumerId].agentId}
+                  </p>
+
+                  <p className="text-sm opacity-80 font-semibold">
+                    Total Orders: {consumers[consumerId].orders.length}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

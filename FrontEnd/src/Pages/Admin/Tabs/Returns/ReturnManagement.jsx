@@ -3,6 +3,7 @@ import { getAllReturns } from "../../../../api/services";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import StoreIcon from "@mui/icons-material/Store";
 
 const ReturnsManagement = () => {
   const [returns, setReturns] = useState([]);
@@ -115,21 +116,29 @@ const ReturnsManagement = () => {
                   setSelectedConsumer(consumerId);
                   setExpandedReturn(null);
                 }}
-                className={`p-4 rounded-xl cursor-pointer border transition
-                  ${
-                    selectedConsumer === consumerId
-                      ? "bg-blue-100 border-blue-500 border-2"
-                      : "bg-blue-50 hover:bg-blue-100 border-blue-200"
-                  }`}>
-                <p className="font-semibold">Store ID: {consumerId}</p>
+                className={`p-4 rounded-xl cursor-pointer border transition flex gap-4 items-start
+    ${
+      selectedConsumer === consumerId
+        ? "bg-blue-100 border-blue-500 border-2"
+        : "bg-blue-50 hover:bg-blue-100 border-blue-200"
+    }`}>
+                {/* LEFT ICON */}
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <StoreIcon className="text-blue-600 text-3xl" />
+                </div>
 
-                <p className="text-sm opacity-80">
-                  Registered By: {consumers[consumerId].agentId}
-                </p>
+                {/* RIGHT CONTENT */}
+                <div className="flex flex-col">
+                  <p className="font-semibold">Store ID: {consumerId}</p>
 
-                <p className="text-sm font-semibold">
-                  Total Returns: {consumers[consumerId].returns.length}
-                </p>
+                  <p className="text-sm opacity-80">
+                    Registered By: {consumers[consumerId].agentId}
+                  </p>
+
+                  <p className="text-sm font-semibold">
+                    Total Returns: {consumers[consumerId].returns.length}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

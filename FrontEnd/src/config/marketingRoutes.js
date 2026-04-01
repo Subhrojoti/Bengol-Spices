@@ -33,20 +33,21 @@ export const marketingRoutes = [
     fullPath: "/marketing/daily-targets",
     component: lazy(() => import("../pages/MarketingHub/Tabs/Targets/Targets")),
   },
-  {
-    label: "Leaderboard",
-    path: "leaderboard",
-    fullPath: "/marketing/leaderboard",
-    component: lazy(
-      () => import("../pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
-    ),
-  },
+
   {
     label: "Payments",
     path: "payments",
     fullPath: "/marketing/payments",
     component: lazy(
       () => import("../pages/MarketingHub/Tabs/Payments/PaymentManagement"),
+    ),
+  },
+  {
+    label: "Leaderboard",
+    path: "leaderboard",
+    fullPath: "/marketing/leaderboard",
+    component: lazy(
+      () => import("../pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
     ),
   },
 ];

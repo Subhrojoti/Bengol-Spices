@@ -80,14 +80,13 @@ const Leaderboard = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             {/* Table Header */}
             <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
-                <th className="px-4 py-3 text-left">Rank</th>
-                <th className="px-4 py-3 text-left">Agent</th>
+                <th className="px-4 py-3 text-left w-[120px]">Rank</th>
+                <th className="px-4 py-3 text-left w-[300px]">Agent</th>
 
-                {/* Center aligned headers */}
                 <th className="px-4 py-3 text-center">Orders</th>
                 <th className="px-4 py-3 text-center">Sales</th>
                 <th className="px-4 py-3 text-center">Collected</th>
@@ -105,33 +104,41 @@ const Leaderboard = () => {
                     user.rank <= 3 ? "bg-yellow-50/40" : ""
                   }`}>
                   {/* Rank */}
-                  <td className="px-4 py-3 flex items-center gap-2">
-                    <span>{user.medal}</span>
-                    <span>{user.rank}</span>
-                  </td>
-
-                  {/* Agent */}
-                  <td className="px-4 py-3 flex items-center gap-3">
-                    <img
-                      src={user.profileImage}
-                      alt={user.name}
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-medium text-gray-800">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.agentId}</p>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span>{user.medal}</span>
+                      <span>{user.rank}</span>
                     </div>
                   </td>
 
-                  {/* Center aligned values */}
+                  {/* Agent */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={user.profileImage}
+                        alt={user.name}
+                        className="w-9 h-9 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-800">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.agentId}</p>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Data columns */}
                   <td className="px-4 py-3 text-center">
                     {user.ordersDelivered}
                   </td>
+
                   <td className="px-4 py-3 text-center text-indigo-600 font-medium">
                     ₹{user.sales}
                   </td>
+
                   <td className="px-4 py-3 text-center">₹{user.collected}</td>
+
                   <td className="px-4 py-3 text-center">{user.returns}</td>
+
                   <td className="px-4 py-3 text-center">
                     {user.storesCreated}
                   </td>

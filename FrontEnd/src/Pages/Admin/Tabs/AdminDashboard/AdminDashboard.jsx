@@ -241,8 +241,8 @@ export default function AdminDashboard() {
             <PieChart>
               <Pie
                 data={[
-                  { name: "Delivered", value: orderStats.delivered },
                   { name: "Cancelled", value: orderStats.cancelled },
+                  { name: "Delivered", value: orderStats.delivered },
                   { name: "Pending", value: orderStats.pendingPayments },
                 ]}
                 innerRadius={60}

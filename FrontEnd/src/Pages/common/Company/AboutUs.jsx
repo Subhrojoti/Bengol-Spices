@@ -1,4 +1,6 @@
 import React from "react";
+import Slide7 from "../../../assets/Slides/Slide7.png";
+import Slide8 from "../../../assets/Slides/Slide8.png";
 
 const AboutUs = () => {
   return (
@@ -84,21 +86,13 @@ const AboutUs = () => {
         </div>
 
         {/* RIGHT IMAGE */}
-        <img
-          src="https://source.unsplash.com/800x600/?indian-spices"
-          alt="spices"
-          className="w-full h-full object-cover"
-        />
+        <img src={Slide7} alt="spices" className="w-full h-full object-cover" />
       </div>
 
       {/* SECOND SPLIT */}
       <div className="grid md:grid-cols-2">
         {/* IMAGE */}
-        <img
-          src="https://source.unsplash.com/800x600/?indian-food"
-          alt="food"
-          className="w-full h-full object-cover"
-        />
+        <img src={Slide8} alt="food" className="w-full h-full object-cover" />
 
         {/* TEXT */}
         <div className="bg-orange-500 text-white p-10 flex flex-col justify-center">
@@ -108,6 +102,79 @@ const AboutUs = () => {
             Bengol Spices Pvt. Ltd. connects every node in the ecosystem —
             ensuring consistency, quality, and trust at every step.
           </p>
+        </div>
+      </div>
+
+      {/* TEAM SECTION */}
+      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16 bg-white">
+        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-12">
+          Our Team & Partners
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {[
+            {
+              name: "Supriyo Nag",
+              role: "Promoter & Director",
+              img: "/team/supriyo.png",
+            },
+            {
+              name: "Ranjit Yadav",
+              role: "Promoter & Director",
+              img: "/team/ranjit.png",
+            },
+            {
+              name: "Raja Santanu Shaw",
+              role: "Promoter & Director",
+              img: "/team/raja.png",
+            },
+            {
+              name: "Shivan Kumar Das",
+              role: "Sales & Marketing",
+              img: "/team/shivan.png",
+            },
+            {
+              name: "Jalil Gazi",
+              role: "Operations / Coordinator",
+              img: "/team/jalil.png",
+            },
+            {
+              name: "Pankaj Kumar Sah",
+              role: "Sales & Marketing",
+              img: "/team/pankaj.png",
+            },
+            {
+              name: "Ravi Chitra Rasu",
+              role: "Production",
+              img: "/team/ravi.png",
+            },
+            {
+              name: "Sreshtanghu Ray",
+              role: "Production",
+              img: "/team/sreshtanghu.png",
+            },
+            {
+              name: "Ayush Kumar Pandey",
+              role: "CRM",
+              img: "/team/ayush.png",
+            },
+          ].map((member, index) => (
+            <div
+              key={index}
+              className="bg-gray-50 rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center">
+              <img
+                src={member.img}
+                alt={member.name}
+                className="w-24 h-24 mx-auto rounded-full object-cover border-2 border-gray-900"
+              />
+
+              <h3 className="mt-4 font-semibold text-gray-800">
+                {member.name}
+              </h3>
+
+              <p className="text-sm text-orange-500 mt-1">{member.role}</p>
+            </div>
+          ))}
         </div>
       </div>
 

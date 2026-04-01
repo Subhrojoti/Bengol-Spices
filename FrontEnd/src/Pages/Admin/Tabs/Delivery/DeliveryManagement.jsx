@@ -243,7 +243,7 @@ const DeliveryManagement = () => {
                         {order.deliveryAddress.storeName}
                       </p>
 
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs font-semibold text-gray-500">
                         {order.deliveryAddress.city},{" "}
                         {order.deliveryAddress.state}
                       </p>
@@ -345,7 +345,7 @@ const DeliveryManagement = () => {
 
                     <p className="text-sm text-gray-600">{partner.phone}</p>
 
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs font-semibold text-gray-500">
                       {partner.address.city}, {partner.address.state}
                     </p>
 
