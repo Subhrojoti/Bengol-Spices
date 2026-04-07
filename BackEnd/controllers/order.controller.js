@@ -7,10 +7,19 @@ import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import Product from "../models/Product.js";
 import Target from "../models/Target.js";
+import Invoice from "../models/Invoice.js";
+import AgentTargetProgress from "../models/AgentTargetProgress.js";
+import {
+  createInvoiceFromOrder,
+  regenerateInvoicePDF,
+  updateInvoiceAfterPayment,
+} from "../services/invoice.service.js";
+import { uploadPdfToCloudinary } from "../utils/uploadPdf.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
 import Payment from "../models/Payment.js";
 import { createNotification } from "../services/notification.service.js";
 import { razorpayInstance } from "../config/razorpay.js";
+import Agent from "../models/Agent.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -113,11 +122,10 @@ export const placeOrder = async (req, res) => {
       if (productDoc) {
         item.productId = productDoc._id;
         item.name = productDoc.name;
-
-        // Optional safety (uncomment if needed)
-        // item.unitPrice = productDoc.discountPrice || productDoc.price;
-
         item.image = productDoc.images?.front?.url;
+
+        // ✅ ADD THIS LINE (VERY IMPORTANT)
+        item.gstPercentage = productDoc.gstPercentage || 0;
       }
 
       /* =============================
@@ -199,6 +207,26 @@ export const placeOrder = async (req, res) => {
       paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
 
+    // ✅ FIX: Create payment entry for CASH / initial payment
+    if (paidAmount > 0) {
+      await Payment.create({
+        orderId: order.orderId,
+        consumerId: order.consumerId,
+        agentId: order.agentId,
+        amount: paidAmount,
+        method: paymentMode === "ONLINE" ? "RAZORPAY" : "CASH",
+        collectedBy: {
+          id: agentId,
+          role: "AGENT",
+        },
+      });
+    }
+
+    /* ============================= 
+        Auto Invoice Generation 
+       ============================= */
+
+    await createInvoiceFromOrder(order);
     /* =============================
        TARGET + COMMISSION + NOTIFICATION
        ============================= */
@@ -910,6 +938,12 @@ export const collectPayment = async (req, res) => {
     }
 
     await order.save();
+    // Update invoice after payment
+    await updateInvoiceAfterPayment({
+      orderId: order.orderId,
+      amount,
+      method: method || "CASH",
+    });
 
     res.json({
       success: true,
@@ -1004,6 +1038,19 @@ export const getCompletePaymentSummary = async (req, res) => {
 
     const orderIds = orders.map((o) => o.orderId);
 
+    // 🔥 Fetch Agent Details
+    const agentIds = [...new Set(orders.map((o) => o.agentId))];
+
+    const agents = await Agent.find({
+      agentId: { $in: agentIds },
+    }).lean();
+
+    // Create lookup map
+    const agentMap = {};
+    agents.forEach((a) => {
+      agentMap[a.agentId] = a;
+    });
+
     /* =============================
        FETCH PAYMENTS
        ============================= */
@@ -1035,12 +1082,20 @@ export const getCompletePaymentSummary = async (req, res) => {
 
       const totalPaid = orderPayments.reduce((sum, p) => sum + p.amount, 0);
 
+      const agent = agentMap[order.agentId];
+
       return {
         orderId: order.orderId,
         consumerId: order.consumerId,
         agentId: order.agentId,
 
-        // 💰 Order financials
+        // 👇 NEW FIELD
+        agent: {
+          agentId: order.agentId,
+          name: agent?.name || null,
+          phone: agent?.phone || null,
+        },
+
         totalAmount: order.totalAmount,
         paidAmount: totalPaid,
         dueAmount: order.totalAmount - totalPaid,
@@ -1051,13 +1106,11 @@ export const getCompletePaymentSummary = async (req, res) => {
         dueDate: order.dueDate,
         createdAt: order.createdAt,
 
-        // 📍 Store info (important for admin UI)
         store: order.deliveryAddress?.storeName,
         phone: order.deliveryAddress?.phone,
         city: order.deliveryAddress?.city,
         state: order.deliveryAddress?.state,
 
-        // 💳 Payment breakdown
         payments: orderPayments.map((p) => ({
           amount: p.amount,
           method: p.method,
@@ -1268,6 +1321,29 @@ export const verifyRazorpayPayment = async (req, res) => {
 
     await order.save();
 
+    // ✅ UPDATE INVOICE AFTER PAYMENT
+    const invoice = await Invoice.findOne({ orderId });
+
+    if (invoice) {
+      const paid = numericAmount / 100;
+
+      invoice.paidAmount += paid;
+      invoice.dueAmount -= paid;
+
+      invoice.payments.push({
+        amount: paid,
+        method: "RAZORPAY",
+        paymentId: razorpay_payment_id,
+      });
+
+      invoice.status = invoice.dueAmount === 0 ? "PAID" : "PARTIAL";
+
+      await invoice.save();
+
+      // 🔥 OPTIONAL: regenerate PDF
+      await regenerateInvoicePDF(invoice);
+    }
+
     res.json({
       success: true,
       message: "Payment successful",
@@ -1377,6 +1453,13 @@ export const verifyPaymentAndPlaceOrder = async (req, res) => {
         }),
       });
     });
+
+    // ✅ CREATE INVOICE AFTER ORDER CREATED
+    const order = await Order.findOne({ orderId: response.data.orderId });
+
+    if (order) {
+      await createInvoiceFromOrder(order); // 👈 helper function (clean code)
+    }
 
     if (!response.data.success) {
       return res.status(400).json(response.data);

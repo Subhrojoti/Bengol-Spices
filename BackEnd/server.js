@@ -14,6 +14,7 @@ import returnRoutes from "./routes/return.routes.js";
 import targetRoutes from "./routes/target.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import faqRoutes from "./routes/faq.routes.js";
+import invoiceRoutes from "./routes/invoice.routes.js";
 // import { seedFAQs } from "./utils/seedFaqs.js";
 
 const app = express();
@@ -42,6 +43,7 @@ app.use("/returns", returnRoutes);
 app.use("/targets", targetRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/invoice", invoiceRoutes);
 
 const PORT = process.env.PORT || 5000;
 
