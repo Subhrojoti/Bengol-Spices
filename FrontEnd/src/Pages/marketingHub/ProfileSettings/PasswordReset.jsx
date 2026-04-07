@@ -10,7 +10,7 @@ import {
   Box,
   CircularProgress,
 } from "@mui/material";
-import { changePassword } from "../../api/services";
+import { changePassword } from "../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -56,7 +56,7 @@ const PasswordReset = ({ open, onClose }) => {
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Failed to change password. Please try again."
+          "Failed to change password. Please try again.",
       );
     } finally {
       setLoading(false);
