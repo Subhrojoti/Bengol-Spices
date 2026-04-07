@@ -15,6 +15,7 @@ import targetRoutes from "./routes/target.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import faqRoutes from "./routes/faq.routes.js";
 import invoiceRoutes from "./routes/invoice.routes.js";
+import incentiveRoutes from "./routes/incentive.routes.js";
 // import { seedFAQs } from "./utils/seedFaqs.js";
 
 const app = express();
@@ -44,6 +45,7 @@ app.use("/targets", targetRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/invoice", invoiceRoutes);
+app.use("/api/incentives", incentiveRoutes);
 
 const PORT = process.env.PORT || 5000;
 
