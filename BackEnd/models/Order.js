@@ -63,6 +63,11 @@ const orderSchema = new mongoose.Schema(
           min: 0,
         },
 
+        gstPercentage: {
+          type: Number,
+          default: 0,
+        },
+
         image: {
           type: String,
         },
