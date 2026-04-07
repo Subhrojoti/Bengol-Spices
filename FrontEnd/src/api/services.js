@@ -588,3 +588,21 @@ export const getFaqs = async () => {
     throw error;
   }
 };
+
+// Download Invoice
+
+export const downloadInvoice = async (orderNo) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/invoice/download/${orderNo}`,
+      {
+        responseType: "blob",
+      },
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Download invoice failed:", error);
+    throw error;
+  }
+};

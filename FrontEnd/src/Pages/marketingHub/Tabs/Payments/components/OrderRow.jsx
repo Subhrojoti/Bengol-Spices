@@ -1,6 +1,38 @@
-import { Button } from "@mui/material";
+import { Button, Tooltip, IconButton } from "@mui/material";
+import DescriptionIcon from "@mui/icons-material/Description";
+import { downloadInvoice } from "../../../../../api/services";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const OrderRow = ({ order, onPayNow }) => {
+  const handleDownloadInvoice = async () => {
+    try {
+      const res = await downloadInvoice(order.orderNo);
+
+      // Case 1: No data or empty file
+      if (!res || !res.data || res.data.size === 0) {
+        toast.error("Invoice not available");
+        return;
+      }
+
+      // Create file URL
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${order.orderNo}.pdf`);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      // Case 2: API error (404 / 500 / etc.)
+      console.error("Invoice download error:", err);
+
+      toast.error(err?.response?.data?.message || "Invoice not available");
+    }
+  };
+
   return (
     <div className="flex justify-between items-center border border-gray-200 rounded-lg p-4 bg-white hover:bg-gray-50 transition">
       {/* LEFT: Order Info */}
@@ -78,6 +110,21 @@ const OrderRow = ({ order, onPayNow }) => {
           }}>
           {order.paymentStatus === "COMPLETED" ? "PAID" : "Pay Now"}
         </Button>
+
+        {/* Download Invoice Icon */}
+        <Tooltip title="Download invoice">
+          <IconButton
+            onClick={handleDownloadInvoice}
+            size="small"
+            sx={{
+              color: "#626262",
+              "&:hover": {
+                color: "#515151",
+              },
+            }}>
+            <DescriptionIcon />
+          </IconButton>
+        </Tooltip>
       </div>
     </div>
   );
