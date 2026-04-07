@@ -27,6 +27,7 @@ import ScheduleIcon from "@mui/icons-material/EventAvailable";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneIcon from "@mui/icons-material/Phone";
+import InboxIcon from "@mui/icons-material/Inbox";
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -102,7 +103,6 @@ const returnSteps = [
     label: "Received at Warehouse",
     icon: <InventoryIcon />,
   },
-
   { key: "COMPLETED", label: "Return Completed", icon: <CheckCircleIcon /> },
   {
     key: "REFUND_PROCESSED",
@@ -117,6 +117,51 @@ const getReturnLabel = (status) => {
   const step = returnSteps.find((s) => s.key === normalized);
   return step ? step.label : status;
 };
+
+/* ================= EMPTY STATE ================= */
+
+const EmptyOrdersState = ({ onBack }) => (
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    height="90vh"
+    bgcolor="#f9fafb"
+    gap={3}
+    px={2}>
+    <Box
+      sx={{
+        width: 120,
+        height: 120,
+        borderRadius: "50%",
+        bgcolor: "#e5e7eb",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+      <InboxIcon sx={{ fontSize: 60, color: "#9ca3af" }} />
+    </Box>
+
+    <Box textAlign="center">
+      <Typography variant="h6" fontWeight={700} color="text.primary" mb={1}>
+        No Orders or Returns Available
+      </Typography>
+      <Typography variant="body2" color="text.secondary" maxWidth={320}>
+        This store doesn't have any orders or returns yet. Once orders are
+        placed, they'll appear here.
+      </Typography>
+    </Box>
+
+    <Button
+      variant="outlined"
+      startIcon={<ArrowBackIcon />}
+      onClick={onBack}
+      sx={{ borderRadius: 2, px: 3 }}>
+      Go Back
+    </Button>
+  </Box>
+);
 
 /* ================= COMPONENT ================= */
 
@@ -161,9 +206,7 @@ const ViewOrders = ({ onBack, onCreate }) => {
     status?.trim()?.toUpperCase()?.replace(/-/g, "_");
 
   const normalizedStatus = normalizeStatus(selectedOrder?.status);
-
   const returnStatus = normalizeStatus(selectedReturn?.status);
-
   const isCancelled = normalizedStatus === "CANCELLED";
 
   const activeStep = useMemo(() => {
@@ -175,8 +218,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
     return orderSteps.findIndex((step) => step.key === normalizedStatus);
   }, [hasSelectedOrder, normalizedStatus, returnStatus, selectedReturn]);
-
-  // Map available status for filtering
 
   const availableStatuses = useMemo(() => {
     const statusSet = new Set();
@@ -232,8 +273,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
     fetchOrders();
   }, [consumerId]);
 
-  // Fetch Returns
-
   useEffect(() => {
     const fetchReturns = async () => {
       try {
@@ -246,6 +285,12 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
     fetchReturns();
   }, []);
+
+  /* ================= EMPTY STATE FALLBACK ================= */
+
+  if (!loading && orders.length === 0) {
+    return <EmptyOrdersState onBack={onBack} />;
+  }
 
   /* ================= UI ================= */
 
@@ -645,7 +690,6 @@ const ViewOrders = ({ onBack, onCreate }) => {
               try {
                 await initiateReturn(selectedOrder.orderId, returnReason);
 
-                // fetch return details
                 const returnsRes = await getMyReturns();
                 setReturns(returnsRes?.data || []);
 
