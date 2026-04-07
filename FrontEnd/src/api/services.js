@@ -588,3 +588,56 @@ export const getFaqs = async () => {
     throw error;
   }
 };
+
+// Download Invoice
+
+export const downloadInvoice = async (orderNo) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/invoice/download/${orderNo}`,
+      {
+        responseType: "blob",
+      },
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Download invoice failed:", error);
+    throw error;
+  }
+};
+
+// Incentive List API
+export const getIncentiveList = async () => {
+  try {
+    const response = await axiosInstance.get("/api/incentives/list");
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Incentive Payout API
+export const payoutIncentive = async (payload) => {
+  try {
+    const response = await axiosInstance.post(
+      "/api/incentives/payout",
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Incentive Summary
+export const getIncentiveSummary = async () => {
+  const res = await axiosInstance.get("/api/incentives/summary");
+  return res.data;
+};
+
+// Incentive History
+export const getIncentiveHistory = async () => {
+  const res = await axiosInstance.get("/api/incentives/history");
+  return res.data;
+};

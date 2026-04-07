@@ -80,12 +80,6 @@ const Careers = () => {
           Join our ecosystem and be part of a smarter, faster, and more reliable
           supply chain network.
         </p>
-
-        <button
-          onClick={() => navigate("/agent-onboarding")}
-          className="bg-orange-600 text-white px-6 py-3 rounded-full text-sm">
-          Get Started
-        </button>
       </div>
     </div>
   );

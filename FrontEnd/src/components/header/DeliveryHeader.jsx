@@ -165,7 +165,8 @@ const DeliveryHeader = () => {
               <div className="p-1 ml-3">
                 <Tooltip title="Notifications" arrow>
                   <div>
-                    <NotificationsOutlined className="text-gray-500 cursor-pointer" />
+                    {/* <NotificationsOutlined className="text-gray-500 cursor-pointer" /> */}
+                    <NotificationBell />
                   </div>
                 </Tooltip>
               </div>

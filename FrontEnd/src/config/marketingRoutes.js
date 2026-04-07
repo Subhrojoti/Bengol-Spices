@@ -50,4 +50,10 @@ export const marketingRoutes = [
       () => import("../pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
     ),
   },
+  {
+    label: "Wallet",
+    path: "wallet",
+    fullPath: "/marketing/wallet",
+    component: lazy(() => import("../pages/MarketingHub/Tabs/Wallet/Wallet")),
+  },
 ];

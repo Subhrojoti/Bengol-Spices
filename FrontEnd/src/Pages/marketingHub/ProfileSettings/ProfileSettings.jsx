@@ -10,7 +10,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Logout, LockReset, Edit, ArrowBack } from "@mui/icons-material";
-import { getAgentProfile } from "../../api/services";
+import { getAgentProfile } from "../../../api/services";
 import { useNavigate } from "react-router-dom";
 import PasswordReset from "./PasswordReset";
 
@@ -95,9 +95,9 @@ const ProfileSettings = () => {
           </Box>
 
           {/* Right: Edit button */}
-          <IconButton disabled>
+          {/* <IconButton disabled>
             <Edit fontSize="small" />
-          </IconButton>
+          </IconButton> */}
         </Box>
 
         {/* ===== Content Section ===== */}

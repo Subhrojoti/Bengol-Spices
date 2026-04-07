@@ -1,81 +1,79 @@
 import React from "react";
 import Slide7 from "../../../assets/Slides/Slide7.png";
 import Slide8 from "../../../assets/Slides/Slide8.png";
+import logo from "../../../assets/logo/BS_Logo_New.png";
+import logoBG from "../../../assets/logo/BS_Logo_BG.png";
 
 const AboutUs = () => {
   return (
     <div className="bg-white">
       {/* HERO QUOTE */}
-      <div className="bg-orange-500 text-white px-6 md:px-20 lg:px-32 xl:px-40 py-16">
-        <p className="text-4xl font-bold mb-6">“</p>
-        <p className="text-lg md:text-xl max-w-4xl leading-relaxed">
-          Our mission is to bring authentic Indian spices closer to every
-          kitchen by creating a seamless supply chain between wholesalers,
-          agents, and retailers. We believe quality and convenience should go
-          hand in hand.
-        </p>
-      </div>
+      <div className="relative px-6 md:px-20 lg:px-32 xl:px-40 py-20 flex flex-col items-center text-center overflow-hidden">
+        {/* Background Image */}
+        <img
+          src={logoBG}
+          alt="background"
+          className="absolute inset-0 w-full h-full object-cover  pointer-events-none"
+        />
 
-      {/* JOURNEY SECTION */}
-      <div className="bg-gray-100 px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-10">
-          Our Journey
-        </h2>
+        {/* Optional overlay (for better readability) */}
+        <div className="absolute inset-0 bg-black/70"></div>
 
-        <div className="grid md:grid-cols-3 gap-8 text-left">
-          <div>
-            <h3 className="font-semibold text-lg">2018</h3>
-            <p className="text-sm text-gray-600">
-              Started as a small wholesale spice distributor with a vision to
-              simplify supply chains.
-            </p>
-          </div>
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Logo */}
+          <img
+            src={logo}
+            alt="Bengol Spices"
+            className="h-40 md:h-56 lg:h-72 mb-8 object-contain"
+          />
 
-          <div>
-            <h3 className="font-semibold text-lg">2021</h3>
-            <p className="text-sm text-gray-600">
-              Expanded into digital ordering via agents, improving efficiency
-              and reach across cities.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-lg">2024</h3>
-            <p className="text-sm text-gray-600">
-              Established a strong delivery network connecting retailers with
-              high-quality spice products across regions.
-            </p>
-          </div>
+          {/* Text */}
+          <p className="text-xl md:text-2xl lg:text-3xl font-light max-w-5xl leading-relaxed tracking-wide text-white">
+            Our mission is to bring authentic Indian spices closer to every
+            kitchen by creating a seamless supply chain between wholesalers,
+            agents, and retailers. We believe quality and convenience should go
+            hand in hand.
+          </p>
         </div>
       </div>
-
-      {/* STATS SECTION */}
-      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16">
-        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-10">
-          What’s Ahead
+      {/* ABOUT - WHAT WE STAND FOR */}
+      <div className="bg-gray-100 px-6 md:px-20 lg:px-32 xl:px-40 py-20 text-center">
+        <h2 className="text-3xl md:text-4xl font-semibold text-gray-800 mb-12">
+          What We Stand For
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { value: "10,000+", label: "Retail Partners" },
-            { value: "2,000+", label: "Agents" },
-            { value: "50,000+", label: "Orders Delivered" },
-            { value: "100+", label: "Cities" },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className="border border-orange-400 rounded-xl p-6">
-              <p className="text-2xl font-bold">{item.value}</p>
-              <p className="text-sm text-gray-600 mt-2">{item.label}</p>
-            </div>
-          ))}
+        <div className="grid md:grid-cols-3 gap-10 text-center">
+          <div>
+            <h3 className="text-lg font-medium mb-3">Authenticity</h3>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+              We ensure every spice reflects true Indian origin, preserving
+              taste, aroma, and quality at every step.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium mb-3">Reliability</h3>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+              From sourcing to delivery, we maintain a consistent and dependable
+              supply chain for our partners.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium mb-3">Efficiency</h3>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+              Our streamlined system connects wholesalers, agents, and retailers
+              seamlessly, reducing delays and complexity.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* SPLIT SECTION */}
       <div className="grid md:grid-cols-2">
         {/* LEFT TEXT */}
-        <div className="bg-purple-700 text-white p-10 flex flex-col justify-center">
+        <div className="bg-green-500 text-white p-10 flex flex-col justify-center">
           <h2 className="text-2xl font-semibold mb-4">Built for Efficiency</h2>
           <p className="text-sm leading-6">
             Our platform ensures that agents can place orders seamlessly,
@@ -180,26 +178,36 @@ const AboutUs = () => {
 
       {/* CONTACT SECTION */}
       <div className="bg-gray-100 px-6 md:px-20 lg:px-32 xl:px-40 py-16 grid md:grid-cols-2 gap-10 items-center">
+        {/* LEFT CONTENT */}
         <div>
           <h2 className="text-3xl font-semibold mb-4">Get In Touch</h2>
           <h3 className="text-xl text-orange-500 mb-4">Head Office</h3>
 
-          <p className="text-sm text-gray-700">
-            Bengol Spices Pvt. Ltd. <br />
-            Ground Floor, Tech Park <br />
-            Kolkata, India
+          <p className="text-sm text-gray-700 leading-relaxed">
+            BENGOL SPICES PRIVATE LIMITED <br />
+            23/23, Kalipur Kancha Road, Marich Jhapi, Paschim Putiary, <br />
+            Kolkata - 700082, West Bengal
           </p>
 
-          <button className="mt-6 bg-green-600 text-white px-4 py-2 rounded-full text-sm">
-            Get Location
-          </button>
+          {/* Button with real map link */}
+          <a
+            href="https://www.google.com/maps/place/23%2F23,+Kalipur+Kancha+Rd,+Marich+Jhapi,+Paschim+Putiary,+Kolkata,+West+Bengal+700082/@22.4776054,88.3324406,20.38z"
+            target="_blank"
+            rel="noopener noreferrer">
+            <button className="mt-6 bg-green-600 hover:bg-green-700 transition text-white px-5 py-2 rounded-full text-sm">
+              Get Location
+            </button>
+          </a>
         </div>
 
-        <img
-          src="https://source.unsplash.com/600x600/?india-map"
-          alt="map"
-          className="rounded-full w-full max-w-sm mx-auto"
-        />
+        {/* RIGHT MAP (REAL EMBED) */}
+        <div className="w-full h-[350px] rounded-2xl overflow-hidden shadow-md">
+          <iframe
+            title="Google Map Location"
+            src="https://www.google.com/maps?q=22.4776054,88.3324406&z=17&output=embed"
+            className="w-full h-full border-0"
+            loading="lazy"></iframe>
+        </div>
       </div>
     </div>
   );

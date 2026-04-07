@@ -16,7 +16,7 @@ import {
   FormControl,
   Grid,
   Tooltip,
-  TextField, // ✅ ADDED
+  TextField,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
@@ -30,6 +30,8 @@ import { useNavigate } from "react-router-dom";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import IconButton from "@mui/material/IconButton";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import NumbersIcon from "@mui/icons-material/Numbers";
 import Collapse from "@mui/material/Collapse";
 import Stack from "@mui/material/Stack";
 import {
@@ -228,6 +230,14 @@ export default function AgentManagement() {
                 filteredAgents.map((agent) => {
                   const isOpen = openRow === agent._id;
 
+                  const bank = agent.bankDetails;
+
+                  const hasBankData =
+                    bank?.accountHolderName ||
+                    bank?.accountNumber ||
+                    bank?.ifscCode ||
+                    bank?.bankName;
+
                   return (
                     <React.Fragment key={agent._id}>
                       <TableRow hover>
@@ -290,14 +300,12 @@ export default function AgentManagement() {
                           </Box>
                         </TableCell>
                       </TableRow>
+
                       {/* ================= DISCLOSURE ROW ================= */}
                       <TableRow>
                         <TableCell colSpan={5} sx={{ p: 0, border: 0 }}>
                           <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                            <Box
-                              sx={{
-                                bgcolor: "grey.50",
-                              }}>
+                            <Box sx={{ bgcolor: "grey.50" }}>
                               {/* ===== SUB PANEL CONTAINER ===== */}
                               <Box
                                 sx={{
@@ -320,7 +328,11 @@ export default function AgentManagement() {
                                   }}
                                 />
 
-                                <Grid container spacing={4}>
+                                {/* ✅ FIX: alignItems="stretch" */}
+                                <Grid
+                                  container
+                                  spacing={4}
+                                  alignItems="stretch">
                                   {/* ===== LEFT CARD: BASIC DETAILS ===== */}
                                   <Grid item xs={12} md={6}>
                                     <Box
@@ -328,8 +340,11 @@ export default function AgentManagement() {
                                         p: 2.5,
                                         borderRadius: 2,
                                         bgcolor: "grey.100",
+                                        height: "100%", // ✅ FIX
+                                        display: "flex", // ✅ FIX
+                                        flexDirection: "column", // ✅ FIX
                                       }}>
-                                      <Stack spacing={2.5}>
+                                      <Stack spacing={2.5} sx={{ flex: 1 }}>
                                         {[
                                           {
                                             icon: (
@@ -361,7 +376,6 @@ export default function AgentManagement() {
                                                 minWidth: 32,
                                                 height: 32,
                                                 borderRadius: "50%",
-
                                                 color: "primary.main",
                                                 display: "flex",
                                                 alignItems: "center",
@@ -419,71 +433,264 @@ export default function AgentManagement() {
                                     </Box>
                                   </Grid>
 
-                                  {/* ===== RIGHT CARD: DOCUMENTS ===== */}
+                                  {/* ===== RIGHT CARD: DOCUMENTS + BANK ===== */}
                                   <Grid item xs={12} md={6}>
-                                    <Box
-                                      sx={{
-                                        p: 2.5,
-                                        borderRadius: 2,
-                                        bgcolor: "grey.100",
-                                      }}>
-                                      <Stack spacing={1}>
-                                        {[
-                                          {
-                                            label: "Aadhaar",
-                                            url: agent.documents?.aadhaar,
-                                          },
-                                          {
-                                            label: "PAN",
-                                            url: agent.documents?.pan,
-                                          },
-                                          {
-                                            label: "Photo",
-                                            url: agent.documents?.photo,
-                                          },
-                                        ].map(
-                                          (doc) =>
-                                            doc.url && (
-                                              <Stack
-                                                key={doc.label}
-                                                direction="row"
-                                                justifyContent="space-between"
-                                                alignItems="center"
-                                                sx={{
-                                                  p: 1,
-                                                  borderRadius: 1.5,
-                                                  bgcolor: "background.paper",
-                                                  border: "1px solid",
-                                                  borderColor: "divider",
-                                                }}>
-                                                <Stack
-                                                  direction="row"
-                                                  spacing={1.5}>
-                                                  <DescriptionIcon
-                                                    fontSize="small"
-                                                    color="action"
-                                                  />
-                                                  <Typography variant="body2">
-                                                    {doc.label}
-                                                  </Typography>
-                                                </Stack>
+                                    <Grid
+                                      container
+                                      spacing={2}
+                                      sx={{ height: "100%" }}>
+                                      {/* ===== DOCUMENTS ===== */}
+                                      <Grid item xs={12} md={6}>
+                                        <Box
+                                          sx={{
+                                            p: 2.5,
+                                            borderRadius: 2,
+                                            bgcolor: "grey.100",
+                                            height: "100%",
+                                          }}>
+                                          <Typography
+                                            variant="subtitle2"
+                                            mb={1}>
+                                            Documents
+                                          </Typography>
 
-                                                <IconButton
-                                                  size="small"
-                                                  color="primary"
-                                                  onClick={() =>
-                                                    window.open(
-                                                      doc.url,
-                                                      "_blank",
-                                                    )
-                                                  }>
-                                                  <VisibilityIcon fontSize="small" />
-                                                </IconButton>
-                                              </Stack>
-                                            ),
-                                        )}
-                                      </Stack>
-                                    </Box>
+                                          <Stack spacing={1}>
+                                            {[
+                                              {
+                                                label: "Aadhaar",
+                                                url: agent.documents?.aadhaar,
+                                              },
+                                              {
+                                                label: "PAN",
+                                                url: agent.documents?.pan,
+                                              },
+                                              {
+                                                label: "Photo",
+                                                url: agent.documents?.photo,
+                                              },
+                                            ].map(
+                                              (doc) =>
+                                                doc.url && (
+                                                  <Stack
+                                                    key={doc.label}
+                                                    direction="row"
+                                                    justifyContent="space-between"
+                                                    alignItems="center"
+                                                    sx={{
+                                                      p: 1,
+                                                      borderRadius: 1.5,
+                                                      bgcolor:
+                                                        "background.paper",
+                                                      border: "1px solid",
+                                                      borderColor: "divider",
+                                                    }}>
+                                                    <Stack
+                                                      direction="row"
+                                                      spacing={1.5}>
+                                                      <DescriptionIcon
+                                                        fontSize="small"
+                                                        color="action"
+                                                      />
+                                                      <Typography variant="body2">
+                                                        {doc.label}
+                                                      </Typography>
+                                                    </Stack>
+
+                                                    <IconButton
+                                                      size="small"
+                                                      color="primary"
+                                                      onClick={() =>
+                                                        window.open(
+                                                          doc.url,
+                                                          "_blank",
+                                                        )
+                                                      }>
+                                                      <VisibilityIcon fontSize="small" />
+                                                    </IconButton>
+                                                  </Stack>
+                                                ),
+                                            )}
+                                          </Stack>
+                                        </Box>
+                                      </Grid>
+
+                                      {/* ===== BANK DETAILS ===== */}
+                                      <Grid item xs={12} md={6}>
+                                        <Box
+                                          sx={{
+                                            p: 2.5,
+                                            borderRadius: 2,
+                                            bgcolor: "grey.100",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                          }}>
+                                          <Typography
+                                            variant="subtitle2"
+                                            mb={2}>
+                                            Bank Details
+                                          </Typography>
+
+                                          <Box sx={{ flex: 1 }}>
+                                            {hasBankData ? (
+                                              <Grid container spacing={2}>
+                                                {/* COLUMN 1 */}
+                                                <Grid item xs={12} md={6}>
+                                                  <Stack spacing={2}>
+                                                    {[
+                                                      {
+                                                        icon: (
+                                                          <BadgeIcon fontSize="small" />
+                                                        ),
+                                                        label: "Account Holder",
+                                                        value:
+                                                          bank?.accountHolderName,
+                                                      },
+                                                      {
+                                                        icon: (
+                                                          <DescriptionIcon fontSize="small" />
+                                                        ),
+                                                        label: "Account Number",
+                                                        value:
+                                                          bank?.accountNumber,
+                                                      },
+                                                    ].map(
+                                                      ({
+                                                        icon,
+                                                        label,
+                                                        value,
+                                                      }) =>
+                                                        value && (
+                                                          <Stack
+                                                            key={label}
+                                                            direction="row"
+                                                            spacing={2}
+                                                            alignItems="flex-start">
+                                                            <Box
+                                                              sx={{
+                                                                minWidth: 32,
+                                                                height: 32,
+                                                                borderRadius:
+                                                                  "50%",
+                                                                color:
+                                                                  "primary.main",
+                                                                display: "flex",
+                                                                alignItems:
+                                                                  "center",
+                                                                justifyContent:
+                                                                  "center",
+                                                              }}>
+                                                              {icon}
+                                                            </Box>
+
+                                                            <Box>
+                                                              <Typography
+                                                                variant="caption"
+                                                                color="text.secondary">
+                                                                {label}
+                                                              </Typography>
+                                                              <Typography
+                                                                variant="body2"
+                                                                fontWeight={
+                                                                  500
+                                                                }>
+                                                                {value}
+                                                              </Typography>
+                                                            </Box>
+                                                          </Stack>
+                                                        ),
+                                                    )}
+                                                  </Stack>
+                                                </Grid>
+
+                                                {/* COLUMN 2 */}
+                                                <Grid item xs={12} md={6}>
+                                                  <Stack spacing={2}>
+                                                    {[
+                                                      {
+                                                        icon: (
+                                                          <NumbersIcon fontSize="small" />
+                                                        ),
+                                                        label: "IFSC Code",
+                                                        value: bank?.ifscCode,
+                                                      },
+                                                      {
+                                                        icon: (
+                                                          <AccountBalanceIcon fontSize="small" />
+                                                        ),
+                                                        label: "Bank Name",
+                                                        value: bank?.bankName,
+                                                      },
+                                                    ].map(
+                                                      ({
+                                                        icon,
+                                                        label,
+                                                        value,
+                                                      }) =>
+                                                        value && (
+                                                          <Stack
+                                                            key={label}
+                                                            direction="row"
+                                                            spacing={2}
+                                                            alignItems="flex-start">
+                                                            <Box
+                                                              sx={{
+                                                                minWidth: 32,
+                                                                height: 32,
+                                                                borderRadius:
+                                                                  "50%",
+                                                                color:
+                                                                  "primary.main",
+                                                                display: "flex",
+                                                                alignItems:
+                                                                  "center",
+                                                                justifyContent:
+                                                                  "center",
+                                                              }}>
+                                                              {icon}
+                                                            </Box>
+
+                                                            <Box>
+                                                              <Typography
+                                                                variant="caption"
+                                                                color="text.secondary">
+                                                                {label}
+                                                              </Typography>
+                                                              <Typography
+                                                                variant="body2"
+                                                                fontWeight={
+                                                                  500
+                                                                }>
+                                                                {value}
+                                                              </Typography>
+                                                            </Box>
+                                                          </Stack>
+                                                        ),
+                                                    )}
+                                                  </Stack>
+                                                </Grid>
+                                              </Grid>
+                                            ) : (
+                                              // ✅ FALLBACK UI
+                                              <Box
+                                                sx={{
+                                                  height: "100%",
+                                                  display: "flex",
+                                                  alignItems: "flex-start",
+                                                  justifyContent: "center",
+                                                  pt: 1,
+                                                }}>
+                                                <Typography
+                                                  variant="body2"
+                                                  color="text.secondary">
+                                                  No bank details available
+                                                </Typography>
+                                              </Box>
+                                            )}
+                                          </Box>
+                                        </Box>
+                                      </Grid>
+                                    </Grid>
                                   </Grid>
                                 </Grid>
                               </Box>

@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Button,
   Grid,
   Card,
   CardContent,
-  LinearProgress,
   CircularProgress,
+  Avatar,
 } from "@mui/material";
-import BarChartIcon from "@mui/icons-material/BarChart";
+import StoreIcon from "@mui/icons-material/Store";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import PaymentsIcon from "@mui/icons-material/Payments";
 import { getTargetPerformance } from "../../../../../api/services";
 
 export default function TargetPerformance() {
@@ -23,11 +24,88 @@ export default function TargetPerformance() {
   const fetchPerformance = async () => {
     try {
       const res = await getTargetPerformance();
-      setData(res?.data || []);
+      const rawData = res?.data || [];
+
+      const grouped = Object.values(
+        rawData.reduce((acc, item) => {
+          const agentId = item.agentId;
+
+          if (!acc[agentId]) {
+            acc[agentId] = {
+              agentId,
+              agentName: agentId,
+              completedTarget: 0,
+              totalTarget: 0,
+              totalEarned: 0,
+              targets: {},
+            };
+          }
+
+          acc[agentId].completedTarget += item.achievedValue || 0;
+          acc[agentId].totalTarget += item.count || item.achievedValue;
+          acc[agentId].totalEarned += item.earnedAmount || 0;
+
+          const type = item.type;
+          if (!acc[agentId].targets[type]) {
+            acc[agentId].targets[type] = 0;
+          }
+          acc[agentId].targets[type] += item.achievedValue || 0;
+
+          return acc;
+        }, {}),
+      );
+
+      setData(grouped);
     } catch (err) {
-      console.error("Error fetching performance:", err);
+      console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ================= HELPERS =================
+  const getColor = (value) => {
+    if (value >= 80) return "#22c55e";
+    if (value >= 40) return "#f59e0b";
+    return "#ef4444";
+  };
+
+  const formatType = (type) => {
+    switch (type) {
+      case "STORE_CREATION":
+        return "Store";
+      case "ORDER":
+        return "Orders";
+      case "PAYMENT":
+        return "Payments";
+      default:
+        return type;
+    }
+  };
+
+  const getIcon = (type) => {
+    switch (type) {
+      case "STORE_CREATION":
+        return <StoreIcon sx={{ fontSize: 14 }} />;
+      case "ORDER":
+        return <ShoppingCartIcon sx={{ fontSize: 14 }} />;
+      case "PAYMENT":
+        return <PaymentsIcon sx={{ fontSize: 14 }} />;
+      default:
+        return null;
+    }
+  };
+
+  const getBg = (type) => {
+    switch (type) {
+      case "STORE_CREATION":
+        return "#e0f2fe";
+      case "ORDER":
+        return "#ede9fe";
+      case "PAYMENT":
+        return "#dcfce7";
+      default:
+        return "#f1f5f9";
     }
   };
 
@@ -46,94 +124,142 @@ export default function TargetPerformance() {
     );
   }
 
-  // ================= EMPTY STATE =================
-  if (!data.length) {
-    return (
-      <Box
-        sx={{
-          height: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          px: 2,
-        }}>
-        <Box
-          sx={{
-            bgcolor: "#cefffc",
-            color: "#0071bd",
-            p: 2,
-            borderRadius: "50%",
-            mb: 2,
-          }}>
-          <BarChartIcon sx={{ fontSize: 32 }} />
-        </Box>
-
-        <Typography variant="h6" fontWeight={600} gutterBottom>
-          No Performance Data Yet
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ maxWidth: 360 }}>
-          Target performance analytics will appear here once targets are created
-          and agents start completing their daily targets.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // ================= DATA UI =================
+  // ================= UI =================
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h6" fontWeight={600} mb={2}>
+    <Box sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 3 }}>
+      <Typography variant="h6" fontWeight={700} mb={3}>
         Target Performance
       </Typography>
 
       <Grid container spacing={2}>
         {data.map((agent, index) => {
-          const progress = (agent.completedTarget / agent.totalTarget) * 100;
+          const total = agent.totalTarget || 0;
+          const completed = agent.completedTarget || 0;
+          const progress =
+            total > 0 ? Math.round((completed / total) * 100) : 0;
+
+          const color = getColor(progress);
 
           return (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid
+              item
+              key={index}
+              sx={{
+                width: 260,
+              }}>
               <Card
                 sx={{
-                  borderRadius: 3,
-                  boxShadow: 2,
-                  transition: "0.2s",
+                  borderRadius: 4,
+                  height: 290,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  p: 1,
+                  background: "linear-gradient(180deg, #ffffff, #f1f5f9)",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                  transition: "0.25s",
                   "&:hover": {
-                    boxShadow: 4,
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
                   },
                 }}>
                 <CardContent>
-                  {/* Agent Name */}
-                  <Typography fontWeight={600} mb={1}>
-                    {agent.agentName || "Agent"}
-                  </Typography>
+                  {/* HEADER */}
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <Avatar
+                      sx={{
+                        bgcolor: "#6366f1",
+                        width: 38,
+                        height: 38,
+                        fontSize: 14,
+                        mr: 1,
+                      }}>
+                      {agent.agentName?.charAt(0)}
+                    </Avatar>
 
-                  {/* Targets */}
-                  <Typography variant="body2" color="text.secondary" mb={1}>
-                    {agent.completedTarget} / {agent.totalTarget} completed
-                  </Typography>
+                    <Box>
+                      <Typography fontWeight={600} fontSize={14}>
+                        {agent.agentName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Agent
+                      </Typography>
+                    </Box>
+                  </Box>
 
-                  {/* Progress Bar */}
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress || 0}
-                    sx={{
-                      height: 8,
-                      borderRadius: 5,
-                      mb: 1,
-                    }}
-                  />
+                  {/* RADIAL PROGRESS */}
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    position="relative"
+                    mb={2}>
+                    <CircularProgress
+                      variant="determinate"
+                      value={progress}
+                      size={80}
+                      thickness={5}
+                      sx={{
+                        color,
+                      }}
+                    />
 
-                  {/* Percentage */}
-                  <Typography variant="caption" color="text.secondary">
-                    {Math.round(progress || 0)}% achieved
-                  </Typography>
+                    <Box
+                      position="absolute"
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center">
+                      <Typography fontWeight={700} fontSize={16}>
+                        {progress}%
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Done
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* TARGET BREAKDOWN */}
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {Object.entries(agent.targets || {}).map(
+                      ([type, value]) => (
+                        <Box
+                          key={type}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 2,
+                            fontSize: 11,
+                            background: getBg(type),
+                          }}>
+                          {getIcon(type)}
+                          <span>
+                            {formatType(type)} ({value})
+                          </span>
+                        </Box>
+                      ),
+                    )}
+                  </Box>
                 </CardContent>
+
+                {/* FOOTER */}
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  px={2}
+                  pb={1}>
+                  <Typography variant="body" color="text.secondary">
+                    {completed}/{total}
+                  </Typography>
+
+                  <Typography
+                    variant="body"
+                    sx={{ fontWeight: 700, color: "#16a34a" }}>
+                    ₹{agent.totalEarned}
+                  </Typography>
+                </Box>
               </Card>
             </Grid>
           );

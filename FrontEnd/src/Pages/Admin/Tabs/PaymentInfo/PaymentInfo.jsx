@@ -61,6 +61,7 @@ const PaymentInfo = () => {
       if (!map[key]) {
         map[key] = {
           consumerId: order.consumerId,
+          agent: order.agent,
           storeName: order.store,
           phone: order.phone,
           city: order.city,
@@ -141,28 +142,56 @@ const PaymentInfo = () => {
                   )}
 
                   {/* Store Info */}
-                  <div className="flex flex-col">
-                    {/* Store Name */}
-                    <p className="font-semibold text-gray-800 text-sm md:text-base">
-                      {store.storeName}
-                    </p>
+                  <div className="flex justify-between  items-start gap-8">
+                    {/* LEFT SIDE */}
+                    <div className="flex flex-col">
+                      {/* Store Name */}
+                      <p className="font-semibold text-gray-800 text-sm md:text-base leading-tight">
+                        {store.storeName}
+                      </p>
 
-                    {/* Consumer ID */}
-                    <p className="text-xs text-gray-500">{store.consumerId}</p>
+                      {/* Consumer ID */}
+                      <p className="text-xs text-gray-500 leading-tight mt-0.5">
+                        {store.consumerId}
+                      </p>
 
-                    {/* Location */}
-                    <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                      <LocationOnIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
-                      <span>
-                        {store.city}, {store.state}
-                      </span>
+                      {/* Location */}
+                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 leading-tight">
+                        <LocationOnIcon
+                          sx={{ fontSize: 14, color: "#9ca3af" }}
+                        />
+                        <span>
+                          {store.city}, {store.state}
+                        </span>
+                      </div>
+
+                      {/* Phone */}
+                      <div className="flex items-center gap-1 text-xs text-gray-500 leading-tight">
+                        <PhoneIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
+                        <span>{store.phone}</span>
+                      </div>
                     </div>
 
-                    {/* Phone (below location) */}
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <PhoneIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
-                      <span>{store.phone}</span>
-                    </div>
+                    {/* RIGHT SIDE - AGENT */}
+                    {store.agent && (
+                      <div className="flex flex-col items-start text-xs text-gray-500 mt-7">
+                        {/* Header */}
+                        <span className="text-[10px] uppercase text-gray-400 tracking-wide leading-tight mb-1">
+                          Agent
+                        </span>
+
+                        {/* Name */}
+                        <span className="font-medium leading-tight">
+                          {store.agent.name}
+                        </span>
+
+                        {/* Phone */}
+                        <div className="flex items-center gap-1 leading-tight">
+                          <PhoneIcon sx={{ fontSize: 14, color: "#9ca3af" }} />
+                          <span>{store.agent.phone}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

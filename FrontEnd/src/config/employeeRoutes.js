@@ -40,7 +40,7 @@ export const employeeRoutes = [
     label: "Agent",
     path: "agent",
     icon: Groups3Icon,
-    permission: "canManageAgents",
+    permissions: ["canManageAgents", "canPayoutIncentives"],
     component: Agent,
   },
   {
