@@ -79,20 +79,21 @@ const Footer = () => {
           {/* COLUMN 4 - AVAILABLE */}
           <div>
             <h2 className="font-semibold text-gray-900 mb-3">Available in</h2>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li>Kolkata</li>
-              <li>Pune</li>
-              <li>Lucknow</li>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>West Bengal</li>
+              <li>Delhi</li>
+              <li>Uttar Pradesh</li>
+              <li>Bihar</li>
             </ul>
           </div>
         </div>
       </div>
 
       {/* DIVIDER */}
-      <div className="border-t border-gray-300 my-10"></div>
+      {/* <div className="border-t border-gray-300 my-10"></div> */}
 
       {/* BOTTOM SECTION */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+      {/* <div className="flex flex-col md:flex-row items-center justify-center gap-12">
         <p className="text-xl text-center md:text-left">
           Experience mobile version for easy access, download now
         </p>
@@ -102,7 +103,7 @@ const Footer = () => {
           className="bg-black text-white px-5 py-2.5 rounded-md text-sm hover:opacity-90 transition">
           Get it on Play Store
         </a>
-      </div>
+      </div> */}
     </footer>
   );
 };

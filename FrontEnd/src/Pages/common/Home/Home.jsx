@@ -5,8 +5,10 @@ import cumin from "../../../assets/products/BS_Cumin_Powder.jpeg";
 import garamMasala from "../../../assets/products/BS_Garam_Masala.jpeg";
 import redChilli from "../../../assets/products/BS_Red_Chilli_Powder.jpeg";
 import turmeric from "../../../assets/products/BS_Turmeric_Powder.jpeg";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
   const products = [
     { name: "Coriander Powder", image: coriander },
     { name: "Cumin Powder", image: cumin },
@@ -37,14 +39,16 @@ const Home = () => {
             locally — we ensure quality, speed, and reliability.
           </p>
 
-          <button className="bg-orange-600 px-6 py-3 rounded-full text-sm font-medium hover:opacity-90">
+          <button
+            onClick={() => navigate("/about")}
+            className="bg-cyan-600 px-6 py-3 rounded-full text-sm font-medium hover:opacity-90">
             Our Journey
           </button>
         </div>
       </div>
 
       {/* SERVICES SECTION */}
-      <div className="bg-orange-500 text-white px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
+      <div className="bg-cyan-500 text-white px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
         <h2 className="text-3xl md:text-4xl font-semibold mb-8">
           Import. Distribute. Deliver. Scale.
         </h2>
@@ -169,7 +173,7 @@ const Home = () => {
       </div>
 
       {/* CTA SECTION */}
-      <div className="bg-orange-600 text-white px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
+      <div className="bg-purple-700 text-white px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
         <h2 className="text-3xl font-semibold mb-4">
           Powering the future of spice distribution
         </h2>
@@ -178,7 +182,9 @@ const Home = () => {
           supply chain ecosystem.
         </p>
 
-        <button className="bg-white text-orange-600 px-6 py-3 rounded-full font-medium">
+        <button
+          className="bg-white text-purple-600 px-6 py-3 rounded-full font-medium"
+          onClick={() => navigate("/careers")}>
           Get Started
         </button>
       </div>
