@@ -8,6 +8,14 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
   const start = new Date(from);
   const end = new Date(to);
 
+  const startStr = start.toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
+
+  const endStr = end.toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
+
   // =========================
   // 🟢 ORDERS
   // =========================
@@ -20,13 +28,11 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
     {
       $group: {
         _id: "$agentId",
-
         ordersDelivered: {
           $sum: {
             $cond: [{ $eq: ["$status", "DELIVERED"] }, 1, 0],
           },
         },
-
         sales: { $sum: "$totalAmount" },
         collected: { $sum: "$paidAmount" },
       },
@@ -51,21 +57,21 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
   ]);
 
   // =========================
-  // 🟡 TARGET + INCENTIVE
+  // 🟡 TARGET (NEW SYSTEM)
   // =========================
   const progress = await AgentTargetProgress.aggregate([
     {
       $match: {
-        createdAt: { $gte: start, $lte: end },
+        date: { $gte: startStr, $lte: endStr }, // ✅ FIXED
       },
     },
     {
       $group: {
         _id: "$agentId",
-        incentive: { $sum: "$incentiveEarned" },
-        targetAchieved: {
+        earnedAmount: { $sum: "$earnedAmount" }, // ✅ NEW FIELD
+        completedTargets: {
           $sum: {
-            $cond: ["$targetAchieved", 1, 0],
+            $cond: ["$isCompleted", 1, 0], // ✅ NEW FIELD
           },
         },
       },
@@ -90,7 +96,7 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
   ]);
 
   // =========================
-  // 🧠 MERGE DATA
+  // 🧠 MERGE
   // =========================
   const map = {};
 
@@ -101,8 +107,8 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
       sales: o.sales,
       collected: o.collected,
       returns: 0,
-      incentive: 0,
-      targetAchieved: 0,
+      earnedAmount: 0,
+      completedTargets: 0,
       storesCreated: 0,
     };
   });
@@ -114,8 +120,8 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
 
   progress.forEach((p) => {
     if (!map[p._id]) map[p._id] = { agentId: p._id };
-    map[p._id].incentive = p.incentive;
-    map[p._id].targetAchieved = p.targetAchieved;
+    map[p._id].earnedAmount = p.earnedAmount;
+    map[p._id].completedTargets = p.completedTargets;
   });
 
   stores.forEach((s) => {
@@ -124,7 +130,7 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
   });
 
   // =========================
-  // 👤 FETCH AGENT DETAILS
+  // 👤 AGENT DETAILS
   // =========================
   const agentIds = Object.keys(map);
 
@@ -137,34 +143,36 @@ export const getLeaderboard = async ({ from, to, limit = 10 }) => {
     agentMap[a.agentId] = a;
   });
 
+  // =========================
+  // 🏆 FINAL LEADERBOARD
+  // =========================
   const leaderboard = Object.values(map)
-    .sort((a, b) => b.sales - a.sales)
+    .sort((a, b) => b.earnedAmount - a.earnedAmount) // 🔥 FIXED
     .slice(0, limit)
     .map((agent, index) => {
       const agentInfo = agentMap[agent.agentId] || {};
 
       return {
         rank: index + 1,
-
         medal:
           index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : null,
 
         agentId: agent.agentId,
         name: agentInfo.name || "Unknown",
-
         profileImage: agentInfo?.documents?.photo || null,
-
-        // ✅ NEW FIELD
         state: agentInfo?.addressDetails?.state || "N/A",
+
+        // 📊 METRICS
+        earnedAmount: agent.earnedAmount || 0, // 🔥 MAIN KPI
+        completedTargets: agent.completedTargets || 0,
 
         ordersDelivered: agent.ordersDelivered || 0,
         sales: agent.sales || 0,
         collected: agent.collected || 0,
         returns: agent.returns || 0,
-        incentive: agent.incentive || 0,
-        targetAchieved: agent.targetAchieved || 0,
         storesCreated: agent.storesCreated || 0,
       };
     });
+
   return leaderboard;
 };

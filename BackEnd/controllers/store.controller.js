@@ -3,6 +3,7 @@ import cloudinary from "../config/cloudinary.js";
 import AgentTargetProgress from "../models/AgentTargetProgress.js";
 import AgentSalesLocation from "../models/AgentSalesLocation.js";
 import Counter from "../models/Counter.js";
+import { updateTargetProgress } from "../services/target.service.js";
 
 //Store Creation - POST /api/stores
 export const createStore = async (req, res) => {
@@ -101,26 +102,11 @@ export const createStore = async (req, res) => {
       status: "ACTIVE",
     });
 
-    const today = new Date().toISOString().split("T")[0];
-
-    let progress = await AgentTargetProgress.findOne({
+    await updateTargetProgress({
       agentId: req.user.agentId,
-      date: today,
       type: "STORE_CREATION",
+      value: 1,
     });
-
-    if (!progress) {
-      await AgentTargetProgress.create({
-        agentId: req.user.agentId,
-        date: today,
-        type: "STORE_CREATION",
-        count: 1,
-      });
-    } else {
-      progress.count += 1;
-      await progress.save();
-    }
-
     return res.status(201).json({
       success: true,
       message: "Store registered successfully",

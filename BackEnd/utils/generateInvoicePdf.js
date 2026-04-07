@@ -15,6 +15,7 @@ const C = {
   red: "#C0392B",
   green: "#1A7F4B",
   rowAlt: "#F0F2F5",
+  gray: "#F5F5F55",
 };
 
 /* ─────────────────────────────────────────────
@@ -421,7 +422,7 @@ export const generateInvoicePDFBuffer = async (invoice) => {
         dark: false,
         bold: false,
       },
-      { label: "IGST / GST", val: fmt(gstTot), dark: false, bold: false },
+      { label: "GST", val: fmt(gstTot), dark: false, bold: false },
       { label: "Grand Total", val: fmt(grandTotal), dark: true, bold: true },
       {
         label: "Amount Paid",

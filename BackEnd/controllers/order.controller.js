@@ -6,20 +6,18 @@ import Admin from "../models/Admin.js";
 import Order from "../models/Order.js";
 import Store from "../models/store.js";
 import Product from "../models/Product.js";
-import Target from "../models/Target.js";
 import Invoice from "../models/Invoice.js";
-import AgentTargetProgress from "../models/AgentTargetProgress.js";
 import {
   createInvoiceFromOrder,
   regenerateInvoicePDF,
   updateInvoiceAfterPayment,
 } from "../services/invoice.service.js";
-import { uploadPdfToCloudinary } from "../utils/uploadPdf.js";
 import { createShiprocketOrder } from "../services/shiprocket.service.js";
 import Payment from "../models/Payment.js";
 import { createNotification } from "../services/notification.service.js";
 import { razorpayInstance } from "../config/razorpay.js";
 import Agent from "../models/Agent.js";
+import { updateTargetProgress } from "../services/target.service.js";
 
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
@@ -231,135 +229,11 @@ export const placeOrder = async (req, res) => {
        TARGET + COMMISSION + NOTIFICATION
        ============================= */
 
-    const today = new Date().toLocaleDateString("en-CA", {
-      timeZone: "Asia/Kolkata",
+    await updateTargetProgress({
+      agentId,
+      type: "ORDER",
+      order,
     });
-
-    const activeTargets = await Target.find({
-      type: "ORDER_PLACEMENT",
-      isActive: true,
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
-    });
-
-    for (const target of activeTargets) {
-      let progress = await AgentTargetProgress.findOne({
-        agentId,
-        date: today,
-        type: "ORDER_PLACEMENT",
-        targetId: target._id,
-      });
-
-      if (!progress) {
-        progress = await AgentTargetProgress.create({
-          agentId,
-          date: today,
-          type: "ORDER_PLACEMENT",
-          targetId: target._id,
-          count: 0,
-          incentiveEarned: 0,
-          productBreakdown: [],
-          milestonesNotified: [],
-        });
-      }
-
-      let earned = 0;
-      let totalQty = 0;
-
-      for (const item of products) {
-        const qty = item.quantity;
-        totalQty += qty;
-
-        const rule = target.productRules?.find(
-          (r) =>
-            r.productId?.toString() === item.productId?.toString() ||
-            r.productName === item.name,
-        );
-
-        if (!rule) continue;
-
-        if (rule.perPacketCommission) {
-          earned += qty * rule.perPacketCommission;
-        }
-
-        if (
-          rule.bulkTarget &&
-          rule.bulkIncentive &&
-          !progress.bulkAchieved &&
-          progress.count + totalQty >= rule.bulkTarget
-        ) {
-          earned += rule.bulkIncentive;
-          progress.bulkAchieved = true;
-        }
-
-        const existing = progress.productBreakdown.find(
-          (p) => p.productId?.toString() === item.productId?.toString(),
-        );
-
-        if (existing) {
-          existing.quantity += qty;
-        } else {
-          progress.productBreakdown.push({
-            productId: item.productId,
-            quantity: qty,
-          });
-        }
-      }
-
-      if (
-        target.globalTarget?.totalPackets &&
-        !progress.targetAchieved &&
-        progress.count + totalQty >= target.globalTarget.totalPackets
-      ) {
-        earned += target.globalTarget.incentive;
-        progress.targetAchieved = true;
-
-        await createNotification({
-          title: "Target Achieved 🎉",
-          message: `You completed today's target and earned ₹${progress.incentiveEarned + earned}`,
-          recipientId: agentId,
-          recipientModel: "Agent",
-        });
-      }
-
-      progress.count += totalQty;
-      progress.incentiveEarned += earned;
-
-      if (earned > 0) {
-        await createNotification({
-          title: "Earning Update",
-          message: `💰 You earned ₹${earned} from this order`,
-          recipientId: agentId,
-          recipientModel: "Agent",
-        });
-      }
-
-      if (target.globalTarget?.totalPackets) {
-        const percentage = Math.floor(
-          (progress.count / target.globalTarget.totalPackets) * 100,
-        );
-
-        const milestones = [50, 80];
-
-        for (const milestone of milestones) {
-          if (
-            percentage >= milestone &&
-            !progress.milestonesNotified.includes(milestone)
-          ) {
-            await createNotification({
-              title: "Target Progress",
-              message: `🔥 You reached ${milestone}% of your target`,
-              recipientId: agentId,
-              recipientModel: "Agent",
-            });
-
-            progress.milestonesNotified.push(milestone);
-          }
-        }
-      }
-
-      await progress.save();
-    }
 
     return res.status(201).json({
       success: true,
@@ -945,6 +819,13 @@ export const collectPayment = async (req, res) => {
       method: method || "CASH",
     });
 
+    await updateTargetProgress({
+      agentId: req.user.agentId,
+      type: "PAYMENT",
+      value: 1,
+      amount,
+    });
+
     res.json({
       success: true,
       message: "Payment recorded successfully",
@@ -1344,6 +1225,12 @@ export const verifyRazorpayPayment = async (req, res) => {
       await regenerateInvoicePDF(invoice);
     }
 
+    await updateTargetProgress({
+      agentId: order.agentId,
+      type: "PAYMENT",
+      value: 1,
+    });
+
     res.json({
       success: true,
       message: "Payment successful",
@@ -1482,6 +1369,12 @@ export const verifyPaymentAndPlaceOrder = async (req, res) => {
         id: req.user?.agentId,
         role: "AGENT",
       },
+    });
+
+    await updateTargetProgress({
+      agentId: order.agentId,
+      type: "PAYMENT",
+      value: 1,
     });
 
     return res.json({
