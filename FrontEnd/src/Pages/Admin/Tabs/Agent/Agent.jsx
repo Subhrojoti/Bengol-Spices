@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import AgentManagement from "./tabs/AgentManagement";
 import AgentPerformance from "./tabs/AgentPerformance";
+import AgentIncentives from "./tabs/AgentIncentives";
 
 export default function Agent() {
   const [tab, setTab] = useState(0);
@@ -40,6 +41,7 @@ export default function Agent() {
           }}>
           <Tab label="Agent Management" />
           <Tab label="Agent Performance" />
+          <Tab label="Agent Incentives" />
         </Tabs>
       </Box>
 
@@ -47,6 +49,7 @@ export default function Agent() {
       <Box className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm flex-1 overflow-hidden">
         {tab === 0 && <AgentManagement />}
         {tab === 1 && <AgentPerformance />}
+        {tab === 2 && <AgentIncentives />}
       </Box>
     </Box>
   );
