@@ -9,44 +9,36 @@ const targetSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["STORE_CREATION", "ORDER_PLACEMENT", "PAYMENT_COLLECTION"],
+      enum: ["STORE_CREATION", "ORDER", "PAYMENT"],
       required: true,
     },
 
-    // ✅ OLD (keep for backward compatibility)
-    requiredCount: Number,
-    incentiveAmount: Number,
-
-    // ✅ NEW: Target mode
-    targetMode: {
-      type: String,
-      enum: ["PER_PACKET", "BULK", "HYBRID"],
-      default: "BULK",
+    // 🎯 TARGET CONDITION
+    targetValue: {
+      type: Number, // e.g. 10 stores / 50 packets / 10 payments
+      required: true,
     },
 
-    // ✅ NEW: Product-specific rules
-    productRules: [
+    // 💰 REWARD WHEN COMPLETED
+    rewardAmount: {
+      type: Number,
+      required: true,
+    },
+
+    // 🛒 PRODUCT COMMISSION (ONLY FOR ORDER TYPE)
+    productCommissions: [
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
-
-        productName: String,
-
-        // per packet commission
-        perPacketCommission: Number,
-
-        // bulk target
-        bulkTarget: Number,
-        bulkIncentive: Number,
+        commissionPerUnit: Number, // ₹ per packet
       },
     ],
 
-    // ✅ NEW: Global bulk target (optional)
-    globalTarget: {
-      totalPackets: Number,
-      incentive: Number,
+    // 💵 PAYMENT TARGET CONFIG (ONLY FOR PAYMENT TYPE)
+    paymentConfig: {
+      perPaymentReward: Number, // optional (per collection)
     },
 
     startDate: {
