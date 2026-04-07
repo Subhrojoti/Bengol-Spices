@@ -16,7 +16,7 @@ const Leaderboard = () => {
       if (res.success) {
         const sorted = res.data.sort((a, b) => a.rank - b.rank);
         setLeaders(sorted.slice(0, 3));
-        setData(sorted); // full list
+        setData(sorted);
       }
     } catch (err) {
       console.error(err);
@@ -38,7 +38,7 @@ const Leaderboard = () => {
       {/* Title */}
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Leaderboard</h2>
 
-      {/* Top 3 Cards */}
+      {/* 🔥 Top 3 Cards (Enhanced) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {leaders.map((user, index) => (
           <div
@@ -53,9 +53,16 @@ const Leaderboard = () => {
             />
 
             <h3 className="font-semibold text-gray-800">{user.name}</h3>
-            <p className="text-xs text-gray-500 mb-4">{user.agentId}</p>
+            <p className="text-xs text-gray-500">{user.agentId}</p>
+            <p className="text-xs text-gray-400 mb-3">{user.state}</p>
 
-            <div className="flex justify-between text-sm mt-4">
+            {/* 💰 Earnings */}
+            <div className="bg-green-50 text-green-700 text-sm font-semibold py-1 rounded-lg mb-3">
+              ₹{user.earnedAmount} Earned
+            </div>
+
+            {/* 📊 Stats */}
+            <div className="grid grid-cols-3 gap-2 text-sm mt-2">
               <div>
                 <p className="text-gray-400 text-xs">Sales</p>
                 <p className="font-semibold text-indigo-600">₹{user.sales}</p>
@@ -65,15 +72,17 @@ const Leaderboard = () => {
                 <p className="font-semibold">{user.ordersDelivered}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">Stores</p>
-                <p className="font-semibold">{user.storesCreated}</p>
+                <p className="text-gray-400 text-xs">Targets</p>
+                <p className="font-semibold text-orange-500">
+                  {user.completedTargets}
+                </p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* 📊 Improved Table */}
+      {/* 📊 Table */}
       <div className="bg-white rounded-2xl shadow-md overflow-hidden">
         <div className="px-5 py-3 border-b text-sm text-gray-500 font-medium">
           All staff
@@ -81,21 +90,23 @@ const Leaderboard = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm table-fixed">
-            {/* Table Header */}
+            {/* Header */}
             <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-4 py-3 text-left w-[120px]">Rank</th>
-                <th className="px-4 py-3 text-left w-[300px]">Agent</th>
+                <th className="px-4 py-3 text-left w-[280px]">Agent</th>
 
-                <th className="px-4 py-3 text-center">Orders</th>
+                <th className="px-4 py-3 text-center">Target Achieved</th>
+                <th className="px-4 py-3 text-center">Orders Delivered</th>
                 <th className="px-4 py-3 text-center">Sales</th>
                 <th className="px-4 py-3 text-center">Collected</th>
                 <th className="px-4 py-3 text-center">Returns</th>
                 <th className="px-4 py-3 text-center">Stores</th>
+                <th className="px-4 py-3 text-center">Earned</th>
               </tr>
             </thead>
 
-            {/* Table Body */}
+            {/* Body */}
             <tbody>
               {data.map((user, index) => (
                 <tr
@@ -122,11 +133,16 @@ const Leaderboard = () => {
                       <div>
                         <p className="font-medium text-gray-800">{user.name}</p>
                         <p className="text-xs text-gray-500">{user.agentId}</p>
+                        <p className="text-xs text-gray-400">{user.state}</p>
                       </div>
                     </div>
                   </td>
 
-                  {/* Data columns */}
+                  {/* New Column */}
+                  <td className="px-4 py-3 text-center text-orange-500 font-medium">
+                    {user.completedTargets}
+                  </td>
+
                   <td className="px-4 py-3 text-center">
                     {user.ordersDelivered}
                   </td>
@@ -142,13 +158,18 @@ const Leaderboard = () => {
                   <td className="px-4 py-3 text-center">
                     {user.storesCreated}
                   </td>
+
+                  {/* 💰 Earned */}
+                  <td className="px-4 py-3 text-center text-green-600 font-semibold">
+                    ₹{user.earnedAmount}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Empty State */}
+        {/* Empty */}
         {data.length === 0 && (
           <div className="p-5 text-center text-gray-400">
             No leaderboard data
