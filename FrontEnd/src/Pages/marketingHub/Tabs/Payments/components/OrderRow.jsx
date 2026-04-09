@@ -34,97 +34,158 @@ const OrderRow = ({ order, onPayNow }) => {
   };
 
   return (
-    <div className="flex justify-between items-center border border-gray-200 rounded-lg p-4 bg-white hover:bg-gray-50 transition">
-      {/* LEFT: Order Info */}
-      <div className="flex flex-col">
-        {/* Order No */}
-        <p className="font-semibold text-gray-800 text-sm md:text-base">
-          {order.orderNo}
-        </p>
-
-        {/* Date */}
-        <p className="text-xs text-gray-500">
-          {new Date(order.createdAt).toLocaleDateString()}
-        </p>
-      </div>
-
-      {/* CENTER: Amounts */}
-      <div className="flex items-center gap-6">
-        {/* Total */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500">Total</p>
-          <p className="text-sm font-semibold text-gray-800">
-            ₹ {order.totalAmount}
+    <div className="border border-gray-200 rounded-lg p-3 md:p-4 bg-white hover:bg-gray-50 transition">
+      {/* DESKTOP VIEW */}
+      <div className="hidden md:flex justify-between items-center">
+        {/* LEFT */}
+        <div className="flex flex-col">
+          <p className="font-semibold text-gray-800 text-sm md:text-base">
+            {order.orderNo}
+          </p>
+          <p className="text-xs text-gray-500">
+            {new Date(order.createdAt).toLocaleDateString()}
           </p>
         </div>
 
-        {/* Paid */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500">Paid</p>
-          <p className="text-sm font-semibold text-green-700">
-            ₹ {order.paidAmount}
-          </p>
+        {/* CENTER */}
+        <div className="flex items-center gap-6">
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Total</p>
+            <p className="text-sm font-semibold text-gray-800">
+              ₹ {order.totalAmount}
+            </p>
+          </div>
+
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Paid</p>
+            <p className="text-sm font-semibold text-green-700">
+              ₹ {order.paidAmount}
+            </p>
+          </div>
+
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Due</p>
+            <p className="text-sm font-semibold text-yellow-700">
+              ₹ {order.dueAmount}
+            </p>
+          </div>
         </div>
 
-        {/* Due */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500">Due</p>
-          <p className="text-sm font-semibold text-yellow-700">
-            ₹ {order.dueAmount}
-          </p>
-        </div>
-      </div>
+        {/* RIGHT */}
+        <div className="flex items-center gap-4">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              order.paymentStatus === "COMPLETED"
+                ? "bg-green-100 text-green-700"
+                : "bg-yellow-100 text-yellow-700"
+            }`}>
+            {order.paymentStatus}
+          </span>
 
-      {/* RIGHT: Status + Action */}
-      <div className="flex items-center gap-4">
-        {/* Status */}
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-            order.paymentStatus === "COMPLETED"
-              ? "bg-green-100 text-green-700"
-              : "bg-yellow-100 text-yellow-700"
-          }`}>
-          {order.paymentStatus}
-        </span>
-
-        {/* Button */}
-        <Button
-          variant="contained"
-          size="small"
-          onClick={
-            order.paymentStatus !== "COMPLETED"
-              ? () => onPayNow(order)
-              : undefined
-          }
-          sx={{
-            textTransform: "none",
-            borderRadius: "8px",
-            fontWeight: 500,
-            px: 2,
-            backgroundColor:
-              order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
-            "&:hover": {
+          <Button
+            variant="contained"
+            size="small"
+            onClick={
+              order.paymentStatus !== "COMPLETED"
+                ? () => onPayNow(order)
+                : undefined
+            }
+            sx={{
+              textTransform: "none",
+              borderRadius: "8px",
+              fontWeight: 500,
+              px: 2,
               backgroundColor:
                 order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
-            },
-          }}>
-          {order.paymentStatus === "COMPLETED" ? "PAID" : "Pay Now"}
-        </Button>
-
-        {/* Download Invoice Icon */}
-        <Tooltip title="Download invoice">
-          <IconButton
-            onClick={handleDownloadInvoice}
-            size="small"
-            sx={{
-              color: "#626262",
               "&:hover": {
-                color: "#515151",
+                backgroundColor:
+                  order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
               },
             }}>
-            <DescriptionIcon />
-          </IconButton>
-        </Tooltip>
+            {order.paymentStatus === "COMPLETED" ? "PAID" : "Pay Now"}
+          </Button>
+
+          <Tooltip title="Download invoice">
+            <IconButton onClick={handleDownloadInvoice} size="small">
+              <DescriptionIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </div>
+
+      {/* MOBILE VIEW */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {/* TOP */}
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-semibold text-gray-800 text-sm">
+              {order.orderNo}
+            </p>
+            <p className="text-xs text-gray-500">
+              {new Date(order.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+
+          <span
+            className={`px-2 py-1 rounded-full text-[10px] font-medium ${
+              order.paymentStatus === "COMPLETED"
+                ? "bg-green-100 text-green-700"
+                : "bg-yellow-100 text-yellow-700"
+            }`}>
+            {order.paymentStatus}
+          </span>
+        </div>
+
+        {/* AMOUNTS */}
+        <div className="flex justify-between text-center">
+          <div>
+            <p className="text-[10px] text-gray-500">Total</p>
+            <p className="text-sm font-semibold">₹ {order.totalAmount}</p>
+          </div>
+
+          <div>
+            <p className="text-[10px] text-gray-500">Paid</p>
+            <p className="text-sm font-semibold text-green-700">
+              ₹ {order.paidAmount}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[10px] text-gray-500">Due</p>
+            <p className="text-sm font-semibold text-yellow-700">
+              ₹ {order.dueAmount}
+            </p>
+          </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex items-center gap-2">
+          <Button
+            fullWidth
+            variant="contained"
+            size="small"
+            onClick={
+              order.paymentStatus !== "COMPLETED"
+                ? () => onPayNow(order)
+                : undefined
+            }
+            sx={{
+              textTransform: "none",
+              borderRadius: "8px",
+              fontWeight: 500,
+              height: 36,
+              backgroundColor:
+                order.paymentStatus === "COMPLETED" ? "#40ac67" : undefined,
+            }}>
+            {order.paymentStatus === "COMPLETED" ? "PAID" : "Pay Now"}
+          </Button>
+
+          <Tooltip title="Download invoice">
+            <IconButton onClick={handleDownloadInvoice} size="small">
+              <DescriptionIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );

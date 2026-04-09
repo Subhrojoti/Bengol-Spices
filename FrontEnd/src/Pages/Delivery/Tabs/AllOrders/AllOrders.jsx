@@ -55,10 +55,10 @@ const AllOrders = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-64px)] bg-white px-8 py-6">
-      <div className="flex flex-col md:flex-row gap-8 w-full">
+    <div className="w-full min-h-[calc(90vh-64px)] bg-white px-8 py-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full h-[calc(90vh-64px)] md:h-auto">
         {/* LEFT PANEL */}
-        <div className="w-full md:w-1/3 border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="w-full md:w-1/3 border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-2/5 md:h-auto">
           {/* ===== TABS HEADER ===== */}
           <div className="relative">
             {/* Full width bottom line */}
@@ -92,7 +92,7 @@ const AllOrders = () => {
           </div>
 
           {/* ===== CONTENT SECTION (NOW PADDING HERE) ===== */}
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto flex-1">
             {activeTab === "ASSIGNED" ? (
               <AssignedOrders
                 type="LEFT"
@@ -114,7 +114,7 @@ const AllOrders = () => {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="w-full md:w-2/3 border border-gray-200 rounded-2xl p-8 flex flex-col">
+        <div className="w-full md:w-2/3 border border-gray-200 rounded-2xl p-6 md:p-8 flex flex-col h-3/5 md:h-auto overflow-y-auto">
           {activeTab === "ASSIGNED" ? (
             <AssignedOrders
               type="RIGHT"
