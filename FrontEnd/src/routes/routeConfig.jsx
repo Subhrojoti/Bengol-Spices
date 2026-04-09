@@ -23,6 +23,7 @@ import { footerRoutes } from "../config/footerRoutes.js";
 import { mapRoutes } from "../config/mapRoutes.jsx";
 import HomeBase from "../pages/common/HomeBase.jsx";
 import DeliveryProfile from "../components/profile/DeliveryProfile.jsx";
+import ErrorPage from "../components/common/ErrorPage.jsx";
 
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
@@ -33,6 +34,10 @@ export const routes = [
       // footer routes (about, careers, etc.)
       ...mapRoutes(footerRoutes),
     ],
+  },
+  {
+    path: "/error",
+    element: <ErrorPage />,
   },
   {
     path: "/admin/login",

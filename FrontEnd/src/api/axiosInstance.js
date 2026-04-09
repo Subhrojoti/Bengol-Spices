@@ -20,11 +20,10 @@ const getTokenByPath = () => {
     return localStorage.getItem("deliveryToken");
   }
 
-  // default → agent/app
   return localStorage.getItem("agentToken");
 };
 
-/* REQUEST INTERCEPTOR */
+/* 🔹 REQUEST INTERCEPTOR */
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getTokenByPath();
@@ -33,7 +32,6 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Handle FormData correctly
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
     } else {
@@ -43,6 +41,49 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
+);
+
+/* 🔴 RESPONSE INTERCEPTOR (GLOBAL ERROR HANDLING) */
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    // 🔐 Unauthorized / Token expired
+    if (status === 401) {
+      console.warn("Unauthorized - Redirecting to login");
+
+      // Optional: clear token
+      localStorage.clear();
+
+      window.location.href = "/login";
+    }
+
+    // ⛔ Forbidden
+    else if (status === 403) {
+      console.warn("Forbidden access");
+    }
+
+    // 🔥 Server error → show full screen error page
+    else if (status >= 500) {
+      console.error("Server error - Redirecting to error page");
+
+      if (window.location.pathname !== "/error") {
+        window.location.href = "/error";
+      }
+    }
+
+    // 🌐 Network error (backend down / no internet)
+    else if (!error.response) {
+      console.error("Network error");
+
+      if (window.location.pathname !== "/error") {
+        window.location.href = "/error";
+      }
+    }
+
+    return Promise.reject(error);
+  },
 );
 
 export default axiosInstance;
