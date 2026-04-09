@@ -24,7 +24,16 @@ BackEnd
 
 Future Enhancement 
 
-Currently we can place order even product doesnot exist - need to fix 
+- Assign Location Revoke
+- CSV file transfer
+- Dynamic Login Image Change Througn Admin Pannel
+- Auto Suggent State-Wise/nearest Delivery Partner (During Assign Delivery)
+- Delete Employee
+- Auto reminder before due date
+-🔐 Webhook (auto verify instead of frontend)
+- Websocket For Live Chat
+- Assign Location to Agent History
+
 
 Need to Fix
 - My cart Icon update Issue
@@ -46,6 +55,11 @@ Agent DashBoard
 Employee Dashboard ---> same as Admin Dashboard
 Integration of Product Barcode Scan//
 -CSV file transfer
+
+Bank Details - Admin Screen
+Agent Detils underOder ID
+Agent Target
+
 
 Need One Search API for Admin and Employee so that They can search anyAgent By agentID
 

@@ -9,7 +9,6 @@ import {
   updateProduct,
 } from "../controllers/product.controller.js";
 import { protect } from "../middleware/auth.js";
-// import { isAdminOrAllowedEmployee } from "../middleware/role.js";
 import { upload } from "../middleware/upload.js";
 import { checkPermission } from "../middleware/permission.js";
 
