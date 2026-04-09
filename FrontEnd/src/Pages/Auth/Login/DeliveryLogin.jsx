@@ -85,10 +85,23 @@ export default function DeliveryLogin() {
         background:
           "radial-gradient(circle at top, #a5f3fc 0%, #06b6d4 40%, #0f766e 100%)",
         display: "flex",
+
         alignItems: "center",
+        justifyContent: "center",
+
+        px: 2,
       }}>
-      <Container maxWidth="md">
-        <Box sx={{ position: "relative", height: 540 }}>
+      <Container maxWidth="md" sx={{ px: { xs: 2, md: 0 } }}>
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            height: { xs: "auto", md: 540 },
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
           {/* LEFT SLIDER */}
           <Paper
             elevation={10}
@@ -166,20 +179,29 @@ export default function DeliveryLogin() {
           <Paper
             elevation={14}
             sx={{
-              width: 400,
-              p: 4,
+              width: { xs: "100%", sm: 380, md: 400 },
+              maxWidth: 420,
+              p: { xs: 3, md: 4 },
               borderRadius: 2,
-              position: "absolute",
-              right: 0,
-              top: "50%",
-              transform: "translateY(-50%)",
+
+              position: { xs: "relative", md: "absolute" },
+              top: { md: "50%" },
+              right: { md: 0 },
+              transform: { xs: "none", md: "translateY(-50%)" },
+
               backgroundColor: "#fff",
+
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
             }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              gutterBottom
+              sx={{ mb: 1 }}>
               Delivery Partner Login
             </Typography>
 
-            <Typography variant="body2" sx={{ color: "#0a4540", mb: 3 }}>
+            <Typography variant="body2" sx={{ color: "#0a4540", mb: 2 }}>
               Sign in to access your delivery dashboard
             </Typography>
 
