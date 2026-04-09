@@ -21,7 +21,7 @@ import PermissionGuard from "../components/common/PermissionGuard.jsx";
 import PublicRoute from "../routes/PublicRoute";
 import { footerRoutes } from "../config/footerRoutes.js";
 import { mapRoutes } from "../config/mapRoutes.jsx";
-import HomeBase from "../pages/common/HomeBase.jsx";
+import HomeBase from "../Pages/common/HomeBase.jsx";
 import DeliveryProfile from "../components/profile/DeliveryProfile.jsx";
 import ErrorPage from "../components/common/ErrorPage.jsx";
 
