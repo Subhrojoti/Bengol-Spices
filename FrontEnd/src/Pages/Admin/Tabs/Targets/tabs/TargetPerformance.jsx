@@ -9,6 +9,7 @@ import {
   Avatar,
 } from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import { getTargetPerformance } from "../../../../../api/services";
@@ -127,144 +128,171 @@ export default function TargetPerformance() {
   // ================= UI =================
   return (
     <Box sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 3 }}>
-      <Typography variant="h6" fontWeight={700} mb={3}>
-        Target Performance
-      </Typography>
+      {/* ✅ FALLBACK UI */}
+      {data.length === 0 ? (
+        <Box
+          sx={{
+            height: "75vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#94a3b8",
+          }}>
+          <Avatar
+            sx={{
+              bgcolor: "#e2e8f0",
+              width: 60,
+              height: 60,
+              mb: 2,
+            }}>
+            <BarChartIcon sx={{ fontSize: 40, color: "#64748b" }} />
+          </Avatar>
 
-      <Grid container spacing={2}>
-        {data.map((agent, index) => {
-          const total = agent.totalTarget || 0;
-          const completed = agent.completedTarget || 0;
-          const progress =
-            total > 0 ? Math.round((completed / total) * 100) : 0;
+          <Typography fontSize={16} fontWeight={600}>
+            No Data Available
+          </Typography>
 
-          const color = getColor(progress);
+          <Typography variant="body">
+            Target performance data will appear here
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          {data.map((agent, index) => {
+            const total = agent.totalTarget || 0;
+            const completed = agent.completedTarget || 0;
+            const progress =
+              total > 0 ? Math.round((completed / total) * 100) : 0;
 
-          return (
-            <Grid
-              item
-              key={index}
-              sx={{
-                width: 260,
-              }}>
-              <Card
+            const color = getColor(progress);
+
+            return (
+              <Grid
+                item
+                key={index}
                 sx={{
-                  borderRadius: 4,
-                  height: 290,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  p: 1,
-                  background: "linear-gradient(180deg, #ffffff, #f1f5f9)",
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                  transition: "0.25s",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
-                  },
+                  width: 260,
                 }}>
-                <CardContent>
-                  {/* HEADER */}
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Avatar
-                      sx={{
-                        bgcolor: "#6366f1",
-                        width: 38,
-                        height: 38,
-                        fontSize: 14,
-                        mr: 1,
-                      }}>
-                      {agent.agentName?.charAt(0)}
-                    </Avatar>
+                <Card
+                  sx={{
+                    borderRadius: 4,
+                    height: 290,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    p: 1,
+                    background: "linear-gradient(180deg, #ffffff, #f1f5f9)",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                    transition: "0.25s",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+                    },
+                  }}>
+                  <CardContent>
+                    {/* HEADER */}
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <Avatar
+                        sx={{
+                          bgcolor: "#6366f1",
+                          width: 38,
+                          height: 38,
+                          fontSize: 14,
+                          mr: 1,
+                        }}>
+                        {agent.agentName?.charAt(0)}
+                      </Avatar>
 
-                    <Box>
-                      <Typography fontWeight={600} fontSize={14}>
-                        {agent.agentName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Agent
-                      </Typography>
+                      <Box>
+                        <Typography fontWeight={600} fontSize={14}>
+                          {agent.agentName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Agent
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
 
-                  {/* RADIAL PROGRESS */}
+                    {/* RADIAL PROGRESS */}
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      position="relative"
+                      mb={2}>
+                      <CircularProgress
+                        variant="determinate"
+                        value={progress}
+                        size={80}
+                        thickness={5}
+                        sx={{
+                          color,
+                        }}
+                      />
+
+                      <Box
+                        position="absolute"
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center">
+                        <Typography fontWeight={700} fontSize={16}>
+                          {progress}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Done
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* TARGET BREAKDOWN */}
+                    <Box display="flex" flexWrap="wrap" gap={1}>
+                      {Object.entries(agent.targets || {}).map(
+                        ([type, value]) => (
+                          <Box
+                            key={type}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 2,
+                              fontSize: 11,
+                              background: getBg(type),
+                            }}>
+                            {getIcon(type)}
+                            <span>
+                              {formatType(type)} ({value})
+                            </span>
+                          </Box>
+                        ),
+                      )}
+                    </Box>
+                  </CardContent>
+
+                  {/* FOOTER */}
                   <Box
                     display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    position="relative"
-                    mb={2}>
-                    <CircularProgress
-                      variant="determinate"
-                      value={progress}
-                      size={80}
-                      thickness={5}
-                      sx={{
-                        color,
-                      }}
-                    />
+                    justifyContent="space-between"
+                    px={2}
+                    pb={1}>
+                    <Typography variant="body" color="text.secondary">
+                      {completed}/{total}
+                    </Typography>
 
-                    <Box
-                      position="absolute"
-                      display="flex"
-                      flexDirection="column"
-                      alignItems="center">
-                      <Typography fontWeight={700} fontSize={16}>
-                        {progress}%
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Done
-                      </Typography>
-                    </Box>
+                    <Typography
+                      variant="body"
+                      sx={{ fontWeight: 700, color: "#16a34a" }}>
+                      ₹{agent.totalEarned}
+                    </Typography>
                   </Box>
-
-                  {/* TARGET BREAKDOWN */}
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {Object.entries(agent.targets || {}).map(
-                      ([type, value]) => (
-                        <Box
-                          key={type}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: 2,
-                            fontSize: 11,
-                            background: getBg(type),
-                          }}>
-                          {getIcon(type)}
-                          <span>
-                            {formatType(type)} ({value})
-                          </span>
-                        </Box>
-                      ),
-                    )}
-                  </Box>
-                </CardContent>
-
-                {/* FOOTER */}
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  px={2}
-                  pb={1}>
-                  <Typography variant="body" color="text.secondary">
-                    {completed}/{total}
-                  </Typography>
-
-                  <Typography
-                    variant="body"
-                    sx={{ fontWeight: 700, color: "#16a34a" }}>
-                    ₹{agent.totalEarned}
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
     </Box>
   );
 }

@@ -23,9 +23,13 @@ const ErrorPage = ({ message = "Something went wrong", onRetry }) => {
           Relax, take it easy.
         </p>
 
-        <p className="text-sm sm:text-base mb-4">
-          <span className="text-red-500 font-medium">Error:</span>{" "}
-          <span className="text-gray-500 break-words">{message}</span>
+        <p className="text-sm sm:text-base flex flex-col mb-4">
+          {/* <span className="text-red-500 font-medium">Error:</span>{" "} */}
+          {/* <span className="text-gray-500 break-words">{message}</span> */}
+          <span className="text-red-500 break-words">Something went wrong</span>
+          <span className="text-gray-500 break-words">
+            Please check again after sometime
+          </span>
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
