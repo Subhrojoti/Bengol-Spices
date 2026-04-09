@@ -1,4 +1,3 @@
-import Home from "../pages/common/HomeBase.jsx";
 import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import AgentLogin from "../pages/Auth/Login/AgentLogin";
 import AdminLogin from "../pages/Auth/Login/AdminLogin";
