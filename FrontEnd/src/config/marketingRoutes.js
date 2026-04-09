@@ -1,7 +1,7 @@
 import { lazy } from "react";
 
 export const MarketingHub = lazy(
-  () => import("../pages/MarketingHub/MarketingHub"),
+  () => import("../Pages/MarketingHub/MarketingHub"),
 );
 
 export const marketingRoutes = [
@@ -10,28 +10,28 @@ export const marketingRoutes = [
     path: "overview",
     fullPath: "/marketing/overview",
     component: lazy(
-      () => import("../pages/MarketingHub/Tabs/Overview/Overview"),
+      () => import("../Pages/MarketingHub/Tabs/Overview/Overview"),
     ),
   },
   {
     label: "Store Creation",
     path: "storeCreation",
     fullPath: "/marketing/storeCreation",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/StoreCreation")),
+    component: lazy(() => import("../Pages/MarketingHub/Tabs/StoreCreation")),
   },
   {
     label: "My Stores",
     path: "myStores",
     fullPath: "/marketing/myStores",
     component: lazy(
-      () => import("../pages/MarketingHub/Tabs/MyStores/MyStoresBase"),
+      () => import("../Pages/MarketingHub/Tabs/MyStores/MyStoresBase"),
     ),
   },
   {
     label: "Targets",
     path: "daily-targets",
     fullPath: "/marketing/daily-targets",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/Targets/Targets")),
+    component: lazy(() => import("../Pages/MarketingHub/Tabs/Targets/Targets")),
   },
 
   {
@@ -39,7 +39,7 @@ export const marketingRoutes = [
     path: "payments",
     fullPath: "/marketing/payments",
     component: lazy(
-      () => import("../pages/MarketingHub/Tabs/Payments/PaymentManagement"),
+      () => import("../Pages/MarketingHub/Tabs/Payments/PaymentManagement"),
     ),
   },
   {
@@ -47,13 +47,13 @@ export const marketingRoutes = [
     path: "leaderboard",
     fullPath: "/marketing/leaderboard",
     component: lazy(
-      () => import("../pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
+      () => import("../Pages/MarketingHub/Tabs/Leaderboard/Leaderboard"),
     ),
   },
   {
     label: "Wallet",
     path: "wallet",
     fullPath: "/marketing/wallet",
-    component: lazy(() => import("../pages/MarketingHub/Tabs/Wallet/Wallet")),
+    component: lazy(() => import("../Pages/MarketingHub/Tabs/Wallet/Wallet")),
   },
 ];
