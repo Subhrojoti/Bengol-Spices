@@ -65,13 +65,13 @@ const DeliveryPanel = () => {
   }));
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen space-y-10">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-[100svh] md:min-h-screen space-y-6 md:space-y-10">
       {/* KPI CARDS */}
-      <div className="grid grid-cols-3 gap-6 max-w-8xl mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 max-w-8xl mx-auto">
         {/* Delivered */}
-        <div className="bg-white p-6 rounded-xl shadow">
+        <div className="bg-white p-4 md:p-6 rounded-xl shadow">
           <p className="text-gray-500 text-sm">Total Delivered</p>
-          <h2 className="text-2xl font-bold text-green-600 mb-3">
+          <h2 className="text-xl md:text-2xl font-bold text-green-600 mb-3">
             {summary.totalDelivered}
           </h2>
 
@@ -130,12 +130,12 @@ const DeliveryPanel = () => {
       </div>
 
       {/* MONTHLY DISTRIBUTION */}
-      <div className="bg-white p-8 rounded-xl shadow max-w-8xl mx-auto">
+      <div className="bg-white p-4 md:p-8 rounded-xl shadow max-w-8xl mx-auto">
         <h2 className="text-lg font-semibold mb-6">
           Monthly Delivery Distribution
         </h2>
 
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={220} className="md:h-[300px]">
           <AreaChart data={monthlyDeliveryDistribution}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
@@ -170,7 +170,7 @@ const DeliveryPanel = () => {
           Yearly Delivery Comparison
         </h2>
 
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={180} className="md:h-[300px]">
           <RadialBarChart
             innerRadius="20%"
             outerRadius="90%"
@@ -198,7 +198,7 @@ const DeliveryPanel = () => {
         </ResponsiveContainer>
 
         {/* Year labels */}
-        <div className="flex justify-center gap-20 mt-[-5rem]">
+        <div className="flex justify-center gap-6 md:gap-20 mt-4 flex-wrap">
           {yearlyComparison.map((year) => (
             <div key={year.year} className="text-center">
               <p className="text-sm text-gray-500">{year.year}</p>

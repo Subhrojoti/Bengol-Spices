@@ -21,9 +21,15 @@ const Targets = () => {
   const fetchTarget = async () => {
     try {
       const res = await getDailyTarget();
+
+      if (res?.success && (!res.targets || res.targets.length === 0)) {
+        setTargets([]);
+        return;
+      }
+
       if (res?.success) {
         const merged = res.targets.map((t) => {
-          const progressItem = res.progress.find((p) => p.targetId === t._id);
+          const progressItem = res.progress?.find((p) => p.targetId === t._id);
 
           return {
             ...t,
@@ -35,9 +41,10 @@ const Targets = () => {
 
         setTargets(merged);
       } else {
-        toast.error("Failed to fetch target");
+        toast.error(res?.message || "Failed to fetch target");
       }
-    } catch {
+    } catch (err) {
+      console.error("Target API error:", err);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);

@@ -79,10 +79,25 @@ export default function Login() {
         background:
           "radial-gradient(circle at top, #fde68a 0%, #f59e0b 45%, #f59e0b 100%)",
         display: "flex",
-        alignItems: "center",
+
+        // ✅ FIXED ALIGNMENT
+        alignItems: { xs: "center", md: "center" },
+        justifyContent: "center",
+
+        // ✅ REMOVE EXTRA SPACE
+        px: 2,
       }}>
-      <Container maxWidth="md">
-        <Box sx={{ position: "relative", height: 540 }}>
+      <Container maxWidth="md" sx={{ px: { xs: 2, md: 0 } }}>
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            height: { xs: "auto", md: 540 },
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
           {/* LEFT SLIDER */}
           <Paper
             elevation={10}
@@ -163,20 +178,31 @@ export default function Login() {
           <Paper
             elevation={14}
             sx={{
-              width: 400,
-              p: 4,
+              width: { xs: "100%", sm: 380, md: 400 },
+              maxWidth: 420,
+              p: { xs: 3, md: 4 },
               borderRadius: 2,
-              position: "absolute",
-              right: 0,
-              top: "50%",
-              transform: "translateY(-50%)",
+
+              // ✅ KEY FIX
+              position: { xs: "relative", md: "absolute" },
+              top: { md: "50%" },
+              right: { md: 0 },
+              transform: { xs: "none", md: "translateY(-50%)" },
+
               backgroundColor: "#fff",
+
+              // ✅ BETTER MOBILE LOOK
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
             }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              gutterBottom
+              sx={{ mb: 1 }}>
               Agent Login
             </Typography>
 
-            <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
               Sign in to manage your Bengol Spices account
             </Typography>
 
