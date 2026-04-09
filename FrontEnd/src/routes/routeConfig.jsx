@@ -4,7 +4,7 @@ import AdminLogin from "../Pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../Pages/Auth/Agent/AgentOnboarding";
 import { adminRoutes } from "../config/adminRoutes";
-import ProfileSettings from "../Pages/MarketingHub/ProfileSettings/ProfileSettings.jsx";
+import ProfileSettings from "../Pages/marketingHub/ProfileSettings/ProfileSettings.jsx";
 import SetPassword from "../Pages/Auth/Agent/AgentSetPassword";
 import DeliveryPartnerRegister from "../Pages/Auth/DeliveryPartner/DeliveryPartnerRegister";
 import AdminBase from "../Pages/Admin/AdminBase";
