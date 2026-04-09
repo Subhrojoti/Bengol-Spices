@@ -6,13 +6,13 @@ import Agent from "../models/Agent.js";
 import Employee from "../models/Employee.js";
 import Product from "../models/Product.js";
 import DeliveryPartner from "../models/DeliveryPartner.js";
+import AgentIncentiveLedger from "../models/AgentIncentiveLedger.js";
 
-// Agent Dashboard Service
 export const getAgentDashboard = async ({ agentId, from, to }) => {
   const start = new Date(from);
   const end = new Date(to);
+  end.setHours(23, 59, 59, 999);
 
-  // 🔥 COMMON MATCH
   const orderMatch = {
     agentId,
     createdAt: { $gte: start, $lte: end },
@@ -23,50 +23,38 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     createdAt: { $gte: start, $lte: end },
   };
 
-  const progressMatch = {
-    agentId,
-    createdAt: { $gte: start, $lte: end },
-  };
-
   const storeMatch = {
     registeredBy: agentId,
-    createdAt: { $gte: start, $lte: end },
   };
 
-  // 🚀 PARALLEL EXECUTION (VERY IMPORTANT)
+  // =========================
+  // 🚀 PARALLEL (EXCEPT INCENTIVE)
+  // =========================
   const [orderData, returnData, progressData, storeCount] = await Promise.all([
-    // =========================
-    // 🟢 ORDER AGGREGATION
-    // =========================
     Order.aggregate([
       { $match: orderMatch },
-
       {
         $facet: {
           summary: [
             {
               $group: {
                 _id: null,
-
                 totalOrdersDelivered: {
                   $sum: {
                     $cond: [{ $eq: ["$status", "DELIVERED"] }, 1, 0],
                   },
                 },
-
                 totalCancelled: {
                   $sum: {
                     $cond: [{ $eq: ["$status", "CANCELLED"] }, 1, 0],
                   },
                 },
-
                 totalSalesAmount: { $sum: "$totalAmount" },
                 totalCollected: { $sum: "$paidAmount" },
                 totalDue: { $sum: "$dueAmount" },
               },
             },
           ],
-
           monthly: [
             {
               $group: {
@@ -74,19 +62,16 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
                   month: { $month: "$createdAt" },
                   year: { $year: "$createdAt" },
                 },
-
                 ordersDelivered: {
                   $sum: {
                     $cond: [{ $eq: ["$status", "DELIVERED"] }, 1, 0],
                   },
                 },
-
                 cancelled: {
                   $sum: {
                     $cond: [{ $eq: ["$status", "CANCELLED"] }, 1, 0],
                   },
                 },
-
                 sales: { $sum: "$totalAmount" },
                 collected: { $sum: "$paidAmount" },
                 due: { $sum: "$dueAmount" },
@@ -98,9 +83,6 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
       },
     ]),
 
-    // =========================
-    // 🔴 RETURNS
-    // =========================
     Return.aggregate([
       { $match: returnMatch },
       {
@@ -111,40 +93,60 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
       },
     ]),
 
-    // =========================
-    // 🟡 TARGET + INCENTIVE
-    // =========================
     AgentTargetProgress.aggregate([
-      { $match: progressMatch },
+      {
+        $match: { agentId },
+      },
       {
         $group: {
           _id: null,
-          totalIncentive: { $sum: "$incentiveEarned" },
           targetAchievedCount: {
             $sum: {
-              $cond: ["$targetAchieved", 1, 0],
+              $cond: [{ $eq: ["$isCompleted", true] }, 1, 0],
             },
           },
         },
       },
     ]),
 
-    // =========================
-    // 🟣 STORE COUNT
-    // =========================
     Store.countDocuments(storeMatch),
   ]);
 
   // =========================
-  // 🧠 FORMAT DATA
+  // 💰 INCENTIVE (EXACT COPY FROM WORKING API)
   // =========================
+  const incentiveSummary = await AgentIncentiveLedger.aggregate([
+    {
+      $match: { agentId },
+    },
+    {
+      $group: {
+        _id: "$agentId",
+        totalEarned: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "EARNING"] }, "$amount", 0],
+          },
+        },
+        totalPaid: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "PAYOUT"] }, "$amount", 0],
+          },
+        },
+      },
+    },
+  ]);
 
+  const earned = incentiveSummary[0]?.totalEarned || 0;
+  const paid = incentiveSummary[0]?.totalPaid || 0;
+  const netIncentive = earned - paid;
+
+  // =========================
+  // 🧠 FORMAT
+  // =========================
   const summary = orderData[0]?.summary[0] || {};
-
   const returns = returnData[0]?.totalReturns || 0;
   const progress = progressData[0] || {};
 
-  // 🗓️ MONTH FORMAT
   const monthNames = [
     "",
     "Jan",
@@ -170,10 +172,6 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     collected: m.collected,
     due: m.due,
   }));
-
-  // =========================
-  // 🧠 FILL MISSING MONTHS (VERY IMPORTANT)
-  // =========================
 
   const fillMissingMonths = (monthly, from, to) => {
     const result = [];
@@ -211,9 +209,6 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     return result;
   };
 
-  // =========================
-  // 🎯 FINAL RESPONSE
-  // =========================
   const finalMonthly = fillMissingMonths(monthly, from, to);
 
   const calculateGrowth = (monthly) => {
@@ -227,6 +222,14 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     return (((last - prev) / prev) * 100).toFixed(2);
   };
 
+  // console.log("DASHBOARD AGENT ID:", agentId);
+  // const rawLedger = await AgentIncentiveLedger.find({ agentId });
+  // console.log("RAW LEDGER DATA:", rawLedger);
+  // console.log("INCENTIVE AGG:", incentiveSummary);
+
+  // =========================
+  // 🎯 FINAL
+  // =========================
   return {
     summary: {
       totalOrdersDelivered: summary.totalOrdersDelivered || 0,
@@ -235,7 +238,13 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
       totalSalesAmount: summary.totalSalesAmount || 0,
       totalCollected: summary.totalCollected || 0,
       totalDue: summary.totalDue || 0,
-      totalIncentive: progress.totalIncentive || 0,
+
+      // ✅ FIXED (SHOW EARNED INSTEAD OF NET)
+      totalIncentive: earned,
+
+      totalEarned: earned,
+      totalPaid: paid,
+
       targetAchievedCount: progress.targetAchievedCount || 0,
       totalStoresCreated: storeCount || 0,
     },
@@ -246,7 +255,6 @@ export const getAgentDashboard = async ({ agentId, from, to }) => {
     },
   };
 };
-
 // Admin Dashboard Service
 export const getAdminDashboard = async ({ year }) => {
   const startOfYear = new Date(year, 0, 1);
