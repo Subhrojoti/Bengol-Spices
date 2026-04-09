@@ -297,14 +297,19 @@ const ViewOrders = ({ onBack, onCreate }) => {
   return (
     <Box
       display="flex"
-      height="90vh"
+      flexDirection={{ xs: "column", md: "row" }}
+      height={{ xs: "auto", md: "90vh" }}
       bgcolor="#f9fafb"
-      p={2}
-      gap={2}
-      overflow="hidden">
+      p={{ xs: 1, md: 2 }}
+      gap={2}>
       {/* ================= LEFT PANEL ================= */}
 
-      <Box width={320} display="flex" flexDirection="column" gap={2}>
+      <Box
+        width={{ xs: "100%", md: 320 }}
+        minWidth={{ md: 280 }}
+        display="flex"
+        flexDirection="column"
+        gap={2}>
         {/* STORE CARD */}
 
         <Card sx={{ borderRadius: 3 }}>
@@ -361,7 +366,13 @@ const ViewOrders = ({ onBack, onCreate }) => {
 
         {/* MAP */}
 
-        <Card sx={{ flex: 1, borderRadius: 3, overflow: "hidden" }}>
+        <Card
+          sx={{
+            flex: 1,
+            borderRadius: 3,
+            overflow: "hidden",
+            height: { xs: 200, md: "100%" },
+          }}>
           {latitude && longitude ? (
             <Box
               component="iframe"
@@ -398,7 +409,9 @@ const ViewOrders = ({ onBack, onCreate }) => {
             <Box
               display="flex"
               alignItems="center"
-              justifyContent={"space-between"}
+              justifyContent="space-between"
+              gap={1}
+              flexWrap="wrap"
               mb={2}>
               <IconButton onClick={onBack}>
                 <ArrowBackIcon />
@@ -436,38 +449,52 @@ const ViewOrders = ({ onBack, onCreate }) => {
                 })}
               </Menu>
             </Box>
+            <Box
+              sx={{
+                overflowX: "auto",
+                "&::-webkit-scrollbar": { display: "none" },
+              }}>
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                sx={{ minWidth: 600 }}>
+                {(selectedReturn ? returnSteps : orderSteps).map(
+                  (step, index) => {
+                    const isActive = index === activeStep;
+                    const isCompleted = index < activeStep;
 
-            <Stepper activeStep={activeStep} alternativeLabel>
-              {(selectedReturn ? returnSteps : orderSteps).map(
-                (step, index) => {
-                  const isActive = index === activeStep;
-                  const isCompleted = index < activeStep;
-
-                  return (
-                    <Step key={step.key} completed={isCompleted}>
-                      <StepLabel
-                        StepIconComponent={(props) => (
-                          <CustomStepIcon
-                            {...props}
-                            active={isActive}
-                            completed={isCompleted}
-                            icon={step.icon}
-                          />
-                        )}>
-                        <Typography variant="caption" fontWeight={600}>
-                          {step.label}
-                        </Typography>
-                      </StepLabel>
-                    </Step>
-                  );
-                },
-              )}
-            </Stepper>
+                    return (
+                      <Step key={step.key} completed={isCompleted}>
+                        <StepLabel
+                          StepIconComponent={(props) => (
+                            <CustomStepIcon
+                              {...props}
+                              active={isActive}
+                              completed={isCompleted}
+                              icon={step.icon}
+                            />
+                          )}>
+                          <Typography variant="caption" fontWeight={600}>
+                            {step.label}
+                          </Typography>
+                        </StepLabel>
+                      </Step>
+                    );
+                  },
+                )}
+              </Stepper>
+            </Box>
           </Box>
 
           {/* ===== ORDERS LIST ===== */}
 
-          <Paper sx={{ flex: 1, p: 2, borderRadius: 3, overflowY: "auto" }}>
+          <Paper
+            sx={{
+              flex: 1,
+              p: { xs: 1, md: 2 },
+              borderRadius: 3,
+              overflowY: { md: "auto" },
+            }}>
             <Stack spacing={2}>
               {filteredOrders.map((order) => {
                 const normalized = normalizeStatus(order.status);
@@ -511,12 +538,12 @@ const ViewOrders = ({ onBack, onCreate }) => {
                               prev === order.orderId ? null : order.orderId,
                             )
                           }>
-                          <div className="flex items-center gap-3 w-full">
+                          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
                             <Avatar
                               variant="rounded"
                               sx={(theme) => ({
-                                width: 64,
-                                height: 64,
+                                width: { xs: 48, md: 64 },
+                                height: { xs: 48, md: 64 },
                                 bgcolor:
                                   theme.palette[
                                     isReturnCard ? "secondary" : chipColor
@@ -543,8 +570,8 @@ const ViewOrders = ({ onBack, onCreate }) => {
                               </Typography>
                             </div>
 
-                            <div className="text-right mr-2">
-                              <div className="flex items-center justify-end gap-1">
+                            <div className="text-left md:text-right w-full md:w-auto">
+                              <div className="flex flex-wrap md:justify-end gap-1">
                                 {normalized === "DELIVERED" &&
                                   !isReturnCard && (
                                     <Chip

@@ -34,7 +34,7 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="px-3 py-4 md:p-6">
       {/* Title */}
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Leaderboard</h2>
 
@@ -88,7 +88,7 @@ const Leaderboard = () => {
           All staff
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm table-fixed">
             {/* Header */}
             <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
@@ -167,6 +167,81 @@ const Leaderboard = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="md:hidden space-y-3 p-3">
+          {data.map((user, index) => (
+            <div
+              key={index}
+              className={`bg-white rounded-xl shadow-sm p-3 border ${
+                user.rank <= 3 ? "bg-yellow-50/40" : ""
+              }`}>
+              {/* TOP */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span>{user.medal}</span>
+                  <span className="font-semibold">{user.rank}</span>
+                </div>
+
+                <div className="text-green-600 font-semibold text-sm">
+                  ₹{user.earnedAmount}
+                </div>
+              </div>
+
+              {/* AGENT */}
+              <div className="flex items-center gap-3 mt-2">
+                <img
+                  src={user.profileImage}
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+
+                <div>
+                  <p className="font-medium text-sm">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.agentId}</p>
+                  <p className="text-xs text-gray-400">{user.state}</p>
+                </div>
+              </div>
+
+              {/* STATS */}
+              <div className="grid grid-cols-3 gap-2 text-center mt-3 text-xs">
+                <div>
+                  <p className="text-gray-400">Sales</p>
+                  <p className="font-semibold text-indigo-600">₹{user.sales}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-400">Orders</p>
+                  <p className="font-semibold">{user.ordersDelivered}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-400">Targets</p>
+                  <p className="font-semibold text-orange-500">
+                    {user.completedTargets}
+                  </p>
+                </div>
+              </div>
+
+              {/* EXTRA */}
+              <div className="grid grid-cols-3 gap-2 text-center mt-2 text-xs">
+                <div>
+                  <p className="text-gray-400">Collected</p>
+                  <p className="font-semibold">₹{user.collected}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-400">Returns</p>
+                  <p className="font-semibold">{user.returns}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-400">Stores</p>
+                  <p className="font-semibold">{user.storesCreated}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Empty */}

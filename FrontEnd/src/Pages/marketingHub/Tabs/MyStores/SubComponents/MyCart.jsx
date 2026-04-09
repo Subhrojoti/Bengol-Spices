@@ -286,10 +286,19 @@ const MyCart = ({ onBack }) => {
   /* ---------------- UI ---------------- */
 
   return (
-    <Box display="flex" height="100%">
+    <Box
+      display="flex"
+      flexDirection={{ xs: "column", md: "row" }}
+      height="100%">
       {/* LEFT */}
-      <Box flex={1} p={4} overflow="auto">
-        <Box display="flex" justifyContent="space-between" mb={3}>
+      <Box flex={1} p={{ xs: 2, md: 4 }} overflow="auto">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+          gap={1}
+          mb={3}>
           <Typography variant="h4" fontWeight={700}>
             Shopping Cart
           </Typography>
@@ -301,47 +310,40 @@ const MyCart = ({ onBack }) => {
         <Divider />
 
         {cartItems.map((item) => (
-          <Box key={item.id} py={3}>
-            <Box display="flex" alignItems="center" gap={2}>
+          <Box key={item.id} py={2}>
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1.5}
+              sx={{
+                flexWrap: "nowrap",
+              }}>
+              {/* IMAGE */}
               <Box
                 component="img"
                 src={item.image}
                 alt={item.name}
                 sx={{
-                  width: 72,
-                  height: 72,
+                  width: 56,
+                  height: 56,
                   borderRadius: 2,
                   objectFit: "cover",
                 }}
               />
 
-              <Box flex={1}>
-                <Typography fontWeight={600}>{item.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
+              {/* NAME + PRICE */}
+              <Box flex={1} minWidth={0}>
+                <Typography fontWeight={600} noWrap>
+                  {item.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
                   ₹{item.unitPrice} / {item.uom}
                 </Typography>
               </Box>
 
-              <Box display="flex" alignItems="center" gap={1}>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    if (item.quantity > 1) {
-                      dispatch(
-                        addToCart({
-                          consumerId,
-                          product: { ...item, quantity: -1 },
-                        }),
-                      );
-                    } else {
-                      dispatch(
-                        removeFromCart({
-                          consumerId,
-                          productId: item.id,
-                        }),
-                      );
-                    }
-                  }}>
+              {/* QUANTITY */}
+              <Box display="flex" alignItems="center" gap={0.5}>
+                <IconButton size="small">
                   <RemoveIcon fontSize="small" />
                 </IconButton>
 
@@ -349,50 +351,38 @@ const MyCart = ({ onBack }) => {
                   value={item.quantity}
                   size="small"
                   sx={{
-                    width: 48,
+                    width: 40,
                     "& input": {
                       textAlign: "center",
-                      fontSize: 13,
+                      fontSize: 12,
+                      padding: "6px 4px",
                     },
                   }}
                 />
 
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    dispatch(
-                      addToCart({
-                        consumerId,
-                        product: { ...item, quantity: 1 },
-                      }),
-                    )
-                  }>
+                <IconButton size="small">
                   <AddIcon fontSize="small" />
                 </IconButton>
-
-                <Typography variant="caption" color="text.secondary">
-                  {item.uom}
-                </Typography>
               </Box>
 
-              <Typography fontWeight={600} width={90} textAlign="right">
+              {/* PRICE */}
+              <Typography
+                fontWeight={600}
+                sx={{
+                  minWidth: 60,
+                  textAlign: "right",
+                  fontSize: 14,
+                }}>
                 ₹{item.unitPrice * item.quantity}
               </Typography>
 
-              <IconButton
-                onClick={() =>
-                  dispatch(
-                    removeFromCart({
-                      consumerId,
-                      productId: item.id,
-                    }),
-                  )
-                }>
-                <CloseIcon />
+              {/* DELETE */}
+              <IconButton size="small">
+                <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
 
-            <Divider sx={{ mt: 3 }} />
+            <Divider sx={{ mt: 2 }} />
           </Box>
         ))}
 
@@ -406,17 +396,27 @@ const MyCart = ({ onBack }) => {
 
       {/* RIGHT */}
       <Box
-        width={360}
-        p={4}
+        width={{ xs: "100%", md: 360 }}
+        p={{ xs: 2, md: 4 }}
         sx={{
           backgroundColor: "#f3f4f6",
-          borderLeft: "1px solid #e5e7eb",
+          borderLeft: { md: "1px solid #e5e7eb" },
+          borderTop: { xs: "1px solid #e5e7eb", md: "none" },
         }}>
         <Typography variant="h5" fontWeight={700} mb={3}>
           Summary
         </Typography>
 
-        <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          mb={2}
+          sx={{
+            position: { xs: "sticky", md: "static" },
+            bottom: 0,
+            zIndex: 10,
+            backgroundColor: "#f3f4f6",
+          }}>
           <Typography>ITEMS {cartItems.length}</Typography>
           <Typography>₹{subtotal}</Typography>
         </Box>
