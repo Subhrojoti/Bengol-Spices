@@ -6,6 +6,7 @@ import Product from "../models/Product.js";
 
 /* =====================================================
    ✅ CREATE TARGET (ADMIN)
+   🔥 FORCED 24 HOUR EXPIRY
 ===================================================== */
 export const createTarget = async (req, res) => {
   try {
@@ -17,18 +18,11 @@ export const createTarget = async (req, res) => {
       productCommissions,
       paymentConfig,
       startDate,
-      endDate,
+      endDate, // (kept for compatibility, but ignored)
     } = req.body;
 
-    // 🔴 BASIC VALIDATION
-    if (
-      !name ||
-      !type ||
-      !targetValue ||
-      !rewardAmount ||
-      !startDate ||
-      !endDate
-    ) {
+    // 🔴 BASIC VALIDATION (unchanged)
+    if (!name || !type || !targetValue || !rewardAmount || !startDate) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
@@ -48,6 +42,10 @@ export const createTarget = async (req, res) => {
       }
     }
 
+    // ✅ FORCE 24-HOUR WINDOW
+    const start = new Date(startDate);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
     // ✅ CREATE TARGET
     const target = await Target.create({
       name,
@@ -56,8 +54,8 @@ export const createTarget = async (req, res) => {
       rewardAmount,
       productCommissions,
       paymentConfig,
-      startDate,
-      endDate,
+      startDate: start,
+      endDate: end, // 🔥 always 24h
     });
 
     // ✅ NOTIFY ALL AGENTS
@@ -115,26 +113,23 @@ export const getTargetPerformance = async (req, res) => {
 
 /* =====================================================
    ✅ GET TODAY TARGET (AGENT)
+   🔥 AUTO REMOVE EXPIRED TARGETS
 ===================================================== */
 export const getTodayTarget = async (req, res) => {
   try {
     const now = new Date();
 
-    const startOfDay = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
+    // ✅ AUTO-DEACTIVATE EXPIRED TARGETS
+    await Target.updateMany(
+      { endDate: { $lt: now }, isActive: true },
+      { $set: { isActive: false } },
     );
-    startOfDay.setHours(0, 0, 0, 0);
 
-    const endOfDay = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
-    );
-    endOfDay.setHours(23, 59, 59, 999);
-
-    // ✅ GET ALL ACTIVE TARGETS
+    // ✅ ONLY FETCH CURRENTLY ACTIVE TARGETS (REAL-TIME)
     const targets = await Target.find({
       isActive: true,
-      startDate: { $lte: endOfDay },
-      endDate: { $gte: startOfDay },
+      startDate: { $lte: now },
+      endDate: { $gte: now },
     });
 
     if (!targets.length) {
