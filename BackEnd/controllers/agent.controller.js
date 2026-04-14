@@ -211,12 +211,14 @@ export const applyAgent = async (req, res) => {
     /* =============================
        NOTIFICATION
     ============================= */
-    await sendAdminNotification({
-      customAgentId: agent.agentId,
-      name,
-      email,
-      phone,
-    });
+    sendAdminNotification({
+  customAgentId: agent.agentId,
+  name,
+  email,
+  phone,
+}).catch((err) => {
+  console.error("Email failed:", err);
+});
 
     /* =============================
        SUCCESS RESPONSE
