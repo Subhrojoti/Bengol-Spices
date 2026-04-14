@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./axiosInstance";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://bengol-spices-backend.onrender.com";
 
 export const agentRegistration = async (formData) => {
   const response = await axios.post(`${API_BASE_URL}/agent/apply`, formData, {
