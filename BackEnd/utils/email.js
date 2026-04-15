@@ -1,12 +1,8 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const FROM = "Bengol Spices <noreply@bengolspices.com>";
 
 export const sendAdminNotification = async ({
   customAgentId,
@@ -14,10 +10,10 @@ export const sendAdminNotification = async ({
   email,
   phone,
 }) => {
-  await transporter.sendMail({
-    from: `"Bengol Spices" <${process.env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: FROM,
     to: process.env.ADMIN_EMAIL,
-    subject: "🚀 New Marketing Agent Application",
+    subject: "New Marketing Agent Application",
     html: `
       <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
         <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
@@ -52,7 +48,7 @@ export const sendAdminNotification = async ({
 
             <div style="margin-top: 25px; text-align: center;">
               <a
-                href="#"
+                href="${process.env.ADMIN_PANEL_URL || "#"}"
                 style="
                   background: #2563eb;
                   color: #ffffff;
@@ -76,60 +72,128 @@ export const sendAdminNotification = async ({
       </div>
     `,
   });
+
+  if (error) {
+    console.error("sendAdminNotification error:", error);
+    throw new Error(error.message || "Failed to send admin notification");
+  }
 };
 
 export const sendAgentApprovalMail = async ({ email, agentId, token }) => {
   const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+  const { error } = await resend.emails.send({
+    from: FROM,
     to: email,
     subject: "Your Agent Account is Approved",
-    text: `
-Congratulations!
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
-Your documents are verified successfully.
+          <div style="background: #1f2937; color: #ffffff; padding: 16px 20px;">
+            <h2 style="margin: 0;">Congratulations! Account Approved</h2>
+          </div>
 
-Agent ID: ${agentId}
+          <div style="padding: 20px; color: #333;">
+            <p style="font-size: 15px;">Your documents are verified successfully.</p>
 
-Set your password using the link below:
-${link}
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr>
+                <td style="padding: 8px; font-weight: bold;">Agent ID</td>
+                <td style="padding: 8px;">${agentId}</td>
+              </tr>
+            </table>
 
-This link will expire in 15 minutes.
-`,
+            <p style="margin-top: 20px;">Set your password using the button below. <strong>This link expires in 15 minutes.</strong></p>
+
+            <div style="margin-top: 25px; text-align: center;">
+              <a
+                href="${link}"
+                style="
+                  background: #16a34a;
+                  color: #ffffff;
+                  padding: 12px 24px;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                  display: inline-block;
+                "
+              >
+                Set My Password
+              </a>
+            </div>
+
+            <p style="font-size: 12px; color: #6b7280; margin-top: 16px;">
+              If the button doesn't work, copy and paste this link into your browser:<br/>
+              <a href="${link}">${link}</a>
+            </p>
+          </div>
+
+          <div style="background: #f3f4f6; padding: 12px; text-align: center; font-size: 12px; color: #6b7280;">
+            © ${new Date().getFullYear()} Bengol Spices Pvt Ltd
+          </div>
+
+        </div>
+      </div>
+    `,
   });
+
+  if (error) {
+    console.error("sendAgentApprovalMail error:", error);
+    throw new Error(error.message || "Failed to send approval email");
+  }
 };
 
 // SEND REJECTION EMAIL TO AGENT
 export const sendAgentRejectionMail = async ({ email, agentId }) => {
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+  const { error } = await resend.emails.send({
+    from: FROM,
     to: email,
     subject: "Your Marketing Agent Application Status",
-    text: `
-Hello,
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
-We regret to inform you that your marketing agent application has been rejected after verification.
+          <div style="background: #1f2937; color: #ffffff; padding: 16px 20px;">
+            <h2 style="margin: 0;">Application Status Update</h2>
+          </div>
 
-If you believe this is a mistake, you may contact our support team.
+          <div style="padding: 20px; color: #333;">
+            <p style="font-size: 15px;">Hello,</p>
+            <p>
+              We regret to inform you that your marketing agent application has been
+              rejected after verification.
+            </p>
+            <p>If you believe this is a mistake, you may contact our support team.</p>
+            <p>Thank you for your interest.</p>
+            <br/>
+            <p>Regards,<br/><strong>Bengol Spices Team</strong></p>
+          </div>
 
-Thank you for your interest.
+          <div style="background: #f3f4f6; padding: 12px; text-align: center; font-size: 12px; color: #6b7280;">
+            © ${new Date().getFullYear()} Bengol Spices Pvt Ltd
+          </div>
 
-Regards,
-Bengol Spices Team
-`,
+        </div>
+      </div>
+    `,
   });
+
+  if (error) {
+    console.error("sendAgentRejectionMail error:", error);
+    throw new Error(error.message || "Failed to send rejection email");
+  }
 };
 
 export const sendEmployeeWelcomeMail = async ({ name, email, employeeId }) => {
   try {
-    const mailOptions = {
-      from: `"Bengol Spices" <${process.env.EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: FROM,
       to: email,
       subject: "Bengol Spices – Employee Access Details",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>Welcome to Bengol Spices 👋</h2>
+          <h2>Welcome to Bengol Spices</h2>
 
           <p>Hello <strong>${name}</strong>,</p>
 
@@ -146,7 +210,7 @@ export const sendEmployeeWelcomeMail = async ({ name, email, employeeId }) => {
           </p>
 
           <p style="color: #c0392b;">
-            🔒 <strong>Password Information:</strong><br/>
+            <strong>Password Information:</strong><br/>
             Your password is currently managed by the <strong>Admin</strong>.
             Please contact the admin directly to obtain your login password.
           </p>
@@ -160,12 +224,16 @@ export const sendEmployeeWelcomeMail = async ({ name, email, employeeId }) => {
           <p><strong>Bengol Spices Team</strong></p>
         </div>
       `,
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log("Employee welcome email sent to:", email);
+    if (error) {
+      console.error("sendEmployeeWelcomeMail error:", error);
+      // Email failure does NOT block employee creation — matches original behaviour
+    } else {
+      console.log("Employee welcome email sent to:", email);
+    }
   } catch (error) {
     console.error("SEND EMPLOYEE EMAIL ERROR:", error);
-    // ❗ Email failure should NOT block employee creation
+    // Email failure does NOT block employee creation — matches original behaviour
   }
 };
