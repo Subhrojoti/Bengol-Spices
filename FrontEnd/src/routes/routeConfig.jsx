@@ -1,11 +1,10 @@
-import Home from "../pages/common/HomeBase.jsx";
 import { MarketingHub, marketingRoutes } from "../config/marketingRoutes";
 import AgentLogin from "../pages/Auth/Login/AgentLogin";
 import AdminLogin from "../pages/Auth/Login/AdminLogin";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Onboarding from "../pages/Auth/Agent/AgentOnboarding";
 import { adminRoutes } from "../config/adminRoutes";
-import ProfileSettings from "../pages/MarketingHub/ProfileSettings/ProfileSettings.jsx";
+import ProfileSettings from "../pages/marketingHub/ProfileSettings/ProfileSettings.jsx";
 import SetPassword from "../pages/Auth/Agent/AgentSetPassword";
 import DeliveryPartnerRegister from "../pages/Auth/DeliveryPartner/DeliveryPartnerRegister";
 import AdminBase from "../pages/Admin/AdminBase";
@@ -13,7 +12,7 @@ import ProductDetails from "../pages/Admin/Tabs/AllProducts/ProductDetails";
 import DeliveryLogin from "../pages/Auth/Login/DeliveryLogin";
 import DeliveryHub from "../pages/Delivery/DeliveryHub";
 import DeliveryPanel from "../pages/Delivery/Tabs/DeliveryPanel/DeliveryPanel";
-import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders";
+import AllOrders from "../pages/Delivery/Tabs/AllOrders/AllOrders.jsx";
 import EmployeeLogin from "../pages/Auth/Login/EmployeeLogin";
 import { employeeRoutes } from "../config/employeeRoutes.js";
 import EmployeeBase from "../pages/Employee/EmployeeBase";
@@ -22,9 +21,9 @@ import PublicRoute from "../routes/PublicRoute";
 import { footerRoutes } from "../config/footerRoutes.js";
 import { mapRoutes } from "../config/mapRoutes.jsx";
 import HomeBase from "../pages/common/HomeBase.jsx";
+
 import DeliveryProfile from "../components/profile/DeliveryProfile.jsx";
 import ErrorPage from "../components/common/ErrorPage.jsx";
-
 export const routes = [
   /* ===================== PUBLIC ROUTES ===================== */
   {
