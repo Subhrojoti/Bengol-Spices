@@ -31,8 +31,8 @@ export const createEmployee = async (req, res) => {
 
     if (req.file) {
       profilePic = {
-        url: req.file.path || req.file.secure_url || "",
-        publicId: req.file.filename || req.file.public_id || "",
+        url: req.file.path, // Cloudinary URL
+        publicId: req.file.filename, // Cloudinary public_id
       };
     }
 
@@ -47,6 +47,9 @@ export const createEmployee = async (req, res) => {
     const employeeId = `EMP${currentYear}-${serial}`;
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // console.log("Files", req.file);
+    // console.log("Body", req.body);
 
     const employee = await Employee.create({
       employeeId,
