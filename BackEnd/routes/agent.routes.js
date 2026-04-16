@@ -33,7 +33,7 @@ router.post(
   applyAgent,
 );
 
-router.post("/auth/agent-set-password", setPassword);
+router.post("/auth/set-password", setPassword);
 
 // 🔒 AGENT ONLY ROUTE
 router.get(

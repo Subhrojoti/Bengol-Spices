@@ -80,7 +80,7 @@ export const sendAdminNotification = async ({
 };
 
 export const sendAgentApprovalMail = async ({ email, agentId, token }) => {
-  const link = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
+  const link = `${process.env.FRONTEND_URL}/agent-set-password?token=${token}`;
 
   const { error } = await resend.emails.send({
     from: FROM,
