@@ -3,6 +3,7 @@ import Slide7 from "../../../assets/Slides/Slide7.png";
 import Slide8 from "../../../assets/Slides/Slide8.png";
 import logo from "../../../assets/logo/BS_Logo_New.png";
 import logoBG from "../../../assets/logo/BS_Logo_BG.png";
+import fssaiLogo from "../../../assets/logo/FSSAI_Logo.png";
 
 const AboutUs = () => {
   return (
@@ -188,6 +189,19 @@ const AboutUs = () => {
             23/23, Kalipur Kancha Road, Marich Jhapi, Paschim Putiary, <br />
             Kolkata - 700082, West Bengal
           </p>
+
+          {/* FSSAI BLOCK */}
+          <div className="mt-5 flex items-center gap-3">
+            <img
+              src={fssaiLogo}
+              alt="FSSAI License"
+              className="h-20 w-auto object-contain"
+            />
+            <div className="text-sm leading-tight mt-4">
+              <p className="font-medium text-gray-800">FSSAI Licensed</p>
+              <p className="text-gray-500">License No: 12825019002131</p>
+            </div>
+          </div>
 
           {/* Button with real map link */}
           <a
