@@ -292,11 +292,16 @@ export default function Onboarding() {
                         <input
                           hidden
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg"
                           name="photo"
                           onChange={handleFileChange}
                         />
                       </Button>
+
+                      {/* Format info */}
+                      <Typography variant="caption" color="text.secondary">
+                        JPG format only
+                      </Typography>
 
                       {(errors.photo || form.photo) && (
                         <Typography
@@ -318,11 +323,16 @@ export default function Onboarding() {
                         <input
                           hidden
                           type="file"
-                          accept="application/pdf,image/*"
+                          accept="application/pdf,image/jpeg"
                           name="aadhaarFile"
                           onChange={handleFileChange}
                         />
                       </Button>
+
+                      {/* Format info */}
+                      <Typography variant="caption" color="text.secondary">
+                        PDF or JPG format
+                      </Typography>
 
                       {(errors.aadhaarFile || form.aadhaarFile) && (
                         <Typography
@@ -346,11 +356,16 @@ export default function Onboarding() {
                         <input
                           hidden
                           type="file"
-                          accept="application/pdf,image/*"
+                          accept="application/pdf,image/jpeg"
                           name="panFile"
                           onChange={handleFileChange}
                         />
                       </Button>
+
+                      {/* Format info */}
+                      <Typography variant="caption" color="text.secondary">
+                        PDF or JPG format
+                      </Typography>
 
                       {(errors.panFile || form.panFile) && (
                         <Typography

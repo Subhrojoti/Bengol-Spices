@@ -315,7 +315,7 @@ const FileInput = ({ label, file, existing, onFileSelect }) => {
       <div>
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-slate-500">
-          Click to upload image (max 5MB)
+          Click to upload image (JPG only, max 5MB)
         </p>
       </div>
 

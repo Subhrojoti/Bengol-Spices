@@ -87,10 +87,10 @@ const DeliveryHeader = () => {
 
             // px-6 md:px-20 lg:px-32 xl:px-40
             px: {
-              xs: 3, // 6 * 4px = 24px
-              md: 20, // 20 * 4px = 80px
-              lg: 25, // 32 * 4px = 128px
-              xl: 25, // 40 * 4px = 160px
+              xs: 2,
+              md: 2,
+              lg: 2,
+              xl: 2,
             },
 
             // py-2
@@ -113,7 +113,7 @@ const DeliveryHeader = () => {
                 />
               </div>
               <Typography fontWeight={700} fontSize={16} color="#0f172a">
-                Delivery Panel
+                Delivery Hub
               </Typography>
             </Box>
 

@@ -288,7 +288,7 @@ const EmpCreation = () => {
                       Profile Photo (Optional)
                     </span>
                     <span className="text-xs text-slate-500">
-                      Click to upload image (max 5 MB)
+                      Click to upload image (JPG only, max 5 MB)
                     </span>
                   </div>
 

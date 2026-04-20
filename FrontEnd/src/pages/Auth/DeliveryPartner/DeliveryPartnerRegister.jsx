@@ -311,6 +311,11 @@ export default function DeliveryPartnerRegister() {
                         <input hidden type="file" onChange={handleFileChange} />
                       </Button>
 
+                      {/* Format info */}
+                      <Typography variant="caption" color="text.secondary">
+                        PDF or JPG format
+                      </Typography>
+
                       {errors.document && (
                         <Typography variant="caption" color="error">
                           {errors.document}
