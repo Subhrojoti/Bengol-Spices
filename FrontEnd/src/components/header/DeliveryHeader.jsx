@@ -1,5 +1,5 @@
 import React from "react";
-import logoMain from "../../assets/logo/BS_Logo_main.png";
+import logoMain from "../../assets/logo/Logo_Final.png";
 import {
   AppBar,
   Toolbar,
@@ -83,6 +83,18 @@ const DeliveryHeader = () => {
             minHeight: 64,
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
+
+            // px-6 md:px-20 lg:px-32 xl:px-40
+            px: {
+              xs: 2,
+              md: 2,
+              lg: 2,
+              xl: 2,
+            },
+
+            // py-2
+            py: 2,
           }}>
           {/* LEFT SECTION (Title + Tabs) */}
           <Box display="flex" alignItems="center" gap={4}>
@@ -101,7 +113,7 @@ const DeliveryHeader = () => {
                 />
               </div>
               <Typography fontWeight={700} fontSize={16} color="#0f172a">
-                Delivery Panel
+                Delivery Hub
               </Typography>
             </Box>
 

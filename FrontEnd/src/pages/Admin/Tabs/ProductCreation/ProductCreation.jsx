@@ -320,7 +320,7 @@ const FileInput = ({ label, file, onFileSelect }) => {
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-medium text-slate-700">{label}</span>
         <span className="text-xs text-slate-500">
-          Click to upload image (max 5 MB)
+          Click to upload image (JPG only, max 5 MB)
         </span>
       </div>
 

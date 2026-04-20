@@ -1,8 +1,9 @@
 import React from "react";
 import Slide7 from "../../../assets/Slides/Slide7.png";
 import Slide8 from "../../../assets/Slides/Slide8.png";
-import logo from "../../../assets/logo/BS_Logo_New.png";
+import logo from "../../../assets/logo/Logo_Final.png";
 import logoBG from "../../../assets/logo/BS_Logo_BG.png";
+import fssaiLogo from "../../../assets/logo/FSSAI_Logo.png";
 
 const AboutUs = () => {
   return (
@@ -103,79 +104,6 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* TEAM SECTION */}
-      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16 bg-white">
-        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-12">
-          Our Team & Partners
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {[
-            {
-              name: "Supriyo Nag",
-              role: "Promoter & Director",
-              img: "/team/supriyo.png",
-            },
-            {
-              name: "Ranjit Yadav",
-              role: "Promoter & Director",
-              img: "/team/ranjit.png",
-            },
-            {
-              name: "Raja Santanu Shaw",
-              role: "Promoter & Director",
-              img: "/team/raja.png",
-            },
-            {
-              name: "Shivan Kumar Das",
-              role: "Sales & Marketing",
-              img: "/team/shivan.png",
-            },
-            {
-              name: "Jalil Gazi",
-              role: "Operations / Coordinator",
-              img: "/team/jalil.png",
-            },
-            {
-              name: "Pankaj Kumar Sah",
-              role: "Sales & Marketing",
-              img: "/team/pankaj.png",
-            },
-            {
-              name: "Ravi Chitra Rasu",
-              role: "Production",
-              img: "/team/ravi.png",
-            },
-            {
-              name: "Sreshtanghu Ray",
-              role: "Production",
-              img: "/team/sreshtanghu.png",
-            },
-            {
-              name: "Ayush Kumar Pandey",
-              role: "CRM",
-              img: "/team/ayush.png",
-            },
-          ].map((member, index) => (
-            <div
-              key={index}
-              className="bg-gray-50 rounded-2xl shadow-md hover:shadow-lg transition p-4 text-center">
-              <img
-                src={member.img}
-                alt={member.name}
-                className="w-24 h-24 mx-auto rounded-full object-cover border-2 border-gray-900"
-              />
-
-              <h3 className="mt-4 font-semibold text-gray-800">
-                {member.name}
-              </h3>
-
-              <p className="text-sm text-orange-500 mt-1">{member.role}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* CONTACT SECTION */}
       <div className="bg-gray-100 px-6 md:px-20 lg:px-32 xl:px-40 py-16 grid md:grid-cols-2 gap-10 items-center">
         {/* LEFT CONTENT */}
@@ -188,6 +116,19 @@ const AboutUs = () => {
             23/23, Kalipur Kancha Road, Marich Jhapi, Paschim Putiary, <br />
             Kolkata - 700082, West Bengal
           </p>
+
+          {/* FSSAI BLOCK */}
+          <div className="mt-5 flex items-center gap-3">
+            <img
+              src={fssaiLogo}
+              alt="FSSAI License"
+              className="h-20 w-auto object-contain"
+            />
+            <div className="text-sm leading-tight mt-4">
+              <p className="font-medium text-gray-800">FSSAI Licensed</p>
+              <p className="text-gray-500">License No: 12825019002131</p>
+            </div>
+          </div>
 
           {/* Button with real map link */}
           <a

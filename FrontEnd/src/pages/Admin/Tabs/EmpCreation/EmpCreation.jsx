@@ -5,8 +5,9 @@ import {
   getAllEmployees,
   updateEmployeePermissions,
 } from "../../../../api/services";
-import { Tabs, Tab, Switch } from "@mui/material";
+import { Tabs, Tab, Switch, Typography, Tooltip } from "@mui/material";
 import ImageIcon from "@mui/icons-material/Image";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 const HEADER_HEIGHT = 64;
 
@@ -35,6 +36,7 @@ const EmpCreation = () => {
   const [permissionLoadingId, setPermissionLoadingId] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState({});
+  const [deleteLoadingId, setDeleteLoadingId] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -161,6 +163,26 @@ const EmpCreation = () => {
     }
   };
 
+  const handleDeleteEmployee = async (employeeId) => {
+    if (!window.confirm("Are you sure you want to delete this employee?"))
+      return;
+
+    try {
+      setDeleteLoadingId(employeeId);
+      const response = await deleteEmployee(employeeId);
+      if (response.success) {
+        toast.success("Employee deleted successfully");
+        setEmployees((prev) => prev.filter((e) => e.employeeId !== employeeId));
+      } else {
+        toast.error("Failed to delete employee");
+      }
+    } catch (error) {
+      toast.error(error?.message || "Error deleting employee");
+    } finally {
+      setDeleteLoadingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
       <div
@@ -266,7 +288,7 @@ const EmpCreation = () => {
                       Profile Photo (Optional)
                     </span>
                     <span className="text-xs text-slate-500">
-                      Click to upload image (max 5 MB)
+                      Click to upload image (JPG only, max 5 MB)
                     </span>
                   </div>
 
@@ -292,7 +314,7 @@ const EmpCreation = () => {
             </div>
           </div>
         ) : (
-          <div className="w-full my-10 max-w-6xl h-auto bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200 overflow-hidden">
+          <div className="w-full my-10 max-w-8xl h-auto bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200 overflow-hidden">
             <div className="px-8 py-6 border-b border-slate-200 flex justify-between items-center">
               <div>
                 <h2 className="text-base font-medium text-slate-800 tracking-tight">
@@ -314,7 +336,7 @@ const EmpCreation = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full  min-w-max text-sm">
                   <thead className="bg-slate-50 text-left text-slate-600 text-xs uppercase tracking-wide">
                     <tr>
                       <th className="px-8 py-4">Employee ID</th>
@@ -324,6 +346,7 @@ const EmpCreation = () => {
                       <th className="px-8 py-4">Permissions</th>
                       <th className="px-8 py-4">Status</th>
                       <th className="px-8 py-4">Created</th>
+                      <th className="px-8 py-4">Action</th>
                     </tr>
                   </thead>
 
@@ -408,6 +431,18 @@ const EmpCreation = () => {
 
                         <td className="px-8 py-4 text-slate-500">
                           {new Date(emp.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-8 py-4">
+                          <Tooltip title="Delete Employee">
+                            <button
+                              disabled={deleteLoadingId === emp.employeeId}
+                              onClick={() =>
+                                handleDeleteEmployee(emp.employeeId)
+                              }
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-40">
+                              <DeleteOutlineIcon fontSize="small" />
+                            </button>
+                          </Tooltip>
                         </td>
                       </tr>
                     ))}

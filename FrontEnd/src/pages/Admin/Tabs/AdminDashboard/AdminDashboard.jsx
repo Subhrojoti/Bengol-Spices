@@ -16,7 +16,7 @@ import {
   Cell,
 } from "recharts";
 import {
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   AlertCircle,
   RefreshCcw,
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
             label: "Total Sales",
             value: financials.totalSales,
             gradient: "from-indigo-500 via-indigo-600 to-indigo-700",
-            icon: <DollarSign size={18} />,
+            icon: <IndianRupee size={18} />,
           },
           {
             label: "Profit",

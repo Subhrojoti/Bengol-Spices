@@ -641,3 +641,16 @@ export const getIncentiveHistory = async () => {
   const res = await axiosInstance.get("/api/incentives/history");
   return res.data;
 };
+
+// Delete api for employee
+
+export const deleteEmployee = async (employeeId) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/employee/delete/${employeeId}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

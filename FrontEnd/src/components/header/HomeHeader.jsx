@@ -1,7 +1,8 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { footerRoutes } from "../../config/footerRoutes";
-import logoMain from "../../assets/logo/BS_Logo_main.png";
+import logoMain from "../../assets/logo/Logo_Final.png";
+import { AppBar, Toolbar } from "@mui/material";
 
 const HIDDEN_TABS = ["privacy", "terms", "cookies"];
 
@@ -29,48 +30,70 @@ const HomeHeader = () => {
   }, [location.pathname, firstTab]);
 
   return (
-    <div className="flex items-center justify-between px-6 md:px-20 lg:px-32 xl:px-40 py-2 bg-white shadow-sm">
-      {/* LEFT */}
-      <div className="flex items-center gap-3">
-        <div
-          className=" cursor-pointer flex items-center justify-center"
-          onClick={() => navigate("/")}>
-          <img
-            src={logoMain}
-            alt="Bengol Spices"
-            className="h-14 object-contain"
-          />
+    <AppBar
+      position="sticky"
+      elevation={1}
+      sx={{
+        backgroundColor: "#fff",
+        color: "#000",
+      }}>
+      <Toolbar
+        disableGutters
+        sx={{
+          maxWidth: 1400,
+          mx: "auto",
+          width: "100%",
+          minHeight: 64,
+          display: "flex",
+          gap: 2,
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: {
+            xs: 2,
+            md: 10,
+            lg: 10,
+            xl: 5,
+          },
+          py: 1,
+        }}>
+        {/* LEFT */}
+        <div className="flex items-center gap-3">
+          <div
+            className=" cursor-pointer flex items-center justify-center"
+            onClick={() => navigate("/")}>
+            <img
+              src={logoMain}
+              alt="Bengol Spices"
+              className="h-14 object-contain"
+            />
+          </div>
         </div>
 
-        <h1 className="text-sm font-semibold text-gray-800 tracking-wide uppercase">
-          {activeTab}
-        </h1>
-      </div>
+        {/* RIGHT */}
+        <div className="hidden md:flex items-center gap-6">
+          {visibleTabs.map((route) => {
+            const isActive = location.pathname === `/${route.path}`;
 
-      {/* RIGHT */}
-      <div className="hidden md:flex items-center gap-6">
-        {visibleTabs.map((route) => {
-          const isActive = location.pathname === `/${route.path}`;
+            return (
+              <button
+                key={route.path}
+                onClick={() => navigate(`/${route.path}`)}
+                className={`text-sm font-medium transition relative ${
+                  isActive
+                    ? "text-orange-600"
+                    : "text-gray-500 hover:text-gray-800"
+                }`}>
+                {route.path.toUpperCase()}
 
-          return (
-            <button
-              key={route.path}
-              onClick={() => navigate(`/${route.path}`)}
-              className={`text-sm font-medium transition relative ${
-                isActive
-                  ? "text-orange-600"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}>
-              {route.path.toUpperCase()}
-
-              {isActive && (
-                <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-orange-600 rounded-full" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+                {isActive && (
+                  <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-orange-600 rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Toolbar>
+    </AppBar>
   );
 };
 

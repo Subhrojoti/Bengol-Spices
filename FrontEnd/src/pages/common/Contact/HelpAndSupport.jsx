@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Mail, Phone } from "lucide-react";
 import { getFaqs } from "../../../api/services";
 
 const HelpAndSupport = () => {
@@ -122,13 +123,26 @@ const HelpAndSupport = () => {
               team.
             </p>
 
-            <div className="mt-3 text-sm">
-              📧{" "}
-              <a
-                href="mailto:support@bengolspices.com"
-                className="text-orange-600 font-medium">
-                support@bengolspices.com
-              </a>
+            <div className="mt-4 space-y-2 text-sm">
+              {/* Email */}
+              <div className="flex items-center gap-2">
+                <Mail size={16} className="text-orange-600" />
+                <a
+                  href="mailto:support@bengolspices.com"
+                  className="text-orange-600 font-medium hover:underline">
+                  support@bengolspices.com
+                </a>
+              </div>
+
+              {/* Phone */}
+              <div className="flex items-center gap-2">
+                <Phone size={16} className="text-orange-600" />
+                <a
+                  href="tel:+916289531457"
+                  className="text-orange-600 font-medium hover:underline">
+                  +916289531457
+                </a>
+              </div>
             </div>
           </div>
         </div>
