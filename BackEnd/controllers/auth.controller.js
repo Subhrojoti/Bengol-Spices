@@ -192,6 +192,13 @@ export const employeeLogin = async (req, res) => {
   try {
     const { employeeId, password } = req.body;
 
+    if (employee.status === "INACTIVE") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been deactivated",
+      });
+    }
+
     if (!employeeId || !password) {
       return res.status(400).json({
         success: false,

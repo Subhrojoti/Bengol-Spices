@@ -13,6 +13,7 @@ export const registerDeliveryPartner = async (req, res) => {
     const {
       name,
       phone,
+      email,
       password,
       idType,
       idNumber,
@@ -20,8 +21,6 @@ export const registerDeliveryPartner = async (req, res) => {
       city,
       street,
       pincode,
-
-      // optional bank fields
       accountHolderName,
       accountNumber,
       ifscCode,
@@ -42,37 +41,21 @@ export const registerDeliveryPartner = async (req, res) => {
       !street ||
       !pincode
     ) {
-      throw new Error("All fields including address are required");
-    }
-
-    // 🔥 STRICT BANK VALIDATION
-    const hasAnyBankField =
-      accountHolderName || accountNumber || ifscCode || bankName;
-
-    const hasAllBankFields =
-      accountHolderName && accountNumber && ifscCode && bankName;
-
-    if (hasAnyBankField && !hasAllBankFields) {
-      throw new Error("Please provide complete bank details");
+      throw new Error("All fields are required");
     }
 
     const exists = await DeliveryPartner.findOne({ phone });
-    if (exists) {
-      throw new Error("Already registered");
-    }
+    if (exists) throw new Error("Already registered");
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const partnerData = {
-      name: name.trim(),
-      phone: phone.trim(),
+      name,
+      phone,
+      email,
       password: hashedPassword,
-      address: {
-        state: state.trim().toUpperCase(),
-        city: city.trim(),
-        street: street.trim(),
-        pincode: pincode.trim(),
-      },
+      status: "PENDING", // 🔥 IMPORTANT
+      address: { state, city, street, pincode },
       documents: {
         idType,
         idNumber,
@@ -80,8 +63,7 @@ export const registerDeliveryPartner = async (req, res) => {
       },
     };
 
-    // ✅ Add bank only if FULL data exists
-    if (hasAllBankFields) {
+    if (accountHolderName && accountNumber && ifscCode && bankName) {
       partnerData.bankDetails = {
         accountHolderName,
         accountNumber,
@@ -94,7 +76,7 @@ export const registerDeliveryPartner = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Registered successfully",
+      message: "Application submitted. Await admin approval.",
     });
   } catch (error) {
     if (uploadedPublicId) {
@@ -108,43 +90,84 @@ export const registerDeliveryPartner = async (req, res) => {
   }
 };
 
-/* LOGIN */
+// DELIVERY PARTNER LOGIN (STRICT STATUS VALIDATION)
 export const loginDeliveryPartner = async (req, res) => {
-  const { phone, password } = req.body;
+  try {
+    const { phone, password } = req.body;
 
-  const partner = await DeliveryPartner.findOne({ phone, status: "ACTIVE" });
+    const partner = await DeliveryPartner.findOne({ phone });
 
-  if (!partner) {
-    return res.status(404).json({
+    // ❌ Not found
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Phone No. or Password does not match",
+      });
+    }
+
+    // 🔒 STRICT STATUS CHECK (MOST IMPORTANT FIX)
+    if (partner.status !== "ACTIVE") {
+      let message = "Your account is not active";
+
+      if (partner.status === "PENDING") {
+        message =
+          "Your account is under review. Please wait for admin approval.";
+      } else if (partner.status === "REJECTED") {
+        message =
+          "Your application has been rejected. Please contact support or reapply.";
+      } else if (partner.status === "INACTIVE") {
+        message = "Your account is inactive. Contact support.";
+      } else {
+        // ❗ Handles corrupted values like "SA"
+        message = "Invalid account status. Please contact support.";
+      }
+
+      return res.status(403).json({
+        success: false,
+        message,
+      });
+    }
+
+    // 🔐 PASSWORD CHECK
+    const isMatch = await bcrypt.compare(password, partner.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Phone No. or Password does not match",
+      });
+    }
+
+    // ✅ UPDATE ONLINE STATUS
+    await DeliveryPartner.updateOne(
+      { _id: partner._id },
+      { $set: { isOnline: true } },
+    );
+
+    // 🔑 TOKEN
+    const token = jwt.sign(
+      {
+        id: partner._id,
+        role: partner.role,
+        name: partner.name,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" },
+    );
+
+    return res.json({
+      success: true,
+      message: "Login successful",
+      token,
+    });
+  } catch (error) {
+    console.error("LOGIN DELIVERY PARTNER ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "Phone No. or Password does not match",
+      message: "Failed to login",
     });
   }
-
-  const isMatch = await bcrypt.compare(password, partner.password);
-
-  if (!isMatch) {
-    return res.status(401).json({
-      success: false,
-      message: "Phone No. or Password does not match",
-    });
-  }
-
-  // ✅ FIX: avoid .save()
-  await DeliveryPartner.updateOne(
-    { _id: partner._id },
-    { $set: { isOnline: true } },
-  );
-
-  const token = jwt.sign(
-    { id: partner._id, role: partner.role, name: partner.name },
-    process.env.JWT_SECRET,
-    { expiresIn: "30d" },
-  );
-
-  res.json({ success: true, token });
 };
-
 /* LOGOUT */
 export const logoutDeliveryPartner = async (req, res) => {
   const partner = await DeliveryPartner.findById(req.user.id);

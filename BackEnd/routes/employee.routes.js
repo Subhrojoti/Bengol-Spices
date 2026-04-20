@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createEmployee,
+  deleteEmployee,
   getAllEmployees,
   getEmployeeProfile,
 } from "../controllers/employee.controller.js";
@@ -18,6 +19,8 @@ router.post(
   upload.single("profilePic"),
   createEmployee,
 );
+// DELETE EMPLOYEE - Soft delete (set status to INACTIVE)
+router.delete("/delete/:employeeId", protect, isAdmin, deleteEmployee);
 // ADMIN - GET ALL EMPLOYEES
 router.get("/all", protect, isAdmin, getAllEmployees);
 // Get Employee Profile - Employee Access Only

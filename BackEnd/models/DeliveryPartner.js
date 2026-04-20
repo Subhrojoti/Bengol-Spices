@@ -18,6 +18,7 @@ const deliveryPartnerSchema = new mongoose.Schema(
     email: {
       type: String,
       trim: true,
+      lowercase: true,
     },
 
     password: {
@@ -45,7 +46,7 @@ const deliveryPartnerSchema = new mongoose.Schema(
       pincode: {
         type: String,
         required: true,
-        match: /^[0-9]{6}$/, // Indian pincode validation
+        match: /^[0-9]{6}$/,
       },
     },
 
@@ -70,39 +71,33 @@ const deliveryPartnerSchema = new mongoose.Schema(
       default: false,
     },
 
+    // 🔥 UPDATED STATUS FLOW
     status: {
       type: String,
-      enum: ["ACTIVE", "INACTIVE"],
-      default: "ACTIVE",
+      enum: ["PENDING", "ACTIVE", "REJECTED"],
+      default: "PENDING",
     },
 
     role: {
       type: String,
       default: "DELIVERY_PARTNER",
     },
+
     bankDetails: {
-      accountHolderName: {
-        type: String,
-        trim: true,
-      },
-      accountNumber: {
-        type: String,
-        trim: true,
-      },
+      accountHolderName: String,
+      accountNumber: String,
       ifscCode: {
         type: String,
         uppercase: true,
         match: /^[A-Z]{4}0[A-Z0-9]{6}$/,
       },
-      bankName: {
-        type: String,
-      },
+      bankName: String,
     },
   },
   { timestamps: true },
 );
 
-// 🔥 Indexes for filtering performance
+// Indexes
 deliveryPartnerSchema.index({ "address.state": 1 });
 deliveryPartnerSchema.index({ "address.pincode": 1 });
 deliveryPartnerSchema.index({ isOnline: 1 });
