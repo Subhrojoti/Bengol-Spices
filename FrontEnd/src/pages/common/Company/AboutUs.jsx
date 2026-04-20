@@ -1,7 +1,7 @@
 import React from "react";
 import Slide7 from "../../../assets/Slides/Slide7.png";
 import Slide8 from "../../../assets/Slides/Slide8.png";
-import logo from "../../../assets/logo/BS_Logo_New.png";
+import logo from "../../../assets/logo/Logo_Final.png";
 import logoBG from "../../../assets/logo/BS_Logo_BG.png";
 import fssaiLogo from "../../../assets/logo/FSSAI_Logo.png";
 

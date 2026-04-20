@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { footerRoutes } from "../../config/footerRoutes";
-import logoMain from "../../assets/logo/BS_Logo_new.png";
+import logoMain from "../../assets/logo/Logo_Final.png";
 import { AppBar, Toolbar } from "@mui/material";
 
 const HIDDEN_TABS = ["privacy", "terms", "cookies"];

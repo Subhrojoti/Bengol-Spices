@@ -1,5 +1,5 @@
 import React from "react";
-import logoMain from "../../assets/logo/BS_Logo_new.png";
+import logoMain from "../../assets/logo/Logo_Final.png";
 import {
   AppBar,
   Toolbar,
