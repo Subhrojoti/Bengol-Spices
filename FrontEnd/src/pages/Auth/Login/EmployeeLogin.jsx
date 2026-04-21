@@ -7,6 +7,7 @@ import {
   Typography,
   Button,
   MobileStepper,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { employeeLogin } from "../../../api/services";
@@ -37,6 +38,7 @@ const spiceImages = [
 export default function EmployeeLogin() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ employeeId: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -56,6 +58,7 @@ export default function EmployeeLogin() {
     const { employeeId, password } = form;
 
     try {
+      setLoading(true);
       const data = await employeeLogin(employeeId, password);
 
       if (data.success) {
@@ -67,6 +70,8 @@ export default function EmployeeLogin() {
     } catch (error) {
       console.error(error);
       toast.error("Invalid employee ID or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -220,9 +225,11 @@ export default function EmployeeLogin() {
             />
 
             <Button
+              type="button"
               fullWidth
               variant="contained"
               onClick={handleLogin}
+              disabled={loading}
               sx={{
                 mt: 4,
                 py: 1.3,
@@ -233,7 +240,23 @@ export default function EmployeeLogin() {
                   backgroundColor: "#5b21b6",
                 },
               }}>
-              Login
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}>
+                  Logging in
+                  <CircularProgress
+                    size={16}
+                    thickness={5}
+                    sx={{ color: "#fff" }}
+                  />
+                </Box>
+              ) : (
+                "Login"
+              )}
             </Button>
           </Paper>
         </Box>

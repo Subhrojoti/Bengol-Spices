@@ -7,6 +7,7 @@ import {
   Typography,
   Button,
   MobileStepper,
+  CircularProgress,
   Link,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
@@ -39,6 +40,7 @@ const deliveryImages = [
 export default function DeliveryLogin() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ phone: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function DeliveryLogin() {
     }
 
     try {
+      setLoading(true);
       const data = await deliveryLogin(phone, password);
 
       if (data.success) {
@@ -75,6 +78,8 @@ export default function DeliveryLogin() {
     } catch (error) {
       console.error(error);
       toast.error("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -249,9 +254,11 @@ export default function DeliveryLogin() {
             />
 
             <Button
+              type="button"
               fullWidth
               variant="contained"
               onClick={handleLogin}
+              disabled={loading}
               sx={{
                 mt: 4,
                 py: 1.3,
@@ -262,7 +269,23 @@ export default function DeliveryLogin() {
                   backgroundColor: "#115e59",
                 },
               }}>
-              Login
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}>
+                  Logging in
+                  <CircularProgress
+                    size={16}
+                    thickness={5}
+                    sx={{ color: "#fff" }}
+                  />
+                </Box>
+              ) : (
+                "Login"
+              )}
             </Button>
             <Typography
               variant="body2"
