@@ -20,7 +20,7 @@ const Careers = () => {
       </div>
 
       {/* ROLES SECTION */}
-      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16">
+      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-16 bg-gray-100">
         <h2 className="text-2xl font-semibold mb-10">Explore Opportunities</h2>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -70,13 +70,99 @@ const Careers = () => {
             </button>
           </div>
         </div>
+
+        {/* OTHER JOB ROLES SECTION */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-semibold mb-2">Other Opportunities</h2>
+          <p className="text-sm text-gray-500 mb-8">
+            Interested in joining our team in a different capacity? Select a
+            role below and apply directly.
+          </p>
+
+          <div className="bg-white border rounded-2xl p-8 shadow-sm w-full">
+            <h3 className="text-base font-semibold text-gray-800 mb-1">
+              Apply for a Role
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Select the department you'd like to join and we'll get in touch.
+            </p>
+
+            {/* Role Grid */}
+            {(() => {
+              const roles = [
+                "Distributer",
+                "Accounts & Finance",
+                "Sales & Marketing",
+                "Operations",
+                "Import / Export",
+                "Warehouse & Logistics",
+                "HR & Admin",
+                "IT & Website",
+                "Quality Control",
+                "Production / Packaging",
+                "Customer Support",
+                "Purchase / Procurement",
+              ];
+
+              const [selectedRole, setSelectedRole] = React.useState(null);
+
+              return (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mx-8 mb-6">
+                    {roles.map((role) => (
+                      <button
+                        key={role}
+                        onClick={() => setSelectedRole(role)}
+                        className={`text-sm px-3 py-2.5 rounded-lg border text-left transition font-medium ${
+                          selectedRole === role
+                            ? "bg-orange-600 text-white border-orange-600"
+                            : "bg-gray-50 text-gray-700 border-gray-200 hover:border-orange-400 hover:text-orange-600"
+                        }`}>
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedRole && (
+                    <p className="text-sm text-gray-500 mb-4">
+                      Selected:{" "}
+                      <span className="font-semibold text-gray-800">
+                        {selectedRole}
+                      </span>
+                    </p>
+                  )}
+                  <a
+                    href={
+                      selectedRole
+                        ? `https://mail.google.com/mail/?view=cm&to=careers@bengolspices.com&su=Application for ${encodeURIComponent(selectedRole)}&body=Hi,%0A%0AI am interested in applying for the ${encodeURIComponent(selectedRole)} role at Bengol Spices.%0A%0APlease find my details below:%0A%0AName:%0APhone:%0AExperience:%0A%0AThank you.`
+                        : undefined
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => {
+                      if (!selectedRole) e.preventDefault();
+                    }}
+                    className={`inline-block px-6 py-2.5 rounded-full text-sm text-white text-center transition ${
+                      selectedRole
+                        ? "bg-orange-600 hover:opacity-90 cursor-pointer"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}>
+                    Apply Now
+                  </a>
+                </>
+              );
+            })()}
+          </div>
+        </div>
       </div>
 
       {/* CTA SECTION */}
-      <div className="bg-gray-100 px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Grow with Bengol Spices</h2>
+      <div className="bg-sky-500 px-6 md:px-20 lg:px-32 xl:px-40 py-16 text-center">
+        <h2 className="text-2xl font-semibold text-white mb-4">
+          Grow with Bengol Spices
+        </h2>
 
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-white mb-6">
           Join our ecosystem and be part of a smarter, faster, and more reliable
           supply chain network.
         </p>
