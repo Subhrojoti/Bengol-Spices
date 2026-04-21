@@ -9,7 +9,11 @@ const storeSchema = new mongoose.Schema(
       index: true,
       sparse: true,
     },
-
+    deliveryCode: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     // 🏪 Store details
     storeName: {
       type: String,

@@ -8,8 +8,6 @@ import {
   confirmOrder,
   assignDeliveryPartner,
   updateDeliveryStatus,
-  generateDeliveryOtp,
-  verifyDeliveryOtp,
   cancelOrder,
   getActiveOrders,
   collectPayment,
@@ -71,20 +69,6 @@ router.put(
   protect,
   isDeliveryPartner,
   updateDeliveryStatus,
-);
-//Generate OTP for Delivery Partner
-router.put(
-  "/:orderId/generate-otp",
-  protect,
-  isDeliveryPartner,
-  generateDeliveryOtp,
-);
-//Verify OTP for Delivery Partner
-router.put(
-  "/:orderId/verify-otp",
-  protect,
-  isDeliveryPartner,
-  verifyDeliveryOtp,
 );
 
 // Collect Payment (Agent Access Only)

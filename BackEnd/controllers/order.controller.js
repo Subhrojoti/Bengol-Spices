@@ -172,6 +172,7 @@ export const placeOrder = async (req, res) => {
     const order = await Order.create({
       orderId,
       consumerId,
+      store: store._id,
       agentId,
       products,
       totalAmount,
@@ -338,10 +339,34 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
 
+    // ✅ match using STRING orderId
+    const orderIds = orders.map((order) => order.orderId);
+
+    const invoices = await Invoice.find({
+      orderId: { $in: orderIds },
+    });
+
+    const invoiceMap = {};
+    invoices.forEach((inv) => {
+      invoiceMap[inv.orderId] = inv;
+    });
+
+    const enrichedOrders = orders.map((order) => {
+      const invoice = invoiceMap[order.orderId];
+
+      return {
+        ...order.toObject(),
+        invoiceLink: invoice
+          ? `${req.protocol}://${req.get("host")}/api/invoice/download/${order.orderId}`
+          : null,
+        invoiceNumber: invoice ? invoice.invoiceNumber : null,
+      };
+    });
+
     return res.json({
       success: true,
-      count: orders.length,
-      orders,
+      count: enrichedOrders.length,
+      orders: enrichedOrders,
     });
   } catch (error) {
     console.error("GET ALL ORDERS ERROR:", error);
@@ -616,7 +641,6 @@ export const updateDeliveryStatus = async (req, res) => {
       });
     }
 
-    // Strict sequence control
     const allowedTransitions = {
       ASSIGNED: "SHIPPED",
       SHIPPED: "OUT_FOR_DELIVERY",
@@ -627,14 +651,6 @@ export const updateDeliveryStatus = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid status transition",
-      });
-    }
-
-    // Cannot directly mark DELIVERED (OTP required)
-    if (status === "DELIVERED") {
-      return res.status(400).json({
-        success: false,
-        message: "Use OTP verification to complete delivery",
       });
     }
 
@@ -659,98 +675,6 @@ export const updateDeliveryStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to update status",
-    });
-  }
-};
-// OTP Generation for Delivery Confirmation
-export const generateDeliveryOtp = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-
-    const order = await Order.findOne({ orderId });
-
-    if (!order || order.status !== "OUT_FOR_DELIVERY") {
-      return res.status(400).json({
-        success: false,
-        message: "Order not ready for delivery",
-      });
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    order.deliveryOtp = {
-      code: otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      verified: false,
-    };
-
-    await order.save();
-
-    console.log("Delivery OTP:", otp);
-
-    res.json({
-      success: true,
-      message: "OTP generated successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to generate OTP",
-    });
-  }
-};
-
-// OTP Verification for Delivery Completion
-export const verifyDeliveryOtp = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { otp } = req.body;
-
-    const order = await Order.findOne({ orderId });
-
-    if (!order || !order.deliveryOtp) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP not generated",
-      });
-    }
-
-    if (order.deliveryOtp.code !== otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
-      });
-    }
-
-    if (order.deliveryOtp.expiresAt < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP expired",
-      });
-    }
-
-    order.status = "DELIVERED";
-
-    order.statusHistory.push({
-      status: "DELIVERED",
-      changedBy: {
-        id: req.user.id,
-        role: req.user.role,
-      },
-    });
-
-    order.deliveryOtp.verified = true;
-
-    await order.save();
-
-    res.json({
-      success: true,
-      message: "Order delivered successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to verify OTP",
     });
   }
 };
