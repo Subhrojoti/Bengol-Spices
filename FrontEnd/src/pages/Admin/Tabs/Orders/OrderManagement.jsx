@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import StoreIcon from "@mui/icons-material/Store";
+import { TextField } from "@mui/material";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -24,6 +25,7 @@ const OrderManagement = () => {
   const [selectedCancelOrderId, setSelectedCancelOrderId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const statusOptions = [
     "ALL",
@@ -72,7 +74,21 @@ const OrderManagement = () => {
     return grouped;
   }, [orders]);
 
-  const consumerKeys = Object.keys(consumers);
+  const consumerKeys = useMemo(() => {
+    const keys = Object.keys(consumers);
+    if (!searchTerm.trim()) return keys;
+
+    const lower = searchTerm.toLowerCase();
+    return keys.filter((consumerId) => {
+      const { deliveryAddress, agentId, orders } = consumers[consumerId];
+      return (
+        consumerId.toLowerCase().includes(lower) ||
+        deliveryAddress?.storeName?.toLowerCase().includes(lower) ||
+        agentId?.toLowerCase().includes(lower) ||
+        orders.some((o) => o.orderId?.toLowerCase().includes(lower))
+      );
+    });
+  }, [consumers, searchTerm]);
   const selectedOrders = useMemo(() => {
     if (!selectedConsumer) return [];
 
@@ -189,8 +205,15 @@ const OrderManagement = () => {
       <div className="flex gap-8 h-[calc(100vh-4rem)]">
         {/* LEFT PANEL */}
         <div className="w-1/3 bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-blue-100">
+          <div className="p-6 border-b border-blue-100 flex justify-between">
             <h2 className="text-xl font-semibold text-blue-800">Stores</h2>
+            <TextField
+              size="small"
+              placeholder="Search store, agent, order..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ width: 250, bgcolor: "white", borderRadius: "8px" }}
+            />
           </div>
 
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
