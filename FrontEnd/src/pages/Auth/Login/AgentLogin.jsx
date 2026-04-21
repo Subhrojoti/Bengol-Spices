@@ -7,6 +7,7 @@ import {
   Typography,
   Button,
   MobileStepper,
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +40,7 @@ const spiceImages = [
 export default function Login() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ agentId: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Auto-slide (React 19 safe)
@@ -58,6 +60,7 @@ export default function Login() {
     const { agentId, password } = form;
 
     try {
+      setLoading(true);
       const data = await agentLogin(agentId, password);
 
       if (data.success) {
@@ -69,6 +72,8 @@ export default function Login() {
     } catch (error) {
       console.error(error);
       toast.error("Invalid agent-id or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,12 +84,8 @@ export default function Login() {
         background:
           "radial-gradient(circle at top, #fde68a 0%, #f59e0b 45%, #f59e0b 100%)",
         display: "flex",
-
-        // ✅ FIXED ALIGNMENT
         alignItems: { xs: "center", md: "center" },
         justifyContent: "center",
-
-        // ✅ REMOVE EXTRA SPACE
         px: 2,
       }}>
       <Container maxWidth="md" sx={{ px: { xs: 2, md: 0 } }}>
@@ -228,9 +229,11 @@ export default function Login() {
             />
 
             <Button
+              type="button"
               fullWidth
               variant="contained"
               onClick={handleLogin}
+              disabled={loading}
               sx={{
                 mt: 4,
                 py: 1.3,
@@ -241,7 +244,23 @@ export default function Login() {
                   backgroundColor: "#92400e",
                 },
               }}>
-              Login
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}>
+                  Logging in
+                  <CircularProgress
+                    size={16}
+                    thickness={5}
+                    sx={{ color: "#fff" }}
+                  />
+                </Box>
+              ) : (
+                "Login"
+              )}
             </Button>
 
             <Typography

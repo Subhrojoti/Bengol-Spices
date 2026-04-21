@@ -7,6 +7,7 @@ import {
   Typography,
   Button,
   MobileStepper,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { adminLogin } from "../../../api/services";
@@ -37,6 +38,7 @@ const spiceImages = [
 export default function Login() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function Login() {
     const { email, password } = form;
 
     try {
+      setLoading(true);
       const data = await adminLogin(email, password);
 
       if (data.success) {
@@ -66,6 +69,8 @@ export default function Login() {
     } catch (error) {
       console.error(error);
       toast.error("Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,17 +209,33 @@ export default function Login() {
               fullWidth
               variant="contained"
               onClick={handleLogin}
+              disabled={loading}
               sx={{
                 mt: 4,
                 py: 1.3,
                 backgroundColor: "#b45309",
                 fontWeight: 600,
                 textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#92400e",
-                },
+                "&:hover": { backgroundColor: "#92400e" },
+                "&.Mui-disabled": { backgroundColor: "#b45309", opacity: 0.75 },
               }}>
-              Login
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}>
+                  Logging in
+                  <CircularProgress
+                    size={16}
+                    thickness={5}
+                    sx={{ color: "#fff" }}
+                  />
+                </Box>
+              ) : (
+                "Login"
+              )}
             </Button>
           </Paper>
         </Box>
