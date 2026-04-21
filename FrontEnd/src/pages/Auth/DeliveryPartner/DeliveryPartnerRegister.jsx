@@ -21,6 +21,7 @@ export default function DeliveryPartnerRegister() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    email: "",
     password: "",
     idType: "AADHAAR",
     idNumber: "",
@@ -58,6 +59,12 @@ export default function DeliveryPartnerRegister() {
 
     if (!/^[6-9]\d{9}$/.test(form.phone))
       newErrors.phone = "Enter valid 10-digit phone";
+
+    if (!form.email || !form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
 
     if (!form.password || form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
@@ -100,6 +107,7 @@ export default function DeliveryPartnerRegister() {
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("phone", form.phone);
+      formData.append("email", form.email);
       formData.append("password", form.password);
       formData.append("idType", form.idType);
       formData.append("idNumber", form.idNumber);
@@ -215,6 +223,17 @@ export default function DeliveryPartnerRegister() {
                     />
 
                     <TextField
+                      variant="standard"
+                      label="Email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      fullWidth
+                    />
+
+                    <TextField
                       select
                       variant="standard"
                       label="ID Type"
@@ -307,7 +326,7 @@ export default function DeliveryPartnerRegister() {
                             backgroundColor: "rgba(15,118,110,0.08)",
                           },
                         }}>
-                        Upload Document
+                        Upload Identity Document
                         <input hidden type="file" onChange={handleFileChange} />
                       </Button>
 

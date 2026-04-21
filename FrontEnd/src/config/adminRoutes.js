@@ -15,7 +15,7 @@ import AddLocationIcon from "@mui/icons-material/AddLocation";
 import PaymentIcon from "@mui/icons-material/Payment";
 import AdsClickIcon from "@mui/icons-material/AdsClick";
 import { AllInbox, LocalShipping, OutboxOutlined } from "@mui/icons-material";
-import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
+import Delivery from "../pages/Admin/Tabs/Delivery/Delivery";
 import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
 import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import PaymentInfo from "../pages/Admin/Tabs/PaymentInfo/PaymentInfo";
@@ -44,9 +44,9 @@ export const adminRoutes = [
   },
   {
     label: "Delivery Partner",
-    path: "delivery-management",
+    path: "delivery",
     icon: LocalShipping,
-    component: DeliveryManagement,
+    component: Delivery,
   },
   {
     label: "Orders",

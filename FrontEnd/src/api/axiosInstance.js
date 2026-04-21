@@ -51,12 +51,12 @@ axiosInstance.interceptors.response.use(
 
     // 🔐 Unauthorized / Token expired
     if (status === 401) {
-      console.warn("Unauthorized - Redirecting to login");
+      console.warn("Unauthorized");
 
       // Optional: clear token
       localStorage.clear();
 
-      window.location.href = "/login";
+      // window.location.href = "/login";
     }
 
     // ⛔ Forbidden
