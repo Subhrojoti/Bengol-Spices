@@ -1,7 +1,7 @@
 import React from "react";
 import Slide7 from "../../../assets/Slides/Slide7.png";
 import Slide8 from "../../../assets/Slides/Slide8.png";
-import logo from "../../../assets/logo/Logo_Final.png";
+import logo from "../../../assets/logo/logoGold.png";
 import logoBG from "../../../assets/logo/BS_Logo_BG.png";
 import fssaiLogo from "../../../assets/logo/FSSAI_Logo.png";
 
@@ -14,7 +14,7 @@ const AboutUs = () => {
         <img
           src={logoBG}
           alt="background"
-          className="absolute inset-0 w-full h-full object-cover  pointer-events-none"
+          className="absolute inset-0 w-full h-full object-fit  pointer-events-none"
         />
 
         {/* Optional overlay (for better readability) */}

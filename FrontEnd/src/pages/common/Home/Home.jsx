@@ -6,6 +6,7 @@ import garamMasala from "../../../assets/products/BS_Garam_Masala.jpeg";
 import redChilli from "../../../assets/products/BS_Red_Chilli_Powder.jpeg";
 import turmeric from "../../../assets/products/BS_Turmeric_Powder.jpeg";
 import { useNavigate } from "react-router-dom";
+import HeroBG from "../../../assets/logo/BS_Home.png";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -20,11 +21,11 @@ const Home = () => {
   return (
     <div className="bg-white">
       {/* HERO SECTION */}
-      <div className="relative h-[80vh] flex items-center px-6 md:px-20 lg:px-32 xl:px-40">
+      <div className="relative h-[85vh] flex items-center px-6 md:px-20 lg:px-32 xl:px-40">
         <img
-          src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092"
+          src={HeroBG}
           alt="hero"
-          className="absolute inset-0 w-full h-full object-cover brightness-50"
+          className="absolute inset-0 w-full h-full object-fit brightness-50"
         />
 
         <div className="relative text-white max-w-2xl">
