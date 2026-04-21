@@ -19,6 +19,11 @@ const orderSchema = new mongoose.Schema(
       index: true,
     },
 
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+    },
+
     agentId: {
       type: String, // e.g. BS2026-001
       required: true,

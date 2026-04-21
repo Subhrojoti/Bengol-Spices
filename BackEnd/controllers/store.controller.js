@@ -7,6 +7,18 @@ import { updateTargetProgress } from "../services/target.service.js";
 
 //Store Creation - POST /api/stores
 export const createStore = async (req, res) => {
+  const generateDeliveryCode = async () => {
+    let code;
+    let exists = true;
+
+    while (exists) {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+      exists = await Store.findOne({ deliveryCode: code });
+    }
+
+    return code;
+  };
+
   let uploadedImageId = null;
 
   try {
@@ -78,8 +90,11 @@ export const createStore = async (req, res) => {
       throw new Error("You are not authorized to sell in this location");
     }
 
+    const deliveryCode = await generateDeliveryCode();
+
     const store = await Store.create({
       consumerId,
+      deliveryCode,
       storeName: storeName.trim(),
       ownerName: ownerName.trim(),
       phone: phone.trim(),
@@ -111,6 +126,7 @@ export const createStore = async (req, res) => {
       success: true,
       message: "Store registered successfully",
       consumerId: store.consumerId,
+      deliveryCode: store.deliveryCode,
     });
   } catch (error) {
     if (uploadedImageId) {

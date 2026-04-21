@@ -5,6 +5,6 @@ import { isAgent } from "../middleware/role.js";
 
 const router = express.Router();
 
-router.get("/download/:orderId", protect, isAgent, downloadInvoice);
+router.get("/download/:orderId", protect, downloadInvoice);
 
 export default router;

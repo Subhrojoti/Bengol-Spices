@@ -202,7 +202,7 @@ export const getAllDeliveryPartners = async (req, res) => {
 /* Get My assigned orders (DELIVERY PARTNER) */
 export const getMyAssignedOrders = async (req, res) => {
   try {
-    const partnerId = req.user.id; // MongoDB _id from JWT
+    const partnerId = req.user.id;
 
     const orders = await Order.find({
       "delivery.partnerId": partnerId,
@@ -210,8 +210,8 @@ export const getMyAssignedOrders = async (req, res) => {
         $in: ["ASSIGNED", "SHIPPED", "OUT_FOR_DELIVERY"],
       },
     })
-      .sort({ createdAt: -1 })
-      .select("-deliveryOtp.code"); // Hide OTP code for safety
+      .populate("store", "storeName deliveryCode address location") // 🔥 MAGIC LINE
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
