@@ -654,3 +654,23 @@ export const deleteEmployee = async (employeeId) => {
     throw error.response?.data || error.message;
   }
 };
+
+// DELIVERY PARTNER LIST
+export const deliveryPartnerList = async () => {
+  const res = await axiosInstance.get("/delivery-partner/all");
+  return res.data;
+};
+
+// APPROVE DELIVERY PARTNER
+export const approveDeliveryPartner = async (id) => {
+  const res = await axiosInstance.post(
+    `/admin/delivery-partners/${id}/approve`,
+  );
+  return res.data;
+};
+
+// REJECT DELIVERY PARTNER
+export const rejectDeliveryPartner = async (id) => {
+  const res = await axiosInstance.post(`/admin/delivery-partners/${id}/reject`);
+  return res.data;
+};

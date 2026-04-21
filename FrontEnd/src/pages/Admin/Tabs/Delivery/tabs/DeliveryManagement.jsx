@@ -5,7 +5,7 @@ import {
   assignOrderToPartner,
   getActiveReturns,
   assignReturnToPartner,
-} from "../../../../api/services";
+} from "../../../../../api/services";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -171,7 +171,7 @@ const DeliveryManagement = () => {
   };
 
   return (
-    <div className="h-screen p-6 bg-gray-100">
+    <div className="h-screen">
       <div className="flex gap-6 h-full">
         {/* LEFT PANEL */}
         <div className="w-1/3 bg-white rounded-xl shadow-md flex flex-col overflow-hidden">

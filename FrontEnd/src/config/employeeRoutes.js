@@ -4,7 +4,7 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import Groups3Icon from "@mui/icons-material/Groups3";
 import AdminDashboard from "../pages/Admin/Tabs/AdminDashboard/AdminDashboard";
-import DeliveryManagement from "../pages/Admin/Tabs/Delivery/DeliveryManagement";
+import Delivery from "../pages/Admin/Tabs/Delivery/Delivery";
 import OrderManagement from "../pages/Admin/Tabs/Orders/OrderManagement";
 import ReturnManagement from "../pages/Admin/Tabs/Returns/ReturnManagement";
 import ProductCreation from "../pages/Admin/Tabs/ProductCreation/ProductCreation";
@@ -45,10 +45,10 @@ export const employeeRoutes = [
   },
   {
     label: "Delivery Partner",
-    path: "delivery-management",
+    path: "delivery",
     icon: LocalShipping,
     permission: "canGetAllDeliveryPartners",
-    component: DeliveryManagement,
+    component: Delivery,
   },
   {
     label: "Orders",
