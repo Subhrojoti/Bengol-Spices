@@ -1,9 +1,11 @@
 import express from "express";
 import {
   approveAgent,
+  approveDeliveryPartner,
   getAllAgents,
   getDashboardSummary,
   rejectAgent,
+  rejectDeliveryPartner,
 } from "../controllers/admin.controller.js";
 
 import { updateEmployeePermissions } from "../controllers/employee.controller.js";
@@ -40,6 +42,19 @@ router.post(
   "/agents/:agentId/reject",
   checkPermission("canManageAgents"),
   rejectAgent,
+);
+
+// Approve Delivery Partner
+router.post(
+  "/delivery-partners/:partnerId/approve",
+  checkPermission("canManageDeliveryPartners"),
+  approveDeliveryPartner,
+);
+// Reject Delivery Partner
+router.post(
+  "/delivery-partners/:partnerId/reject",
+  checkPermission("canManageDeliveryPartners"),
+  rejectDeliveryPartner,
 );
 
 // Get all agents

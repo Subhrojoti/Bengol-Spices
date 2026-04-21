@@ -7,6 +7,8 @@ import Agent from "../models/Agent.js";
 import {
   sendAgentApprovalMail,
   sendAgentRejectionMail,
+  sendDeliveryPartnerApprovalMail,
+  sendDeliveryPartnerRejectionMail,
 } from "../utils/email.js";
 import { getAdminDashboard } from "../services/dashboard.service.js";
 
@@ -144,6 +146,95 @@ export const getDashboardSummary = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch admin dashboard",
+    });
+  }
+};
+
+// APPROVE DELIVERY PARTNER APPLICATION
+export const approveDeliveryPartner = async (req, res) => {
+  try {
+    const { partnerId } = req.params; // ✅ FIXED
+
+    const partner = await DeliveryPartner.findById(partnerId);
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    if (partner.status === "ACTIVE") {
+      return res.status(400).json({
+        success: false,
+        message: "Already approved",
+      });
+    }
+
+    partner.status = "ACTIVE";
+    await partner.save();
+
+    if (partner.email) {
+      await sendDeliveryPartnerApprovalMail({
+        name: partner.name,
+        email: partner.email,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Delivery partner approved successfully",
+    });
+  } catch (error) {
+    console.error("APPROVE DELIVERY PARTNER ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to approve delivery partner",
+    });
+  }
+};
+
+// REJECT DELIVERY PARTNER APPLICATION
+export const rejectDeliveryPartner = async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+
+    const partner = await DeliveryPartner.findById(partnerId); // ✅ FIXED
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    if (partner.status === "REJECTED") {
+      return res.status(400).json({
+        success: false,
+        message: "Already rejected",
+      });
+    }
+
+    partner.status = "REJECTED";
+    await partner.save();
+
+    // 📧 Send rejection mail
+    if (partner.email) {
+      await sendDeliveryPartnerRejectionMail({
+        name: partner.name,
+        email: partner.email,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Partner rejected successfully",
+    });
+  } catch (error) {
+    console.error("REJECT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reject",
     });
   }
 };

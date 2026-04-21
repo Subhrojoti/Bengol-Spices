@@ -82,10 +82,10 @@ export const createEmployee = async (req, res) => {
   }
 };
 
-// ADMIN - GET ALL EMPLOYEES
+// ADMIN - GET ALL ACTIVE EMPLOYEES
 export const getAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find()
+    const employees = await Employee.find({ status: "ACTIVE" }) // ✅ only active
       .select("employeeId name email role permissions status createdAt")
       .sort({ createdAt: -1 });
 
@@ -204,6 +204,55 @@ export const getEmployeeProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch employee profile",
+    });
+  }
+};
+
+// ADMIN - SOFT DELETE EMPLOYEE
+export const deleteEmployee = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const employee = await Employee.findOne({ employeeId });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    // ❗ Prevent admin deleting themselves
+    if (employee._id.toString() === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot delete your own account",
+      });
+    }
+
+    // ❗ Already inactive check
+    if (employee.status === "INACTIVE") {
+      return res.status(400).json({
+        success: false,
+        message: "Employee already deleted",
+      });
+    }
+
+    // ✅ SOFT DELETE
+    employee.status = "INACTIVE";
+    employee.isOnline = false;
+
+    await employee.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee deleted (soft) successfully",
+    });
+  } catch (error) {
+    console.error("DELETE EMPLOYEE ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete employee",
     });
   }
 };

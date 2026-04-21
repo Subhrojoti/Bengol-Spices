@@ -237,3 +237,102 @@ export const sendEmployeeWelcomeMail = async ({ name, email, employeeId }) => {
     // Email failure does NOT block employee creation — matches original behaviour
   }
 };
+
+// DELIVERY PARTNER ✅ APPROVAL EMAIL
+export const sendDeliveryPartnerApprovalMail = async ({ name, email }) => {
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "Your Delivery Partner Account is Approved 🎉",
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+
+          <div style="background: #16a34a; color: #ffffff; padding: 16px 20px;">
+            <h2 style="margin: 0;">Account Approved</h2>
+          </div>
+
+          <div style="padding: 20px; color: #333;">
+            <p>Hello ${name},</p>
+
+            <p>
+              Great news! Your delivery partner account has been <strong>approved</strong>.
+            </p>
+
+            <p>
+              You can now login using your registered phone number and password.
+            </p>
+
+            <br/>
+
+            <p>Welcome aboard 🚀</p>
+
+            <p>Regards,<br/><strong>Bengol Spices Team</strong></p>
+          </div>
+
+          <div style="background: #f3f4f6; padding: 12px; text-align: center; font-size: 12px; color: #6b7280;">
+            © ${new Date().getFullYear()} Bengol Spices Pvt Ltd
+          </div>
+
+        </div>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("sendDeliveryPartnerApprovalMail error:", error);
+    throw new Error(error.message || "Failed to send approval email");
+  }
+};
+
+// DELIVERY PARTNER ❌ REJECTION EMAIL
+export const sendDeliveryPartnerRejectionMail = async ({ name, email }) => {
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "Your Delivery Partner Application Status",
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+
+          <div style="background: #dc2626; color: #ffffff; padding: 16px 20px;">
+            <h2 style="margin: 0;">Application Rejected</h2>
+          </div>
+
+          <div style="padding: 20px; color: #333;">
+            <p>Hello ${name},</p>
+
+            <p>
+              We regret to inform you that your delivery partner application has been 
+              <strong>rejected</strong> after review.
+            </p>
+
+            <p>
+              This could be due to incomplete or invalid information provided during registration.
+            </p>
+
+            <p>
+              You may reapply again with correct details or contact our support team for assistance.
+            </p>
+
+            <br/>
+
+            <p>Thank you for your interest.</p>
+
+            <p>Regards,<br/><strong>Bengol Spices Team</strong></p>
+          </div>
+
+          <div style="background: #f3f4f6; padding: 12px; text-align: center; font-size: 12px; color: #6b7280;">
+            © ${new Date().getFullYear()} Bengol Spices Pvt Ltd
+          </div>
+
+        </div>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("sendDeliveryPartnerRejectionMail error:", error);
+    throw new Error(error.message || "Failed to send rejection email");
+  }
+};
