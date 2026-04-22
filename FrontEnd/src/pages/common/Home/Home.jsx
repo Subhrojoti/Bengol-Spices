@@ -21,7 +21,7 @@ const Home = () => {
   return (
     <div className="bg-white">
       {/* HERO SECTION */}
-      <div className="relative min-h-[60vh] md:h-[85vh] flex items-center w-full overflow-hidden px-4 sm:px-6 md:px-20 lg:px-32 xl:px-40 py-16 md:py-0">
+      <div className="relative min-h-[60vh] md:h-[90vh] flex items-center w-full overflow-hidden px-4 sm:px-6 md:px-20 lg:px-32 xl:px-40 py-16 md:py-0">
         <img
           src={HeroBG}
           alt="hero"
