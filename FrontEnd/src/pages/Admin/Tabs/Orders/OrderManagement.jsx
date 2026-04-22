@@ -3,14 +3,16 @@ import {
   getAllAgentOrders,
   confirmOrder,
   cancelOrder,
+  downloadInvoice,
 } from "../../../../api/services";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import StoreIcon from "@mui/icons-material/Store";
-import { TextField } from "@mui/material";
+import { IconButton, TextField, Tooltip } from "@mui/material";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -200,6 +202,30 @@ const OrderManagement = () => {
     }
   };
 
+  const handleDownloadInvoice = async (order) => {
+    try {
+      const res = await downloadInvoice(order.orderId);
+
+      if (!res || !res.data || res.data.size === 0) {
+        toast.error("Invoice not available");
+        return;
+      }
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${order.orderId}.pdf`);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Invoice download error:", err);
+      toast.error(err?.response?.data?.message || "Invoice not available");
+    }
+  };
+
   return (
     <div className="min-h-screen p-8 bg-blue-50">
       <div className="flex gap-8 h-[calc(100vh-4rem)]">
@@ -361,14 +387,28 @@ const OrderManagement = () => {
                     <div className="p-5 bg-white space-y-4 border-t border-blue-100">
                       {/* Full Details */}
                       <div className="text-sm text-gray-600 space-y-1">
-                        <p>Store ID: {order.consumerId}</p>
-                        <p>Agent ID: {order.agentId}</p>
-                        <p>Paid: ₹{order.paidAmount}</p>
-                        <p>Payment Mode: {order.paymentMode}</p>
-                        <p>
-                          Due Date:{" "}
-                          {new Date(order.dueDate).toLocaleDateString()}
-                        </p>
+                        <div className="flex justify-between">
+                          <div>
+                            <p>Store ID: {order.consumerId}</p>
+                            <p>Agent ID: {order.agentId}</p>
+                            <p>Paid: ₹{order.paidAmount}</p>
+                            <p>Payment Mode: {order.paymentMode}</p>
+                            <p>
+                              Due Date:{" "}
+                              {new Date(order.dueDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex flex-col">
+                            <Tooltip title="Download invoice">
+                              <IconButton
+                                onClick={() => handleDownloadInvoice(order)}
+                                size="small">
+                                <DescriptionIcon sx={{ color: "#2b8eff" }} />
+                              </IconButton>
+                            </Tooltip>
+                          </div>
+                        </div>
+
                         {order.statusHistory?.length > 0 &&
                           (() => {
                             const latest =
