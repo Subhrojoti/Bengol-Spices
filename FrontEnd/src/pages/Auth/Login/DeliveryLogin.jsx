@@ -9,7 +9,10 @@ import {
   MobileStepper,
   CircularProgress,
   Link,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { deliveryLogin } from "../../../api/services";
@@ -40,6 +43,7 @@ const deliveryImages = [
 export default function DeliveryLogin() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ phone: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -234,7 +238,7 @@ export default function DeliveryLogin() {
             <TextField
               fullWidth
               variant="standard"
-              type="password"
+              type={showPassword ? "text" : "password"}
               label="Password"
               name="password"
               value={form.password}
@@ -250,6 +254,23 @@ export default function DeliveryLogin() {
                 "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
                   borderBottomColor: "#0f766e",
                 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                      size="small"
+                      sx={{ color: "text.secondary" }}>
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
 

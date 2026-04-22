@@ -7,7 +7,6 @@ import { getFaqs } from "../../../api/services";
 const shimmer =
   "relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent";
 
-// Inline keyframes injected once
 const SkeletonStyles = () => (
   <style>{`
     @keyframes shimmer {
@@ -17,6 +16,9 @@ const SkeletonStyles = () => (
       background-color: #e5e7eb;
       border-radius: 0.375rem;
     }
+    /* Hide scrollbar for category tabs on mobile */
+    .category-scroll::-webkit-scrollbar { display: none; }
+    .category-scroll { -ms-overflow-style: none; scrollbar-width: none; }
   `}</style>
 );
 
@@ -24,7 +26,7 @@ const SkeletonBox = ({ className = "" }) => (
   <div className={`skeleton-box ${shimmer} ${className}`} />
 );
 
-/* ─── Left Sidebar Skeleton ─────────────────────────────────────────── */
+/* ─── Left Sidebar Skeleton (desktop) ──────────────────────────────── */
 
 const SidebarSkeleton = () => (
   <div className="w-1/4 hidden md:block">
@@ -36,17 +38,35 @@ const SidebarSkeleton = () => (
   </div>
 );
 
+/* ─── Mobile Category Tabs Skeleton ─────────────────────────────────── */
+
+const MobileCategoryTabsSkeleton = () => (
+  <div className="flex md:hidden gap-1 pb-2 mb-4">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <SkeletonBox
+        key={i}
+        className="h-9 rounded-full flex-1" // flex-1 = equally share full width
+      />
+    ))}
+  </div>
+);
+
 /* ─── Right Content Skeleton ────────────────────────────────────────── */
 
 const ContentSkeleton = () => (
   <div className="w-full md:w-3/4">
+    {/* Mobile tabs skeleton */}
+    <MobileCategoryTabsSkeleton />
+
     {/* Title */}
-    <SkeletonBox className="h-7 w-40 mb-6 rounded-md" />
+    <SkeletonBox className="h-7 w-40 mb-6 rounded-md hidden md:block" />
 
     {/* FAQ accordion rows */}
     <div className="bg-white rounded-xl shadow-sm divide-y">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="px-6 py-5 flex items-center justify-between">
+        <div
+          key={i}
+          className="px-4 md:px-6 py-5 flex items-center justify-between">
           <SkeletonBox
             className={`h-4 rounded-md ${i % 2 === 0 ? "w-2/3" : "w-1/2"}`}
           />
@@ -56,9 +76,9 @@ const ContentSkeleton = () => (
     </div>
 
     {/* Contact card */}
-    <div className="mt-8 bg-white rounded-xl shadow-sm p-6 space-y-3">
+    <div className="mt-6 md:mt-8 bg-white rounded-xl shadow-sm p-4 md:p-6 space-y-3">
       <SkeletonBox className="h-5 w-36 rounded-md" />
-      <SkeletonBox className="h-4 w-72 rounded-md" />
+      <SkeletonBox className="h-4 w-full md:w-72 rounded-md" />
       <div className="space-y-2 pt-1">
         <div className="flex items-center gap-2">
           <SkeletonBox className="h-4 w-4 rounded-full" />
@@ -121,11 +141,16 @@ const HelpAndSupport = () => {
     (item) => item.category === activeCategory && item.isActive,
   );
 
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setActiveIndex(null);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <SkeletonStyles />
 
-      <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-10 flex gap-10">
+      <div className="px-4 sm:px-6 md:px-20 lg:px-32 xl:px-40 py-6 md:py-10 flex gap-6 md:gap-10">
         {loading ? (
           <>
             <SidebarSkeleton />
@@ -133,16 +158,13 @@ const HelpAndSupport = () => {
           </>
         ) : (
           <>
-            {/* LEFT SIDEBAR */}
-            <div className="w-1/4 hidden md:block">
-              <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
+            {/* LEFT SIDEBAR — visible on md+ only */}
+            <div className="w-1/4 hidden md:block flex-shrink-0">
+              <div className="bg-white rounded-xl p-4 shadow-sm space-y-2 sticky top-6">
                 {categories.map((cat) => (
                   <div
                     key={cat}
-                    onClick={() => {
-                      setActiveCategory(cat);
-                      setActiveIndex(null);
-                    }}
+                    onClick={() => handleCategoryChange(cat)}
                     className={`px-4 py-3 rounded-lg cursor-pointer text-sm font-medium transition ${
                       activeCategory === cat
                         ? "bg-gray-100 text-black"
@@ -155,9 +177,29 @@ const HelpAndSupport = () => {
             </div>
 
             {/* RIGHT CONTENT */}
-            <div className="w-full md:w-3/4">
-              <h2 className="text-2xl font-semibold mb-6">{activeCategory}</h2>
+            <div className="w-full md:w-3/4 min-w-0">
+              {/* MOBILE CATEGORY TABS — horizontal scroll strip */}
+              <div className="flex md:hidden gap-1 pb-3 mb-4">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategoryChange(cat)}
+                    className={`flex-1 py-2 rounded-full text-xs font-semibold border transition text-center ${
+                      activeCategory === cat
+                        ? "bg-orange-600 text-white border-orange-600"
+                        : "bg-white text-gray-500 border-gray-200 hover:border-orange-300"
+                    }`}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
 
+              {/* PAGE TITLE */}
+              <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">
+                {activeCategory}
+              </h2>
+
+              {/* FAQ ACCORDION */}
               <div className="bg-white rounded-xl shadow-sm divide-y">
                 {filteredFaqs.length > 0 ? (
                   filteredFaqs.map((item, index) => {
@@ -168,15 +210,15 @@ const HelpAndSupport = () => {
                         {/* QUESTION */}
                         <div
                           onClick={() => toggle(index)}
-                          className={`flex justify-between items-center px-6 py-5 cursor-pointer ${
+                          className={`flex justify-between items-center px-4 md:px-6 py-4 md:py-5 cursor-pointer gap-3 ${
                             isOpen ? "text-orange-600" : "text-gray-600"
                           }`}>
-                          <span className="text-md font-bold">
+                          <span className="text-sm md:text-md font-bold leading-snug">
                             {item.question}
                           </span>
 
                           <span
-                            className={`transition-transform ${
+                            className={`transition-transform flex-shrink-0 text-xs ${
                               isOpen ? "rotate-180" : ""
                             }`}>
                             ▼
@@ -185,7 +227,7 @@ const HelpAndSupport = () => {
 
                         {/* ANSWER */}
                         {isOpen && (
-                          <div className="px-6 pb-5 text-sm text-gray-600 leading-6 font-normal">
+                          <div className="px-4 md:px-6 pb-4 md:pb-5 text-sm text-gray-600 leading-6 font-normal">
                             {item.answer}
                           </div>
                         )}
@@ -193,38 +235,43 @@ const HelpAndSupport = () => {
                     );
                   })
                 ) : (
-                  <div className="px-6 py-5 text-sm text-gray-500">
+                  <div className="px-4 md:px-6 py-5 text-sm text-gray-500">
                     No FAQs available.
                   </div>
                 )}
               </div>
 
               {/* SUPPORT CONTACT */}
-              <div className="mt-8 bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-2">Need more help?</h3>
+              <div className="mt-6 md:mt-8 bg-white rounded-xl shadow-sm p-4 md:p-6">
+                <h3 className="text-base md:text-lg font-semibold mb-2">
+                  Need more help?
+                </h3>
                 <p className="text-sm text-gray-600">
                   If your query is not resolved, feel free to contact our
                   support team.
                 </p>
 
-                <div className="mt-4 space-y-2 text-sm">
+                <div className="mt-4 space-y-3 text-sm">
                   {/* Email */}
                   <div className="flex items-center gap-2">
-                    <Mail size={16} className="text-orange-600" />
+                    <Mail size={16} className="text-orange-600 flex-shrink-0" />
                     <a
                       href="mailto:support@bengolspices.com"
-                      className="text-orange-600 font-medium hover:underline">
+                      className="text-orange-600 font-medium hover:underline break-all">
                       support@bengolspices.com
                     </a>
                   </div>
 
                   {/* Phone */}
                   <div className="flex items-center gap-2">
-                    <Phone size={16} className="text-orange-600" />
+                    <Phone
+                      size={16}
+                      className="text-orange-600 flex-shrink-0"
+                    />
                     <a
                       href="tel:+916289531457"
                       className="text-orange-600 font-medium hover:underline">
-                      +916289531457
+                      +91 6289531457
                     </a>
                   </div>
                 </div>

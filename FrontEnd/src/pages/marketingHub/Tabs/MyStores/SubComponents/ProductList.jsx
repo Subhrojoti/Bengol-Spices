@@ -54,6 +54,7 @@ const ProductList = ({ onBack }) => {
 
   const consumerId = selectedStore.consumerId;
   const storeName = selectedStore.storeName;
+  const storeType = selectedStore.storeType?.toUpperCase(); // 👈 extracted once
 
   const cartCount = useSelector((state) => {
     if (!consumerId) return 0;
@@ -65,6 +66,14 @@ const ProductList = ({ onBack }) => {
 
   const FallBackImage =
     "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2";
+
+  /* ---------------- ROLE-BASED PRICE HELPER ---------------- */
+  const getUnitPrice = (product) => {
+    if (storeType === "RETAILER") return product.retailerPrice;
+    if (storeType === "WHOLESALER") return product.wholesalerPrice;
+    if (storeType === "DISTRIBUTOR") return product.distributorPrice;
+    return product.discountPrice ?? product.price; // fallback
+  };
 
   /* ---------------- IMAGE SLIDER ---------------- */
   const handleImageChange = (id, direction, max) => {
@@ -107,7 +116,7 @@ const ProductList = ({ onBack }) => {
           id: product._id,
           name: product.name,
           uom: product.uom,
-          unitPrice: product.discountPrice ?? product.price,
+          unitPrice: getUnitPrice(product), // 👈 role-aware
           quantity: qty,
           image: product.images?.front?.url,
         },
@@ -162,7 +171,7 @@ const ProductList = ({ onBack }) => {
         {products.map((product) => {
           const qty = Number(quantities[product._id]) || 0;
 
-          const unitPrice = product.discountPrice ?? product.price;
+          const unitPrice = getUnitPrice(product); // 👈 role-aware
 
           const totalPrice = qty * unitPrice;
 

@@ -47,7 +47,7 @@ export const employeeRoutes = [
     label: "Delivery Partner",
     path: "delivery",
     icon: LocalShipping,
-    permission: "canGetAllDeliveryPartners",
+    permission: ["canGetAllDeliveryPartners", "canManageDeliveryPartners"],
     component: Delivery,
   },
   {

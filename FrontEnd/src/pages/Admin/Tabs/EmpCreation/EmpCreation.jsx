@@ -26,6 +26,7 @@ const PERMISSIONS = [
   { key: "canManageNotifications", label: "Manage Notifications" },
   { key: "canAssignLocations", label: "Assign Locations" },
   { key: "canPayoutIncentives", label: "Manage Incentives" },
+  { key: "canManageDeliveryPartners", label: "Manage Delivery Partners" },
 ];
 
 const EmpCreation = () => {

@@ -3,7 +3,6 @@ import Careers from "../pages/common/Company/Careers";
 import HelpSupport from "../pages/common/Contact/HelpAndSupport";
 import Terms from "../pages/common/Legal/TermsAndConditions";
 import Privacy from "../pages/common/Legal/PrivacyPolicy";
-import Cookies from "../pages/common/Legal/CookiesPolicy";
 import Home from "../pages/common/Home/Home";
 
 export const footerRoutes = [
@@ -13,5 +12,4 @@ export const footerRoutes = [
   { path: "help", component: HelpSupport },
   { path: "terms", component: Terms },
   { path: "privacy", component: Privacy },
-  { path: "cookies", component: Cookies },
 ];

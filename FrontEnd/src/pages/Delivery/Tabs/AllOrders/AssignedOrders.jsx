@@ -224,19 +224,28 @@ const AssignedOrders = ({
       </div>
 
       {/* Customer Info */}
-      <div className="space-y-2 text-sm mb-6">
-        <p>
-          <span className="font-medium">Store:</span>{" "}
-          {selectedOrder.deliveryAddress.storeName}
-        </p>
-        <p>
-          <span className="font-medium">Owner:</span>{" "}
-          {selectedOrder.deliveryAddress.ownerName}
-        </p>
-        <p>
-          <span className="font-medium">Phone:</span>{" "}
-          {selectedOrder.deliveryAddress.phone}
-        </p>
+      <div className="flex justify-between">
+        <div className="space-y-2 text-sm mb-6">
+          <p>
+            <span className="font-medium">Store:</span>{" "}
+            {selectedOrder.deliveryAddress.storeName}
+          </p>
+          <p>
+            <span className="font-medium">Owner:</span>{" "}
+            {selectedOrder.deliveryAddress.ownerName}
+          </p>
+          <p>
+            <span className="font-medium">Phone:</span>{" "}
+            {selectedOrder.deliveryAddress.phone}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <p>Delivery code:</p>
+
+          <p className=" font-semibold text-[#0f766e]">
+            {selectedOrder.store.deliveryCode}
+          </p>
+        </div>
       </div>
 
       <hr className="mb-6" />
