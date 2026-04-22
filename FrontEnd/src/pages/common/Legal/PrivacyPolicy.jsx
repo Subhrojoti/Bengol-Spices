@@ -6,6 +6,9 @@ const PrivacyPolicy = () => {
       {/* CONTENT */}
       <div className="px-6 md:px-20 lg:px-32 xl:px-40 py-10">
         <div className="max-w-4xl mx-auto text-gray-700 text-sm leading-7 space-y-6">
+          <h1 className="text-lg font-semibold text-gray-900">
+            PRIVACY POLICY
+          </h1>
           <p>
             This Privacy Policy describes how Bengol Spices Pvt. Ltd.
             ("Company", "we", "our", or "us") collects, uses, and protects your
