@@ -19,6 +19,31 @@ import { razorpayInstance } from "../config/razorpay.js";
 import Agent from "../models/Agent.js";
 import { updateTargetProgress } from "../services/target.service.js";
 
+/* =============================
+   HELPER: Resolve tiered price based on store type
+   Returns the correct price for a product given the store's category.
+   Falls back to item.unitPrice if no tiered price is set (backward safe).
+   ============================= */
+const resolvePrice = (productDoc, storeType, fallbackUnitPrice) => {
+  if (!productDoc) return fallbackUnitPrice;
+
+  const priceMap = {
+    RETAILER: productDoc.retailerPrice,
+    WHOLESALER: productDoc.wholesalerPrice,
+    DISTRIBUTOR: productDoc.distributorPrice,
+  };
+
+  const tieredPrice = priceMap[storeType];
+
+  // ✅ Only use tiered price if it's set and valid (> 0)
+  // Otherwise fall back to what agent passed as unitPrice
+  if (tieredPrice !== null && tieredPrice !== undefined && tieredPrice > 0) {
+    return tieredPrice;
+  }
+
+  return fallbackUnitPrice;
+};
+
 // PLACE ORDER (AGENT)
 export const placeOrder = async (req, res) => {
   try {
@@ -76,6 +101,9 @@ export const placeOrder = async (req, res) => {
       });
     }
 
+    // ✅ Capture storeType for price resolution below
+    const storeType = store.storeType; // "RETAILER" | "WHOLESALER" | "DISTRIBUTOR"
+
     /* =============================
        PRODUCT VALIDATION & AMOUNT
        ============================= */
@@ -83,7 +111,7 @@ export const placeOrder = async (req, res) => {
     let totalAmount = 0;
 
     for (const item of products) {
-      // ✅ BASIC VALIDATION (NO productId required)
+      // BASIC VALIDATION
       if (
         !item.name ||
         !item.uom ||
@@ -114,16 +142,19 @@ export const placeOrder = async (req, res) => {
       }
 
       /* =============================
-         ENRICH DATA (NO BREAK)
+         ENRICH DATA + RESOLVE TIERED PRICE
          ============================= */
 
       if (productDoc) {
         item.productId = productDoc._id;
         item.name = productDoc.name;
         item.image = productDoc.images?.front?.url;
-
-        // ✅ ADD THIS LINE (VERY IMPORTANT)
         item.gstPercentage = productDoc.gstPercentage || 0;
+
+        // ✅ NEW: Auto-resolve correct price based on store type
+        // If tiered price exists for this storeType → use it
+        // If not → keep item.unitPrice as sent by agent (backward safe)
+        item.unitPrice = resolvePrice(productDoc, storeType, item.unitPrice);
       }
 
       /* =============================
@@ -206,7 +237,7 @@ export const placeOrder = async (req, res) => {
       paymentStatus: dueAmount === 0 ? "COMPLETED" : "PENDING",
     });
 
-    // ✅ FIX: Create payment entry for CASH / initial payment
+    // ✅ Create payment entry for CASH / initial payment
     if (paidAmount > 0) {
       await Payment.create({
         orderId: order.orderId,
@@ -221,11 +252,12 @@ export const placeOrder = async (req, res) => {
       });
     }
 
-    /* ============================= 
-        Auto Invoice Generation 
+    /* =============================
+       Auto Invoice Generation
        ============================= */
 
     await createInvoiceFromOrder(order);
+
     /* =============================
        TARGET + COMMISSION + NOTIFICATION
        ============================= */
@@ -250,7 +282,6 @@ export const placeOrder = async (req, res) => {
     });
   }
 };
-
 //GET STOREWISE ORDERS
 export const getOrdersByStoreConsumerId = async (req, res) => {
   try {

@@ -7,13 +7,13 @@ const productSchema = new mongoose.Schema(
        ============================= */
 
     name: {
-      type: String, // Short name (e.g. Turmeric)
+      type: String,
       required: true,
       trim: true,
     },
 
     title: {
-      type: String, // Full display name
+      type: String,
       required: true,
     },
 
@@ -31,20 +31,20 @@ const productSchema = new mongoose.Schema(
        ============================= */
 
     category: {
-      type: String, // e.g. Whole Spices, Powder
+      type: String,
       required: true,
       index: true,
     },
 
     sku: {
-      type: String, // Unique product code
+      type: String,
       required: true,
       unique: true,
       index: true,
     },
 
     uom: {
-      type: String, // kg, g, packet, box
+      type: String,
       required: true,
     },
 
@@ -53,18 +53,39 @@ const productSchema = new mongoose.Schema(
        ============================= */
 
     price: {
-      type: Number, // Original price
+      type: Number, // Original / base price — kept for backward compatibility
       required: true,
       min: 0,
     },
 
     discountPrice: {
-      type: Number, // Selling price
+      type: Number, // General selling price — kept for backward compatibility
       min: 0,
     },
 
+    // ✅ NEW: Tiered pricing per store category
+    // All optional so existing products don't break
+    // If not set, order controller falls back to item.unitPrice
+    retailerPrice: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+
+    wholesalerPrice: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+
+    distributorPrice: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+
     gstPercentage: {
-      type: Number, // 0, 5, 12, 18
+      type: Number,
       default: 5,
     },
 
@@ -73,13 +94,13 @@ const productSchema = new mongoose.Schema(
        ============================= */
 
     stock: {
-      type: Number, // Current available stock
+      type: Number,
       required: true,
       min: 0,
     },
 
     minOrderQty: {
-      type: Number, // Minimum order quantity
+      type: Number,
       default: 1,
       min: 1,
     },
@@ -90,7 +111,7 @@ const productSchema = new mongoose.Schema(
 
     certificates: [
       {
-        type: String, // FSSAI, ISO, Organic etc
+        type: String,
       },
     ],
 
@@ -137,11 +158,11 @@ const productSchema = new mongoose.Schema(
        ============================= */
 
     createdBy: {
-      type: String, // ADMIN / EMPLOYEE ID (optional)
+      type: String,
     },
   },
   {
-    timestamps: true, // createdAt & updatedAt
+    timestamps: true,
   },
 );
 
