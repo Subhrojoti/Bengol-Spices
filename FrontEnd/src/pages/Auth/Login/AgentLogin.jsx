@@ -8,7 +8,10 @@ import {
   Button,
   MobileStepper,
   CircularProgress,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { agentLogin } from "../../../api/services";
@@ -40,6 +43,7 @@ const spiceImages = [
 export default function Login() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ agentId: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -220,12 +224,29 @@ export default function Login() {
             <TextField
               fullWidth
               variant="standard"
-              type="password"
+              type={showPassword ? "text" : "password"}
               label="Password"
               name="password"
               value={form.password}
               onChange={handleChange}
               margin="normal"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                      size="small"
+                      sx={{ color: "text.secondary" }}>
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Button

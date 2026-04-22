@@ -8,7 +8,10 @@ import {
   Button,
   MobileStepper,
   CircularProgress,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { employeeLogin } from "../../../api/services";
 import { toast } from "react-toastify";
@@ -38,6 +41,7 @@ const spiceImages = [
 export default function EmployeeLogin() {
   const [activeStep, setActiveStep] = useState(0);
   const [form, setForm] = useState({ employeeId: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -205,7 +209,7 @@ export default function EmployeeLogin() {
             <TextField
               fullWidth
               variant="standard"
-              type="password"
+              type={showPassword ? "text" : "password"}
               label="Password"
               name="password"
               value={form.password}
@@ -221,6 +225,23 @@ export default function EmployeeLogin() {
                 "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
                   borderBottomColor: "#5b21b6",
                 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                      size="small"
+                      sx={{ color: "text.secondary" }}>
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
 
