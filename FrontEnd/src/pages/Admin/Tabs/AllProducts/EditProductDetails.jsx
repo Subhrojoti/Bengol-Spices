@@ -36,6 +36,9 @@ const EditProductDetails = ({ product, onClose, onSuccess }) => {
     stock: "",
     minOrderQty: "",
     certificates: "",
+    retailerPrice: "",
+    wholesalerPrice: "",
+    distributorPrice: "",
   });
 
   const [frontImage, setFrontImage] = useState(null);
@@ -56,6 +59,9 @@ const EditProductDetails = ({ product, onClose, onSuccess }) => {
         stock: product.stock || "",
         minOrderQty: product.minOrderQty || "",
         certificates: product.certificates?.join(", ") || "",
+        retailerPrice: product.retailerPrice || "",
+        wholesalerPrice: product.wholesalerPrice || "",
+        distributorPrice: product.distributorPrice || "",
       });
     }
   }, [product]);
@@ -222,6 +228,33 @@ const EditProductDetails = ({ product, onClose, onSuccess }) => {
                 value={form.minOrderQty}
                 onChange={handleChange}
               />
+              {/* ROLE-BASED PRICING */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <Input
+                  label="Retailer Price"
+                  type="number"
+                  name="retailerPrice"
+                  value={form.retailerPrice}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Wholesaler Price"
+                  type="number"
+                  name="wholesalerPrice"
+                  value={form.wholesalerPrice}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Distributor Price"
+                  type="number"
+                  name="distributorPrice"
+                  value={form.distributorPrice}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
               <Input
                 label="Certificates"
                 name="certificates"

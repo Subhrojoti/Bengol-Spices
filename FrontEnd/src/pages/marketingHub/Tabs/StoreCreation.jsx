@@ -258,6 +258,16 @@ const StoreCreation = () => {
                   />
                   Wholesaler
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="storeType"
+                    value="DISTRIBUTOR"
+                    checked={formData.storeType === "DISTRIBUTOR"}
+                    onChange={handleChange}
+                  />
+                  Distributor
+                </label>
               </div>
             </div>
           </div>

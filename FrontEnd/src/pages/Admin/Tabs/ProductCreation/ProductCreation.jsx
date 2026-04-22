@@ -36,6 +36,9 @@ const ProductCreation = () => {
     stock: "",
     minOrderQty: "",
     certificates: "",
+    retailerPrice: "",
+    wholesalerPrice: "",
+    distributorPrice: "",
   });
 
   const [frontImage, setFrontImage] = useState(null);
@@ -215,6 +218,36 @@ const ProductCreation = () => {
                     name="certificates"
                     value={form.certificates}
                     onChange={handleChange}
+                  />
+                </div>
+              </Section>
+
+              {/* NEW SECTION */}
+              <Section title="Role-Based Pricing">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="Retailer Price"
+                    type="number"
+                    name="retailerPrice"
+                    value={form.retailerPrice}
+                    onChange={handleChange}
+                    required
+                  />
+                  <Input
+                    label="Wholesaler Price"
+                    type="number"
+                    name="wholesalerPrice"
+                    value={form.wholesalerPrice}
+                    onChange={handleChange}
+                    required
+                  />
+                  <Input
+                    label="Distributor Price"
+                    type="number"
+                    name="distributorPrice"
+                    value={form.distributorPrice}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </Section>
