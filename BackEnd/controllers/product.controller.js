@@ -19,6 +19,10 @@ export const createProduct = async (req, res) => {
       stock,
       minOrderQty,
       certificates,
+      // ✅ NEW: Tiered pricing fields (all optional)
+      retailerPrice,
+      wholesalerPrice,
+      distributorPrice,
     } = req.body;
 
     if (!req.files?.frontImage || !req.files?.backImage) {
@@ -46,6 +50,15 @@ export const createProduct = async (req, res) => {
       stock,
       minOrderQty,
       certificates: certificates ? certificates.split(",") : [],
+
+      // ✅ NEW: Save tiered prices — stored as null if not provided (safe)
+      // Parse to Number because req.body from multipart/form-data is string
+      retailerPrice: retailerPrice !== undefined ? Number(retailerPrice) : null,
+      wholesalerPrice:
+        wholesalerPrice !== undefined ? Number(wholesalerPrice) : null,
+      distributorPrice:
+        distributorPrice !== undefined ? Number(distributorPrice) : null,
+
       images: {
         front: {
           url: req.files.frontImage[0].path,
@@ -58,6 +71,7 @@ export const createProduct = async (req, res) => {
       },
       createdBy: req.user.role,
     });
+
     return res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -79,7 +93,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
-//Get All product For Admin and Allowed Employees
+// Get All Products For Admin and Allowed Employees
 export const getAllProductsInternal = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -97,7 +111,7 @@ export const getAllProductsInternal = async (req, res) => {
   }
 };
 
-// Admin and AllowedEmployee
+// Admin and AllowedEmployee — get single product by ID
 export const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -137,10 +151,7 @@ export const updateProduct = async (req, res) => {
 
     // FRONT IMAGE UPDATE
     if (req.files?.frontImage) {
-      // delete old image
       await cloudinary.uploader.destroy(product.images.front.publicId);
-
-      // save new image
       product.images.front = {
         url: req.files.frontImage[0].path,
         publicId: req.files.frontImage[0].filename,
@@ -150,16 +161,34 @@ export const updateProduct = async (req, res) => {
     // BACK IMAGE UPDATE
     if (req.files?.backImage) {
       await cloudinary.uploader.destroy(product.images.back.publicId);
-
       product.images.back = {
         url: req.files.backImage[0].path,
         publicId: req.files.backImage[0].filename,
       };
     }
 
-    // Update fields dynamically
+    // Update all scalar fields dynamically
+    // ✅ Tiered pricing fields (retailerPrice, wholesalerPrice, distributorPrice)
+    //    are handled naturally here since they're in req.body
+    //    We just make sure to parse them as Numbers since multipart sends strings
+    const numericFields = [
+      "price",
+      "discountPrice",
+      "retailerPrice",
+      "wholesalerPrice",
+      "distributorPrice",
+      "gstPercentage",
+      "stock",
+      "minOrderQty",
+    ];
+
     Object.keys(req.body).forEach((key) => {
-      if (key !== "certificates") {
+      if (key === "certificates") return; // handled separately below
+
+      if (numericFields.includes(key)) {
+        // ✅ Safely parse numeric fields — avoids string storage from multipart
+        product[key] = req.body[key] !== "" ? Number(req.body[key]) : null;
+      } else {
         product[key] = req.body[key];
       }
     });
@@ -187,7 +216,6 @@ export const updateProduct = async (req, res) => {
 };
 
 // Delete Product
-
 export const deleteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -200,7 +228,6 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
-    // Delete images from Cloudinary
     await cloudinary.uploader.destroy(product.images.front.publicId);
     await cloudinary.uploader.destroy(product.images.back.publicId);
     await product.deleteOne();
@@ -217,12 +244,14 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// All product for User
+// ✅ All public products for agents/users
+// Now includes tiered pricing fields so agent can display correct price per store type
 export const getAllPublicProducts = async (req, res) => {
   try {
     const products = await Product.find({ status: "ACTIVE" })
       .select(
-        "name title description category uom price discountPrice images gstPercentage",
+        // ✅ NEW: Added retailerPrice, wholesalerPrice, distributorPrice
+        "name title description category uom price discountPrice retailerPrice wholesalerPrice distributorPrice images gstPercentage minOrderQty",
       )
       .sort({ createdAt: -1 });
 
@@ -239,6 +268,7 @@ export const getAllPublicProducts = async (req, res) => {
   }
 };
 
+// ✅ Single public product — also includes tiered pricing
 export const getSinglePublicProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -247,7 +277,8 @@ export const getSinglePublicProduct = async (req, res) => {
       _id: productId,
       status: "ACTIVE",
     }).select(
-      "name title description category uom price discountPrice images gstPercentage",
+      // ✅ NEW: Added retailerPrice, wholesalerPrice, distributorPrice
+      "name title description category uom price discountPrice retailerPrice wholesalerPrice distributorPrice images gstPercentage minOrderQty",
     );
 
     if (!product) {
@@ -259,7 +290,6 @@ export const getSinglePublicProduct = async (req, res) => {
 
     return res.json({
       success: true,
-
       product,
     });
   } catch (error) {

@@ -67,7 +67,7 @@ const storeSchema = new mongoose.Schema(
 
     storeType: {
       type: String,
-      enum: ["RETAILER", "WHOLESALER"],
+      enum: ["RETAILER", "WHOLESALER", "DISTRIBUTOR"],
       required: true,
     },
 
