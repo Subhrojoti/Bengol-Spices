@@ -4,6 +4,7 @@ import {
   createEmployee,
   getAllEmployees,
   updateEmployeePermissions,
+  deleteEmployee,
 } from "../../../../api/services";
 import { Tabs, Tab, Switch, Typography, Tooltip } from "@mui/material";
 import ImageIcon from "@mui/icons-material/Image";
